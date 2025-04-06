@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+    depends_on:
+      - backend
+    command: npm run dev
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend-service
+    ports:
+      - "4000:4000"
+      - "5555:5555"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/project_collab_db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: project_collab_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres-data:
