@@ -1,0 +1,113 @@
+project-collab-app/
+├── .gitignore
+├── docker-compose.yml
+├── folder-structure.txt
+├── backend/
+│   ├── .gitignore
+│   ├── .dockerignore
+│   ├── .env
+│   ├── tsconfig.json
+│   ├── package-lock.json
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── prisma/
+│   │   └── schema.prisma
+│   └── src/
+│       ├── index.ts
+│       ├── routes/
+│       │   ├── settings.ts
+│       │   ├── auth.ts
+│       │   └── user.ts
+│       └── utils/
+│           ├── hash.ts
+│           ├── token.ts
+│           ├── pass.ts
+│           └── email.ts
+├── frontend/
+│   ├── .gitignore
+│   ├── .dockerignore
+│   ├── .env
+│   ├── tsconfig.json
+│   ├── Dockerfile
+│   ├── README.md
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.mjs
+│   ├── next-env.d.ts
+│   ├── next-auth.d.ts
+│   ├── next.config.ts
+│   ├── tailwind.config.ts
+│   ├── components.json
+│   ├── middleware.ts
+│   ├── app/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   └── api/
+│   │       ├── auth/
+│   │       │   ├── [...nextauth]/route.ts
+│   │       │   ├── register/route.ts
+│   │       │   ├── forgot-password/route.ts
+│   │       │   └── reset/
+│   │       │       ├── reset-password/route.ts
+│   │       │       └── validate-reset-token/route.ts
+│   │       ├── settings/route.ts
+│   │       ├── uploadthing/
+│   │       │   ├── route.ts
+│   │       │   └── core.ts
+│   │       └── user/
+│   │           ├── profile/route.ts
+│   │           ├── profile-image/route.ts
+│   │           ├── update-password/route.ts
+│   │           ├── send-delete-verification/route.ts
+│   │           ├── verify-delete-code/route.ts
+│   │           └── delete-account/route.ts
+│   ├── components/
+│   │   ├── context/
+│   │   │   └── UserSettingsContext.tsx
+│   │   ├── layout/
+│   │   │   ├── Header.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   └── ThemeToggle.tsx
+│   │   ├── home/
+│   │   │   ├── Hero.tsx
+│   │   │   ├── CTA.tsx
+│   │   │   ├── Features.tsx
+│   │   │   └── Testimonials.tsx
+│   │   ├── profile/
+│   │   │   ├── account-actions.tsx
+│   │   │   ├── collaboration-preferences.tsx
+│   │   │   ├── delete-account-dialog.tsx
+│   │   │   ├── notification-preferences.tsx
+│   │   │   ├── password-form.tsx
+│   │   │   ├── personal-info-form.tsx
+│   │   │   ├── profile-header.tsx
+│   │   │   ├── profile-sidebar.tsx
+│   │   │   ├── ProfileImageUpload.tsx
+│   │   │   └── security-settings.tsx
+│   │   ├── auth/
+│   │   │   ├── AuthProvider.tsx
+│   │   │   ├── ForgotPasswordForm.tsx
+│   │   │   ├── ResetPasswordForm.tsx
+│   │   │   ├── SignInForm.tsx
+│   │   │   └── SignUpForm.tsx
+│   │   ├── theme/
+│   │   │   └── ThemeProvider.tsx
+│   │   └── ui/
+│   │       ├── alert-dialog.tsx
+│   │       ├── alert.tsx
+│   │       ├── avatar.tsx
+│   │       ├── badge.tsx
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── CustomToggle.tsx
+│   │       ├── dialog.tsx
+│   │       ├── dropdown-menu.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── progress.tsx
+│   │       ├── separator.tsx
+│   │       ├── sonner.tsx
+│   │       ├── switch.tsx
+│   │       └── tabs.tsx

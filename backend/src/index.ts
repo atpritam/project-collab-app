@@ -2,15 +2,15 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
+import authRouter from "./routes/auth";
+import userRouter from "./routes/user";
+import settingsRouter from "./routes/settings";
 
-// Load .env variables
 dotenv.config();
 
-// Init Express and Prisma
 const app = express();
 const prisma = new PrismaClient();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -18,6 +18,10 @@ app.use(express.json());
 app.get("/", (_, res) => {
   res.send("API is running");
 });
+
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+app.use("/api/settings", settingsRouter);
 
 // Start server
 const PORT = process.env.PORT || 4000;
