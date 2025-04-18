@@ -254,7 +254,7 @@ export function DeleteAccountDialog({
                 onClick={requestVerificationCode}
                 type="button"
                 variant="outline"
-                className="w-full border-border hover:bg-muted"
+                className="w-full border-border hover:bg-muted cursor-pointer"
                 disabled={isRequestingCode}
               >
                 {isRequestingCode ? (
@@ -336,13 +336,13 @@ export function DeleteAccountDialog({
               onOpenChange(false);
               resetDialog();
             }}
-            className="border-border hover:bg-muted text-foreground"
+            className="border-border hover:bg-muted text-foreground cursor-pointer"
           >
             Cancel
           </Button>
 
           <Button
-            className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white transition-all"
+            className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white transition-all cursor-pointer"
             onClick={handleDeleteAccount}
             disabled={
               isDeleting ||

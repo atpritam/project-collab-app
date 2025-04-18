@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 
 interface ProfileImageUploadProps {
   onImageUpdated?: () => void;
@@ -39,9 +40,12 @@ export default function ProfileImageUpload({
     "none"
   );
 
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFileKey, setUploadedFileKey] = useState<string | null>(null);
+
   const isAuthenticated = status === "authenticated";
   const hasExistingImage = !!userData?.image;
-  const isUploading = isLoading && !previewImage;
 
   // Helper function to get user initials for avatar fallback
   const getInitials = (name: string | null | undefined) => {
@@ -72,10 +76,38 @@ export default function ProfileImageUpload({
     }
   };
 
+  // Function to delete file from UploadThing
+  const deleteFileFromUploadThing = async (fileKey: string) => {
+    try {
+      const response = await fetch("/api/uploadthing/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileKey }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to delete file");
+      }
+
+      console.log("File deleted successfully from UploadThing");
+    } catch (error) {
+      console.error("Error deleting file from UploadThing:", error);
+    }
+  };
+
   const resetState = () => {
+    // If we have a file key and a preview image that wasn't committed, we delete the file
+    if (uploadedFileKey && previewImage) {
+      deleteFileFromUploadThing(uploadedFileKey);
+    }
+
     setPreviewImage(null);
+    setUploadedFileKey(null);
     setIsLoading(false);
     setConfirmationView("none");
+    setUploadProgress(0);
+    setIsUploading(false);
   };
 
   const updateProfileImage = async (imageUrl: string | null) => {
@@ -119,6 +151,8 @@ export default function ProfileImageUpload({
         onImageUpdated();
       }
 
+      setUploadedFileKey(null);
+
       setTimeout(() => {
         setIsOpen(false);
         resetState();
@@ -126,6 +160,11 @@ export default function ProfileImageUpload({
     } catch (err: any) {
       toast.error(err.message || "Failed to update profile image");
       console.error("Error updating profile image:", err);
+
+      if (uploadedFileKey) {
+        deleteFileFromUploadThing(uploadedFileKey);
+        setUploadedFileKey(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -143,6 +182,11 @@ export default function ProfileImageUpload({
   };
 
   const handleCancelPreview = () => {
+    // Delete the file from UploadThing when user cancels
+    if (uploadedFileKey) {
+      deleteFileFromUploadThing(uploadedFileKey);
+      setUploadedFileKey(null);
+    }
     setPreviewImage(null);
   };
 
@@ -231,14 +275,21 @@ export default function ProfileImageUpload({
           </DialogHeader>
 
           <div className="space-y-6">
-            {isLoading ? (
+            {isLoading && !isUploading ? (
               <div className="h-40 flex flex-col items-center justify-center space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
                 <p className="text-sm text-center">
-                  {isUploading
-                    ? "Uploading image..."
-                    : "Saving your profile picture..."}
+                  Saving your profile picture...
                 </p>
+              </div>
+            ) : isUploading ? (
+              <div className="h-40 flex flex-col items-center justify-center space-y-4">
+                <div className="w-full max-w-xs space-y-2">
+                  <Progress value={uploadProgress} className="h-2 w-full" />
+                  <p className="text-sm text-center text-gray-600">
+                    Uploading... {uploadProgress}%
+                  </p>
+                </div>
               </div>
             ) : confirmationView === "delete" ? (
               <div className="flex flex-col items-center space-y-4">
@@ -325,25 +376,41 @@ export default function ProfileImageUpload({
                     onClientUploadComplete={(res) => {
                       if (res && res.length > 0) {
                         const uploadUrl = res[0].ufsUrl;
-                        if (uploadUrl) {
+                        // file key for deletion
+                        const fileKey = res[0].key;
+
+                        if (uploadUrl && fileKey) {
                           console.log("Upload completed, URL:", uploadUrl);
+                          console.log("File key for deletion:", fileKey);
                           setPreviewImage(uploadUrl);
+                          setUploadedFileKey(fileKey);
                         } else {
                           toast.error("Invalid response from upload service");
+                          console.error(
+                            "Upload response format unexpected:",
+                            res[0]
+                          );
                         }
-                        setIsLoading(false);
+                        setIsUploading(false);
+                        setUploadProgress(0);
                       } else {
                         toast.error("No files were uploaded");
-                        setIsLoading(false);
+                        setIsUploading(false);
+                        setUploadProgress(0);
                       }
                     }}
                     onUploadError={(error: Error) => {
                       console.error("Upload error:", error);
                       toast.error(`Upload failed: ${error.message}`);
-                      setIsLoading(false);
+                      setIsUploading(false);
+                      setUploadProgress(0);
                     }}
                     onUploadBegin={() => {
-                      setIsLoading(true);
+                      setIsUploading(true);
+                      setUploadProgress(0);
+                    }}
+                    onUploadProgress={(progress) => {
+                      setUploadProgress(progress);
                     }}
                     appearance={{
                       button:
