@@ -31,6 +31,18 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!response.ok) {
+            if (response.status === 403) {
+              const data = await response.json();
+              // specific error for email verification
+              throw new Error(
+                JSON.stringify({
+                  message: data.message,
+                  emailVerified: false,
+                  email: data.email,
+                })
+              );
+            }
+            // other errors
             console.error(
               "Login failed:",
               response.status,
@@ -53,7 +65,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         } catch (error) {
           console.error("Error during login:", error);
-          return null;
+          throw error;
         }
       },
     }),

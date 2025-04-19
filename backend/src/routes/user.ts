@@ -6,6 +6,8 @@ import { sendDeleteVerificationEmail } from "../utils/email";
 const prisma = new PrismaClient();
 const userRouter: Router = express.Router();
 
+export default userRouter;
+
 // GET /api/user/profile/:userId
 userRouter.get("/profile/:userId", function (req: Request, res: Response) {
   const { userId } = req.params;
@@ -106,8 +108,6 @@ userRouter.put("/profile/:userId", async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to update user profile" });
   }
 });
-
-export default userRouter;
 
 // POST /api/user/update-password
 userRouter.post("/update-password", function (req: Request, res: Response) {
@@ -294,11 +294,6 @@ userRouter.post("/verify-delete-code", function (req: Request, res: Response) {
           .json({ message: "Verification code has expired" });
       }
 
-      // code cleanup
-      await prisma.deleteAccountToken.delete({
-        where: { id: verificationToken.id },
-      });
-
       res.status(200).json({
         message: "Verification code is valid",
         verified: true,
@@ -331,15 +326,16 @@ userRouter.delete("/:userId", function (req: Request, res: Response) {
 
       let isAuthorized = false;
 
-      // If password is provided, we verify it
+      // If password is provided
       if (password && user.password) {
         const isValidPassword = await verifyPassword(password, user.password);
         if (isValidPassword) {
           isAuthorized = true;
+          console.log("User authorized via password");
         }
       }
 
-      // code verification
+      // If verification code is provided
       if (verificationCode && !isAuthorized) {
         const verificationToken = await prisma.deleteAccountToken.findFirst({
           where: {
@@ -350,15 +346,22 @@ userRouter.delete("/:userId", function (req: Request, res: Response) {
 
         if (verificationToken && verificationToken.expiresAt > new Date()) {
           isAuthorized = true;
+          console.log("User authorized via verification code");
 
-          // cleanup
+          // verification code cleanup
           await prisma.deleteAccountToken.delete({
             where: { id: verificationToken.id },
           });
+        } else {
+          console.log("Invalid or expired verification code");
+          if (verificationToken) {
+            console.log("Code expired at:", verificationToken.expiresAt);
+            console.log("Current time:", new Date());
+          }
         }
       }
 
-      // if neither valid password nor verification code worked
+      // If neither valid password nor verification code worked
       if (!isAuthorized) {
         return res.status(401).json({
           message:

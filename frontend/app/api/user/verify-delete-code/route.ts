@@ -13,6 +13,13 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const { code } = await request.json();
 
+    if (!code || code.length !== 6) {
+      return NextResponse.json(
+        { message: "Invalid verification code format" },
+        { status: 400 }
+      );
+    }
+
     // Request to the backend service
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/user/verify-delete-code`,
@@ -28,6 +35,7 @@ export async function POST(request: Request) {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("Verification error response:", response.status, data);
       return NextResponse.json(
         { message: data.message || "Invalid verification code" },
         { status: response.status }

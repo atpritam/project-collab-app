@@ -11,7 +11,7 @@ export async function DELETE(request: Request) {
     }
 
     const userId = session.user.id;
-    const { password, verificationCode } = await request.json();
+    const body = await request.json();
 
     // request to the backend service
     const response = await fetch(
@@ -21,13 +21,17 @@ export async function DELETE(request: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password, verificationCode }),
+        body: JSON.stringify({
+          password: body.password,
+          verificationCode: body.verificationCode,
+        }),
       }
     );
 
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("Backend delete account error:", response.status, data);
       return NextResponse.json(
         { message: data.message || "Failed to delete account" },
         { status: response.status }

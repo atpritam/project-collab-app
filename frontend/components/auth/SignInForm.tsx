@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Lock,
   ArrowLeft,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,10 +38,16 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/";
 
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setUnverifiedEmail("");
+    setResendSuccess(false);
 
     try {
       const result = await signIn("credentials", {
@@ -50,7 +57,16 @@ export default function SignInForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        try {
+          const errorData = JSON.parse(result.error);
+          if (errorData.emailVerified === false && errorData.email) {
+            setUnverifiedEmail(errorData.email);
+            setError("Please verify your email to sign in.");
+            return;
+          }
+        } catch {
+          setError("Invalid email or password");
+        }
       } else {
         router.push(callbackUrl);
         router.refresh();
@@ -68,6 +84,36 @@ export default function SignInForm() {
       await signIn(provider, { callbackUrl });
     } catch (error) {
       console.error(`${provider} sign-in error:`, error);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+
+    setIsResendingVerification(true);
+    setResendSuccess(false);
+    setError("");
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to resend verification email");
+      }
+
+      setResendSuccess(true);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+    } finally {
+      setIsResendingVerification(false);
     }
   };
 
@@ -101,10 +147,57 @@ export default function SignInForm() {
         </CardHeader>
 
         <CardContent className="pt-6">
-          {error && (
+          {error && !unverifiedEmail && (
             <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg text-red-600 dark:text-red-400 mb-6 flex items-start">
               <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {unverifiedEmail && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mb-6">
+              <div className="flex items-start">
+                <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2" />
+                <div>
+                  <p className="text-yellow-800 dark:text-yellow-300 font-medium">
+                    Email not verified
+                  </p>
+                  <p className="text-yellow-700 dark:text-yellow-400 text-sm mt-1">
+                    Please verify your email address before signing in.
+                  </p>
+                  <div className="mt-3">
+                    <Button
+                      onClick={handleResendVerification}
+                      variant="outline"
+                      size="sm"
+                      className="text-sm border-yellow-300 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                      disabled={isResendingVerification || resendSuccess}
+                    >
+                      {isResendingVerification ? (
+                        <>
+                          <span className="animate-spin mr-2 h-4 w-4 border-2 border-yellow-600 border-t-transparent dark:border-yellow-400 dark:border-t-transparent rounded-full inline-block"></span>
+                          Sending...
+                        </>
+                      ) : resendSuccess ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Verification email sent
+                        </>
+                      ) : (
+                        "Resend verification email"
+                      )}
+                    </Button>
+                    <Button
+                      asChild
+                      variant="link"
+                      className="text-sm ml-2 text-yellow-800 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-200"
+                      size="sm"
+                    >
+                      <Link href="/auth/verify-email">Need help?</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

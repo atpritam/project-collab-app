@@ -97,6 +97,7 @@ export function DeleteAccountDialog({
 
       if (response.ok && data.verified) {
         setVerificationStep("code_verified");
+        setDeleteError("");
         toast.success("Email verified successfully");
       } else {
         setDeleteError(data.message || "Invalid verification code");
@@ -112,20 +113,24 @@ export function DeleteAccountDialog({
   };
 
   const handleDeleteAccount = async () => {
-    // Validate confirmation text
     if (deleteConfirmText !== "delete my account") {
       setDeleteError("Please type 'delete my account' to confirm");
       return;
     }
 
-    // Authentication check
-    if (
-      (hasPasswordAuth &&
-        !deletePassword &&
-        verificationStep !== "code_verified") ||
-      (!hasPasswordAuth && verificationStep !== "code_verified")
-    ) {
-      setDeleteError("Please enter your password or verify your email");
+    // Authentication check -
+    // If user has password auth, they need to provide password OR have a verified code
+    // If user doesn't have password auth, they MUST have a verified code
+    const hasValidAuth =
+      (hasPasswordAuth && deletePassword) ||
+      verificationStep === "code_verified";
+
+    if (!hasValidAuth) {
+      if (hasPasswordAuth) {
+        setDeleteError("Please enter your password or verify your email");
+      } else {
+        setDeleteError("Please verify your email before deleting your account");
+      }
       return;
     }
 
@@ -133,21 +138,24 @@ export function DeleteAccountDialog({
     setDeleteError("");
 
     try {
+      const payload = {
+        password: deletePassword || undefined,
+        verificationCode:
+          verificationStep === "code_verified" ? verificationCode : undefined,
+      };
+
+      console.log("Sending deletion request with payload:", payload);
+
       const response = await fetch("/api/user/delete-account", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          password: deletePassword,
-          verificationCode:
-            verificationStep === "code_verified" ? verificationCode : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         toast.success("Account deleted successfully");
-        // Sign out and redirect to home page
         await signOut({ callbackUrl: "/" });
       } else {
         const data = await response.json();
@@ -169,6 +177,16 @@ export function DeleteAccountDialog({
     setVerificationCode("");
     setVerificationStep("initial");
     setDeleteError("");
+  };
+
+  const isActionButtonDisabled = () => {
+    const hasValidAuth =
+      (hasPasswordAuth && deletePassword) ||
+      verificationStep === "code_verified";
+
+    return (
+      isDeleting || deleteConfirmText !== "delete my account" || !hasValidAuth
+    );
   };
 
   return (
@@ -235,7 +253,7 @@ export function DeleteAccountDialog({
                 onChange={(e) => setDeletePassword(e.target.value)}
                 placeholder="Your current password"
                 className="w-full border-input focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                disabled={verificationStep === "code_verified"}
+                disabled={isDeleting}
               />
             </div>
           )}
@@ -254,7 +272,7 @@ export function DeleteAccountDialog({
                 onClick={requestVerificationCode}
                 type="button"
                 variant="outline"
-                className="w-full border-border hover:bg-muted cursor-pointer"
+                className="w-full border-border hover:bg-muted"
                 disabled={isRequestingCode}
               >
                 {isRequestingCode ? (
@@ -336,22 +354,16 @@ export function DeleteAccountDialog({
               onOpenChange(false);
               resetDialog();
             }}
-            className="border-border hover:bg-muted text-foreground cursor-pointer"
+            className="border-border hover:bg-muted text-foreground"
+            disabled={isDeleting}
           >
             Cancel
           </Button>
 
           <Button
-            className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white transition-all cursor-pointer"
+            className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white transition-all"
             onClick={handleDeleteAccount}
-            disabled={
-              isDeleting ||
-              deleteConfirmText !== "delete my account" ||
-              (hasPasswordAuth &&
-                !deletePassword &&
-                verificationStep !== "code_verified") ||
-              (!hasPasswordAuth && verificationStep !== "code_verified")
-            }
+            disabled={isActionButtonDisabled()}
           >
             {isDeleting ? (
               <>

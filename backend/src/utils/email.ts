@@ -39,6 +39,7 @@ export async function sendPasswordResetEmail(
         <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">Reset Password</a>
         <p>This link will expire in 1 hour.</p>
         <p>If you did not request this, please ignore this email.</p>
+        <p>If the button doesn't work, you can copy and paste this link into your browser: ${resetUrl}</p>
       </div>
     `,
   };
@@ -67,6 +68,39 @@ export async function sendDeleteVerificationEmail(
         </div>
         <p>This code will expire in 10 minutes.</p>
         <p>If you did not request this, please ignore this email and secure your account.</p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+// Email verification email
+export async function sendEmailVerificationEmail(
+  email: string,
+  verificationCode: string
+): Promise<void> {
+  const transporter = createTransporter();
+
+  // Verification URL
+  const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const verificationUrl = `${baseUrl}/auth/verify-email?code=${verificationCode}&email=${encodeURIComponent(
+    email
+  )}`;
+
+  const mailOptions = {
+    from: '"Nudge" <nudge-collab@outlook.com>',
+    to: email,
+    subject: "Email Verification",
+    text: `Welcome to Nudge! Please verify your email address by clicking the following link: ${verificationUrl}\n\nThis link will expire in 24 hours.\n\nIf you did not create an account, please ignore this email.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Welcome to Nudge!</h2>
+        <p>Thanks for signing up. Please verify your email address by clicking the button below:</p>
+        <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">Verify Email Address</a>
+        <p>This link will expire in 24 hours.</p>
+        <p>If you did not create an account, please ignore this email.</p>
+        <p>If the button doesn't work, you can copy and paste this link into your browser: ${verificationUrl}</p>
       </div>
     `,
   };
