@@ -5,6 +5,8 @@ import { PrismaClient } from "@prisma/client";
 import authRouter from "./routes/auth";
 import userRouter from "./routes/user";
 import settingsRouter from "./routes/settings";
+import dashboardRouter from "./routes/dashboard";
+import projectsRouter from "./routes/projects";
 
 dotenv.config();
 
@@ -22,6 +24,8 @@ app.get("/", (_, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/projects", projectsRouter);
 
 // Start server
 const PORT = process.env.PORT || 4000;

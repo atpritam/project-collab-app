@@ -1,113 +1,123 @@
-project-collab-app/
-├── .gitignore
-├── docker-compose.yml
-├── folder-structure.txt
-├── backend/
-│   ├── .gitignore
-│   ├── .dockerignore
-│   ├── .env
-│   ├── tsconfig.json
-│   ├── package-lock.json
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── prisma/
-│   │   └── schema.prisma
-│   └── src/
-│       ├── index.ts
-│       ├── routes/
-│       │   ├── settings.ts
-│       │   ├── auth.ts
-│       │   └── user.ts
-│       └── utils/
-│           ├── hash.ts
-│           ├── token.ts
-│           ├── pass.ts
-│           └── email.ts
-├── frontend/
-│   ├── .gitignore
-│   ├── .dockerignore
-│   ├── .env
-│   ├── tsconfig.json
-│   ├── Dockerfile
-│   ├── README.md
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── postcss.config.mjs
-│   ├── next-env.d.ts
-│   ├── next-auth.d.ts
-│   ├── next.config.ts
-│   ├── tailwind.config.ts
-│   ├── components.json
-│   ├── middleware.ts
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── favicon.ico
-│   │   ├── globals.css
-│   │   └── api/
-│   │       ├── auth/
-│   │       │   ├── [...nextauth]/route.ts
-│   │       │   ├── register/route.ts
-│   │       │   ├── forgot-password/route.ts
-│   │       │   └── reset/
-│   │       │       ├── reset-password/route.ts
-│   │       │       └── validate-reset-token/route.ts
-│   │       ├── settings/route.ts
-│   │       ├── uploadthing/
-│   │       │   ├── route.ts
-│   │       │   └── core.ts
-│   │       └── user/
-│   │           ├── profile/route.ts
-│   │           ├── profile-image/route.ts
-│   │           ├── update-password/route.ts
-│   │           ├── send-delete-verification/route.ts
-│   │           ├── verify-delete-code/route.ts
-│   │           └── delete-account/route.ts
-│   ├── components/
-│   │   ├── context/
-│   │   │   └── UserSettingsContext.tsx
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   └── ThemeToggle.tsx
-│   │   ├── home/
-│   │   │   ├── Hero.tsx
-│   │   │   ├── CTA.tsx
-│   │   │   ├── Features.tsx
-│   │   │   └── Testimonials.tsx
-│   │   ├── profile/
-│   │   │   ├── account-actions.tsx
-│   │   │   ├── collaboration-preferences.tsx
-│   │   │   ├── delete-account-dialog.tsx
-│   │   │   ├── notification-preferences.tsx
-│   │   │   ├── password-form.tsx
-│   │   │   ├── personal-info-form.tsx
-│   │   │   ├── profile-header.tsx
-│   │   │   ├── profile-sidebar.tsx
-│   │   │   ├── ProfileImageUpload.tsx
-│   │   │   └── security-settings.tsx
-│   │   ├── auth/
-│   │   │   ├── AuthProvider.tsx
-│   │   │   ├── ForgotPasswordForm.tsx
-│   │   │   ├── ResetPasswordForm.tsx
-│   │   │   ├── SignInForm.tsx
-│   │   │   └── SignUpForm.tsx
-│   │   ├── theme/
-│   │   │   └── ThemeProvider.tsx
-│   │   └── ui/
-│   │       ├── alert-dialog.tsx
-│   │       ├── alert.tsx
-│   │       ├── avatar.tsx
-│   │       ├── badge.tsx
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── CustomToggle.tsx
-│   │       ├── dialog.tsx
-│   │       ├── dropdown-menu.tsx
-│   │       ├── input.tsx
-│   │       ├── label.tsx
-│   │       ├── progress.tsx
-│   │       ├── separator.tsx
-│   │       ├── sonner.tsx
-│   │       ├── switch.tsx
-│   │       └── tabs.tsx
+project-collab-app/.gitignore
+project-collab-app/docker-compose.yml
+project-collab-app/folder-structure.txt
+project-collab-app/backend/.gitignore
+project-collab-app/backend/.dockerignore
+project-collab-app/backend/.env
+project-collab-app/backend/tsconfig.json
+project-collab-app/backend/package-lock.json
+project-collab-app/backend/Dockerfile
+project-collab-app/backend/package.json
+project-collab-app/backend/prisma/schema.prisma
+project-collab-app/backend/src/index.ts
+project-collab-app/backend/src/utils/hash.ts
+project-collab-app/backend/src/utils/token.ts
+project-collab-app/backend/src/utils/pass.ts
+project-collab-app/backend/src/utils/email.ts
+project-collab-app/backend/src/routes/dashboard.ts
+project-collab-app/backend/src/routes/projects.ts
+project-collab-app/backend/src/routes/settings.ts
+project-collab-app/backend/src/routes/auth.ts
+project-collab-app/backend/src/routes/user.ts
+project-collab-app/frontend/next-env.d.ts
+project-collab-app/frontend/postcss.config.mjs
+project-collab-app/frontend/.gitignore
+project-collab-app/frontend/.dockerignore
+project-collab-app/frontend/components.json
+project-collab-app/frontend/middleware.ts
+project-collab-app/frontend/next.config.ts
+project-collab-app/frontend/.env
+project-collab-app/frontend/tsconfig.json
+project-collab-app/frontend/README.md
+project-collab-app/frontend/package-lock.json
+project-collab-app/frontend/next-auth.d.ts
+project-collab-app/frontend/Dockerfile
+project-collab-app/frontend/package.json
+project-collab-app/frontend/components/context/UserSettingsContext.tsx
+project-collab-app/frontend/components/profile/delete-account-dialog.tsx
+project-collab-app/frontend/components/profile/account-actions.tsx
+project-collab-app/frontend/components/profile/password-form.tsx
+project-collab-app/frontend/components/profile/notification-preferences.tsx
+project-collab-app/frontend/components/profile/profile-header.tsx
+project-collab-app/frontend/components/profile/collaboration-preferences.tsx
+project-collab-app/frontend/components/profile/ProfileImageUpload.tsx
+project-collab-app/frontend/components/profile/security-settings.tsx
+project-collab-app/frontend/components/profile/personal-info-form.tsx
+project-collab-app/frontend/components/profile/profile-sidebar.tsx
+project-collab-app/frontend/components/dashboard/DashboardHeader.tsx
+project-collab-app/frontend/components/dashboard/ActivityFeed.tsx
+project-collab-app/frontend/components/dashboard/TasksSection.tsx
+project-collab-app/frontend/components/dashboard/ProjectsSection.tsx
+project-collab-app/frontend/components/home/Features.tsx
+project-collab-app/frontend/components/home/Hero.tsx
+project-collab-app/frontend/components/home/CTA.tsx
+project-collab-app/frontend/components/home/Testimonials.tsx
+project-collab-app/frontend/components/theme/ThemeProvider.tsx
+project-collab-app/frontend/components/ui/progress.tsx
+project-collab-app/frontend/components/ui/alert-dialog.tsx
+project-collab-app/frontend/components/ui/badge.tsx
+project-collab-app/frontend/components/ui/label.tsx
+project-collab-app/frontend/components/ui/tabs.tsx
+project-collab-app/frontend/components/ui/dashboard-card.tsx
+project-collab-app/frontend/components/ui/select.tsx
+project-collab-app/frontend/components/ui/card.tsx
+project-collab-app/frontend/components/ui/CustomToggle.tsx
+project-collab-app/frontend/components/ui/dialog.tsx
+project-collab-app/frontend/components/ui/button.tsx
+project-collab-app/frontend/components/ui/dropdown-menu.tsx
+project-collab-app/frontend/components/ui/tooltip.tsx
+project-collab-app/frontend/components/ui/alert.tsx
+project-collab-app/frontend/components/ui/input.tsx
+project-collab-app/frontend/components/ui/sonner.tsx
+project-collab-app/frontend/components/ui/avatar.tsx
+project-collab-app/frontend/components/ui/separator.tsx
+project-collab-app/frontend/components/ui/switch.tsx
+project-collab-app/frontend/components/layout/Header.tsx
+project-collab-app/frontend/components/layout/Footer.tsx
+project-collab-app/frontend/components/layout/ThemeToggle.tsx
+project-collab-app/frontend/components/auth/ForgotPasswordForm.tsx
+project-collab-app/frontend/components/auth/VerifyEmailForm.tsx
+project-collab-app/frontend/components/auth/SignInForm.tsx
+project-collab-app/frontend/components/auth/ResetPasswordForm.tsx
+project-collab-app/frontend/components/auth/UserAuthStatus.tsx
+project-collab-app/frontend/components/auth/SignUpForm.tsx
+project-collab-app/frontend/components/auth/AuthProvider.tsx
+project-collab-app/frontend/app/page.tsx
+project-collab-app/frontend/app/globals.css
+project-collab-app/frontend/app/favicon.ico
+project-collab-app/frontend/app/layout.tsx
+project-collab-app/frontend/app/api/projects/create/route.ts
+project-collab-app/frontend/app/api/projects/test/route.ts
+project-collab-app/frontend/app/api/dashboard/projects/route.ts
+project-collab-app/frontend/app/api/dashboard/activity/route.ts
+project-collab-app/frontend/app/api/dashboard/tasks/route.ts
+project-collab-app/frontend/app/api/user/send-delete-verification/route.ts
+project-collab-app/frontend/app/api/user/update-password/route.ts
+project-collab-app/frontend/app/api/user/profile/route.ts
+project-collab-app/frontend/app/api/user/profile-image/route.ts
+project-collab-app/frontend/app/api/user/delete-account/route.ts
+project-collab-app/frontend/app/api/user/verify-delete-code/route.ts
+project-collab-app/frontend/app/api/settings/route.ts
+project-collab-app/frontend/app/api/uploadthing/route.ts
+project-collab-app/frontend/app/api/uploadthing/core.ts
+project-collab-app/frontend/app/api/uploadthing/delete/route.ts
+project-collab-app/frontend/app/api/auth/reset/validate-reset-token/route.ts
+project-collab-app/frontend/app/api/auth/reset/reset-password/route.ts
+project-collab-app/frontend/app/api/auth/resend-verification/route.ts
+project-collab-app/frontend/app/api/auth/[...nextauth]/route.ts
+project-collab-app/frontend/app/api/auth/verify-email/route.ts
+project-collab-app/frontend/app/api/auth/register/route.ts
+project-collab-app/frontend/app/api/auth/forgot-password/route.ts
+project-collab-app/frontend/app/projects/create/page.tsx
+project-collab-app/frontend/app/profile/page.tsx
+project-collab-app/frontend/app/dashboard/page.tsx
+project-collab-app/frontend/app/auth/verification-success/page.tsx
+project-collab-app/frontend/app/auth/reset-password/page.tsx
+project-collab-app/frontend/app/auth/signin/page.tsx
+project-collab-app/frontend/app/auth/verify-email/page.tsx
+project-collab-app/frontend/app/auth/signup/page.tsx
+project-collab-app/frontend/app/auth/forgot-password/page.tsx
+project-collab-app/frontend/lib/themeUtils.ts
+project-collab-app/frontend/lib/colorMigrate.js
+project-collab-app/frontend/lib/uploadthing.ts
+project-collab-app/frontend/lib/utils.ts

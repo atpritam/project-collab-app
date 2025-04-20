@@ -7,18 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User-related models
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String        @unique
   emailVerified DateTime?
-  password      String?   // not for OAuth Users
+  password      String? // not for OAuth Users
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   accounts      Account[]
   UserInfo      UserInfo[]
   UserSettings  UserSettings?
+
+  // Project-related
+  projectMembers  ProjectMember[] // Link to projects
+  createdProjects Project[]       @relation("ProjectCreator")
+
+  // Task-related
+  createdTasks  Task[] @relation("TaskCreator")
+  assignedTasks Task[] @relation("TaskAssignee")
+
+  // Chat and comments
+  chatMessages ChatMessage[]
+  taskComments TaskComment[]
+
+  // File-related - Added this relation to fix the error
+  uploadedFiles File[] @relation("FileUploader")
 }
 
 model Account {
@@ -41,52 +57,52 @@ model Account {
 }
 
 model UserInfo {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  bio         String?
-  skills      String?
-  jobTitle    String? 
-  department  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  bio        String?
+  skills     String?
+  jobTitle   String?
+  department String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserSettings {
-  id                            String   @id @default(cuid())
-  userId                        String   @unique
-  
+  id     String @id @default(cuid())
+  userId String @unique
+
   // Collaboration Preferences
-  autoAcceptTaskAssignments     Boolean  @default(true)
-  taskReminderNotifications     Boolean  @default(true)
-  showDueDatesInLocalTimezone   Boolean  @default(true)
-  
+  autoAcceptTaskAssignments   Boolean @default(true)
+  taskReminderNotifications   Boolean @default(true)
+  showDueDatesInLocalTimezone Boolean @default(true)
+
   // Email Notifications
-  emailProjectInvitations       Boolean  @default(true)
-  emailTaskAssignments          Boolean  @default(true)
-  emailTaskDueDateReminders     Boolean  @default(true)
-  emailComments                 Boolean  @default(true)
-  
+  emailProjectInvitations   Boolean @default(true)
+  emailTaskAssignments      Boolean @default(true)
+  emailTaskDueDateReminders Boolean @default(true)
+  emailComments             Boolean @default(true)
+
   // In-App Notifications
-  inAppProjectUpdates           Boolean  @default(true)
-  inAppRoleChanges              Boolean  @default(true)
-  
+  inAppProjectUpdates Boolean @default(true)
+  inAppRoleChanges    Boolean @default(true)
+
   // Theme Preferences
-  darkMode                      Boolean  @default(false)
-  
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
+  darkMode Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
-  id         String
-  email      String
-  code       String   @unique
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  id        String
+  email     String
+  code      String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   @@unique([id, code])
 }
@@ -101,8 +117,149 @@ model PasswordResetToken {
 
 model DeleteAccountToken {
   id        String   @id @default(uuid())
-  email     String   
+  email     String
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+// Project-related models
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  creatorId   String
+  status      ProjectStatus @default(IN_PROGRESS)
+  dueDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  creator      User                @relation("ProjectCreator", fields: [creatorId], references: [id])
+  members      ProjectMember[]
+  tasks        Task[]
+  projectFiles File[]              @relation("ProjectFiles")
+  invitations  ProjectInvitation[]
+  chatMessages ChatMessage[]
+}
+
+enum ProjectStatus {
+  IN_PROGRESS
+  AT_RISK
+  COMPLETED
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime    @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+enum ProjectRole {
+  ADMIN
+  EDITOR
+  MEMBER
+}
+
+model ProjectInvitation {
+  id        String      @id @default(cuid())
+  projectId String
+  email     String
+  role      ProjectRole @default(MEMBER)
+  token     String      @unique
+  expiresAt DateTime
+  createdAt DateTime    @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, email])
+}
+
+// Task-related models
+model Task {
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  projectId      String
+  creatorId      String
+  assigneeId     String?
+  status         TaskStatus   @default(TODO)
+  dueDate        DateTime?
+  priority       TaskPriority @default(MEDIUM)
+  completionNote String? // Note added when task is completed
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator      User          @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee     User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  taskFiles    File[]        @relation("TaskFiles")
+  taskComments TaskComment[]
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Chat system
+model ChatMessage {
+  id           String   @id @default(cuid())
+  content      String
+  projectId    String
+  userId       String
+  mentionsJson String? // JSON string of mentions (users, projects, tasks)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// File management
+model File {
+  id                String   @id @default(cuid())
+  name              String
+  url               String
+  size              Int // in bytes
+  type              String // MIME type
+  uploaderId        String
+  taskId            String? // Optional: if file is associated with a task
+  projectId         String // All files belong to a project
+  isTaskDeliverable Boolean  @default(false) // Whether this is a deliverable for task completion
+  createdAt         DateTime @default(now())
+
+  // Relations
+  project  Project @relation("ProjectFiles", fields: [projectId], references: [id], onDelete: Cascade)
+  task     Task?   @relation("TaskFiles", fields: [taskId], references: [id], onDelete: SetNull)
+  uploader User    @relation("FileUploader", fields: [uploaderId], references: [id])
 }
