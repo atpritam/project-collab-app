@@ -1,13 +1,6 @@
-// frontend/components/dashboard/TasksSection.tsx
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChevronRight,
   Calendar,
@@ -85,7 +78,7 @@ export default function TasksSection({ tasks }: TasksSectionProps) {
     }
   };
 
-  const truncateDescription = (desc: string | null, maxLength: number = 60) => {
+  const truncateDescription = (desc: string | null, maxLength = 60) => {
     if (!desc) return null;
     return desc.length > maxLength
       ? `${desc.substring(0, maxLength)}...`
@@ -93,8 +86,8 @@ export default function TasksSection({ tasks }: TasksSectionProps) {
   };
 
   return (
-    <div>
-      <div className="flex flex-row items-center justify-between mb-4">
+    <div className="space-y-4">
+      <div className="flex flex-row items-center justify-between">
         <h2 className="text-xl font-semibold">Your Tasks</h2>
         <Button
           asChild
@@ -110,18 +103,29 @@ export default function TasksSection({ tasks }: TasksSectionProps) {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="text-center p-8 border border-dashed border-border rounded-lg bg-muted/50">
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            You don't have any tasks yet
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            Tasks will appear here once you create or are assigned to them
-          </p>
-        </div>
+        <Card className="bg-muted/30">
+          <CardContent className="flex flex-col items-center justify-center py-10">
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              You don't have any tasks yet
+            </h3>
+            <p className="text-muted-foreground mb-6 text-center max-w-md">
+              Tasks will appear here once you create or are assigned to them
+            </p>
+            <Button
+              asChild
+              className="bg-violet-700 hover:bg-violet-800 dark:bg-violet-700 dark:hover:bg-violet-800 text-white"
+            >
+              <Link href="/tasks/create">Create New Task</Link>
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {tasks.map((task) => (
-            <Card key={task.id} className="hover:shadow-sm transition-shadow">
+            <Card
+              key={task.id}
+              className="hover:shadow-sm transition-shadow cursor-pointer"
+            >
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-start">
                   <div className="mt-1 mr-3">{getStatusIcon(task.status)}</div>
@@ -136,14 +140,14 @@ export default function TasksSection({ tasks }: TasksSectionProps) {
                             {task.title}
                           </Link>
                         </CardTitle>
-                        <CardDescription className="text-xs mt-1">
+                        <div className="text-xs mt-1 text-muted-foreground">
                           <Link
                             href={`/projects/${task.project.id}`}
                             className="hover:text-violet-700 transition-colors"
                           >
                             {task.project.name}
                           </Link>
-                        </CardDescription>
+                        </div>
                         {task.description && (
                           <p className="text-sm text-muted-foreground mt-2">
                             {truncateDescription(task.description)}
@@ -161,6 +165,7 @@ export default function TasksSection({ tasks }: TasksSectionProps) {
                       <AvatarImage
                         src={task.assignee.image || ""}
                         alt={task.assignee.name || ""}
+                        className="object-cover"
                       />
                       <AvatarFallback className="text-xs bg-violet-100 text-violet-700">
                         {getInitials(task.assignee.name)}

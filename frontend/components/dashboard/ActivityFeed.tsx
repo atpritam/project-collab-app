@@ -1,4 +1,3 @@
-// frontend/components/dashboard/ActivityFeed.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, FileText } from "lucide-react";
@@ -62,7 +61,7 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
       .toUpperCase();
   };
 
-  const truncateText = (text: string, maxLength: number = 100) => {
+  const truncateText = (text: string, maxLength = 100) => {
     return text.length > maxLength
       ? `${text.substring(0, maxLength)}...`
       : text;

@@ -203,7 +203,7 @@ export default function Header() {
                       variant="ghost"
                       className="rounded-full h-10 w-10 p-0 overflow-hidden"
                     >
-                      <Avatar className="h-10 w-10 border border-violet-100">
+                      <Avatar className="h-10 w-10">
                         <AvatarImage
                           src={userImage}
                           alt={userName}

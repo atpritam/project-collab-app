@@ -1,7 +1,6 @@
-// frontend/components/dashboard/ProjectsSection.tsx
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Calendar, Users, AlertTriangle } from "lucide-react";
+import { ChevronRight, Calendar, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   Card,
@@ -28,10 +27,7 @@ interface ProjectsSectionProps {
 }
 
 export default function ProjectsSection({ projects }: ProjectsSectionProps) {
-  const truncateDescription = (
-    desc: string | null,
-    maxLength: number = 100
-  ) => {
+  const truncateDescription = (desc: string | null, maxLength = 100) => {
     if (!desc) return "No description provided";
     return desc.length > maxLength
       ? `${desc.substring(0, maxLength)}...`
@@ -69,9 +65,9 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
   };
 
   return (
-    <div>
-      <div className="flex flex-row items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Projects Overview</h2>
+    <div className="space-y-4">
+      <div className="flex flex-row items-center justify-between">
+        <h2 className="text-xl font-semibold">Your Projects</h2>
         <Button
           asChild
           variant="ghost"
@@ -86,32 +82,34 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
       </div>
 
       {projects.length === 0 ? (
-        <div className="text-center p-8 border border-dashed border-border rounded-lg bg-muted/50">
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            You don't have any projects yet
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            Create your first project to get started with collaboration
-          </p>
-          <Button
-            asChild
-            className="bg-violet-700 hover:bg-violet-800 dark:bg-violet-700 dark:hover:bg-violet-800 text-white"
-          >
-            <Link href="/projects/new">Create New Project</Link>
-          </Button>
-        </div>
+        <Card className="bg-muted/30">
+          <CardContent className="flex flex-col items-center justify-center py-10">
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              You don't have any projects yet
+            </h3>
+            <p className="text-muted-foreground mb-6 text-center max-w-md">
+              Create your first project to get started with collaboration
+            </p>
+            <Button
+              asChild
+              className="bg-violet-700 hover:bg-violet-800 dark:bg-violet-700 dark:hover:bg-violet-800 text-white"
+            >
+              <Link href="/projects/create">Create New Project</Link>
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="block"
+              className="block group"
             >
-              <Card className="hover:shadow-md transition-shadow h-full">
+              <Card className="h-full transition-all hover:shadow-md hover:bg-muted/30 dark:hover:bg-muted/20">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
-                    <CardTitle>{project.name}</CardTitle>
+                    <CardTitle className="">{project.name}</CardTitle>
                     {getStatusBadge(project.status)}
                   </div>
                   <CardDescription>

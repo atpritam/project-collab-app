@@ -36,7 +36,7 @@ export default function SignInForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams?.get("callbackUrl") || "/";
+  const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
 
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const [isResendingVerification, setIsResendingVerification] = useState(false);

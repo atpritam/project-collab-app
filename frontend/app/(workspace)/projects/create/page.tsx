@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +61,6 @@ export default function NewProjectPage() {
   if (status === "loading") {
     return (
       <div className="flex flex-col min-h-screen">
-        <Header />
         <div className="flex-grow flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
         </div>
@@ -73,21 +70,9 @@ export default function NewProjectPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
-
       <main className="flex-grow">
         <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <Button
-              asChild
-              variant="ghost"
-              className="mb-6 flex items-center text-muted-foreground hover:text-violet-700"
-            >
-              <Link href="/dashboard">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Link>
-            </Button>
             <h1 className="text-3xl font-bold tracking-tight">
               Create New Project
             </h1>
@@ -165,8 +150,6 @@ export default function NewProjectPage() {
           </Card>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
