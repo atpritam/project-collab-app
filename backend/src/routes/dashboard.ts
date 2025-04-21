@@ -34,7 +34,7 @@ dashboardRouter.get(
           },
         },
         orderBy: { updatedAt: "desc" },
-        take: 6, // 6 recent projects
+        take: 4, // 6 recent projects
       });
 
       // completion percentage for each project

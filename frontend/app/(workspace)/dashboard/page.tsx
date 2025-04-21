@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function DashboardPage() {
   const isMobile = useIsMobile();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -35,8 +35,13 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Fetch projects
-      const projectsRes = await fetch("/api/dashboard/projects");
+      const [projectsRes, tasksRes, activityRes] = await Promise.all([
+        fetch("/api/dashboard/projects"),
+        fetch("/api/dashboard/tasks"),
+        fetch("/api/dashboard/activity"),
+      ]);
+
+      // Projects response
       if (projectsRes.ok) {
         const projectsData = await projectsRes.json();
         setProjects(projectsData);
@@ -48,8 +53,7 @@ export default function DashboardPage() {
         toast.error("Failed to load projects");
       }
 
-      // Fetch tasks
-      const tasksRes = await fetch("/api/dashboard/tasks");
+      // Tasks response
       if (tasksRes.ok) {
         const tasksData = await tasksRes.json();
         setTasks(tasksData);
@@ -80,8 +84,7 @@ export default function DashboardPage() {
         toast.error("Failed to load tasks");
       }
 
-      // Fetch activity
-      const activityRes = await fetch("/api/dashboard/activity");
+      // Activity response
       if (activityRes.ok) {
         const activityData = await activityRes.json();
         setActivities(activityData);
@@ -96,7 +99,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || status === "loading") {
     return (
       <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-700" />

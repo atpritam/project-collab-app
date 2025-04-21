@@ -190,7 +190,7 @@ export default function WorkspaceSidebar() {
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage
-                    src={userImage || "/placeholder.svg"}
+                    src={userImage}
                     alt={userName}
                     className="object-cover"
                   />

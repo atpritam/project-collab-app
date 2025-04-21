@@ -11,6 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Make sure Avatar is imported
 
 interface Project {
   id: string;
@@ -20,6 +21,13 @@ interface Project {
   dueDate: string | null;
   memberCount: number;
   completionPercentage: number;
+  members: {
+    user: {
+      Id: string;
+      name: string | null;
+      image: string | null;
+    };
+  }[];
 }
 
 interface ProjectsSectionProps {
@@ -62,6 +70,16 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
       default:
         return null;
     }
+  };
+
+  // get initials
+  const getInitials = (name: string | null) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -127,6 +145,31 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
                     <span className="mx-2">•</span>
                     <Calendar className="h-3.5 w-3.5 mr-1" />
                     <span>{formatDate(project.dueDate)}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex -space-x-2">
+                      {project.members.slice(0, 3).map((member) => (
+                        <Avatar
+                          key={member.user.Id + member.user.name}
+                          className="h-8 w-8 border-2 border-background"
+                        >
+                          <AvatarImage
+                            src={member?.user?.image!}
+                            alt={member?.user?.name!}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-gradient-to-br from-violet-600 to-violet-800 text-white">
+                            {getInitials(member.user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                      {project.members.length > 3 && (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-medium">
+                          +{project.members.length - 3}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
 

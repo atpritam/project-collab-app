@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Calendar, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
 
 export default function NewProjectPage() {
   const { data: session, status } = useSession();
@@ -48,11 +46,9 @@ export default function NewProjectPage() {
         throw new Error(data.message || "Failed to create project");
       }
 
-      toast.success("Project created successfully!");
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating project:", error);
-      toast.error("Failed to create project. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
