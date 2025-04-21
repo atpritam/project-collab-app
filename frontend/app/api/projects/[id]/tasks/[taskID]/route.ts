@@ -5,7 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 // PATCH /api/projects/[id]/tasks/[taskId] - Update a task
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string; taskId: string } }
+  context: { params: Promise<{ id: string; taskId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,9 @@ export async function PATCH(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: projectId, taskId } = params;
+    const params = await context.params;
+    const projectId = params.id;
+    const taskId = params.taskId;
     const userId = session.user.id;
     const body = await request.json();
 
@@ -34,11 +36,20 @@ export async function PATCH(
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { message: errorData.message || "Failed to update task" },
-        { status: response.status }
-      );
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        return NextResponse.json(
+          { message: errorData.message || "Failed to update task" },
+          { status: response.status }
+        );
+      } else {
+        const errorText = await response.text();
+        return NextResponse.json(
+          { message: "Failed to update task" },
+          { status: response.status }
+        );
+      }
     }
 
     const data = await response.json();
@@ -55,7 +66,7 @@ export async function PATCH(
 // DELETE /api/projects/[id]/tasks/[taskId] - Delete a task
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; taskId: string } }
+  context: { params: Promise<{ id: string; taskId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -64,7 +75,9 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: projectId, taskId } = params;
+    const params = await context.params;
+    const projectId = params.id;
+    const taskId = params.taskId;
     const userId = session.user.id;
 
     // Request to the backend service
@@ -82,11 +95,20 @@ export async function DELETE(
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { message: errorData.message || "Failed to delete task" },
-        { status: response.status }
-      );
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        return NextResponse.json(
+          { message: errorData.message || "Failed to delete task" },
+          { status: response.status }
+        );
+      } else {
+        const errorText = await response.text();
+        return NextResponse.json(
+          { message: "Failed to delete task" },
+          { status: response.status }
+        );
+      }
     }
 
     return NextResponse.json({ message: "Task deleted successfully" });

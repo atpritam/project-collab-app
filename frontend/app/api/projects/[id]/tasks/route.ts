@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,7 +13,8 @@ export async function GET(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const params = await context.params;
+    const id = params.id;
 
     // Request to the backend service
     const response = await fetch(
@@ -27,11 +28,20 @@ export async function GET(
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { message: errorData.message || "Failed to fetch tasks" },
-        { status: response.status }
-      );
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        return NextResponse.json(
+          { message: errorData.message || "Failed to fetch tasks" },
+          { status: response.status }
+        );
+      } else {
+        const errorText = await response.text();
+        return NextResponse.json(
+          { message: "Failed to fetch tasks" },
+          { status: response.status }
+        );
+      }
     }
 
     const data = await response.json();
@@ -47,7 +57,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -56,7 +66,8 @@ export async function POST(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: projectId } = params;
+    const params = await context.params;
+    const projectId = params.id;
     const body = await request.json();
 
     // Request to the backend service
@@ -76,11 +87,20 @@ export async function POST(
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { message: errorData.message || "Failed to create task" },
-        { status: response.status }
-      );
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        return NextResponse.json(
+          { message: errorData.message || "Failed to create task" },
+          { status: response.status }
+        );
+      } else {
+        const errorText = await response.text();
+        return NextResponse.json(
+          { message: "Failed to create task" },
+          { status: response.status }
+        );
+      }
     }
 
     const data = await response.json();

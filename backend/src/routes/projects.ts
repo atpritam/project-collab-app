@@ -201,6 +201,39 @@ projectsRouter.patch("/:id", function (req: Request, res: Response) {
   })();
 });
 
+// GET /api/projects/:id/tasks - Get all tasks for a project
+projectsRouter.get("/:id/tasks", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { projectId: id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }],
+    });
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    res.status(500).json({ message: "Failed to fetch tasks" });
+  }
+});
+
 // POST /api/projects/:id/tasks - Create a new task for a project
 projectsRouter.post("/:id/tasks", function (req: Request, res: Response) {
   const { id } = req.params;
