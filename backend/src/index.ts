@@ -7,6 +7,7 @@ import userRouter from "./routes/user";
 import settingsRouter from "./routes/settings";
 import dashboardRouter from "./routes/dashboard";
 import projectsRouter from "./routes/projects";
+import invitationsRouter from "./routes/invitations"; // Import the new router
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/api/user", userRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/projects", projectsRouter);
+app.use("/api/invitations", invitationsRouter);
 
 // Start server
 const PORT = process.env.PORT || 4000;

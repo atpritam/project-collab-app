@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "sonner";
 import WorkspaceSidebar from "@/components/workspace/WorkspaceSidebar";
 import { Loader2 } from "lucide-react";
+import { UnifiedBreadcrumb } from "@/components/workspace/UnifiedBreadcrumb";
 
 export default function WorkspaceLayout({
   children,
@@ -40,8 +41,11 @@ export default function WorkspaceLayout({
         <div className="flex h-screen overflow-hidden bg-background w-full">
           <WorkspaceSidebar />
           <main className="flex-1 overflow-auto">
-            <div className="mx-auto py-6 px-4 md:px-6 lg:px-8">
-              {children}{" "}
+            <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
+              <UnifiedBreadcrumb />
+
+              <div className="pt-2">{children}</div>
+
               <footer>
                 <div className="mt-12 pt-6">
                   <p className="text-center text-sm text-muted-foreground">

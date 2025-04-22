@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Calendar, ArrowLeft } from "lucide-react";
+import { Loader2, Calendar } from "lucide-react";
 
 export default function NewProjectPage() {
   const { data: session, status } = useSession();
@@ -46,7 +46,7 @@ export default function NewProjectPage() {
         throw new Error(data.message || "Failed to create project");
       }
 
-      router.push("/dashboard");
+      router.push("/projects");
     } catch (error) {
       console.error("Error creating project:", error);
     } finally {

@@ -107,3 +107,36 @@ export async function sendEmailVerificationEmail(
 
   await transporter.sendMail(mailOptions);
 }
+
+export async function sendProjectInvitationEmail(
+  email: string,
+  token: string,
+  projectName: string,
+  inviterName: string
+): Promise<void> {
+  const transporter = createTransporter();
+
+  // Invitation URL
+  const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const invitationUrl = `${baseUrl}/invitations/accept?token=${token}`;
+
+  const mailOptions = {
+    from: '"Nudge" <nudge-collab@outlook.com>',
+    to: email,
+    subject: `Invitation to join the "${projectName}" project`,
+    text: `${inviterName} has invited you to collaborate on the "${projectName}" project on Nudge. Click the following link to accept the invitation: ${invitationUrl}\n\nThis invitation will expire in 24 hours.\n\nIf you did not expect this invitation, please ignore this email.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Project Invitation</h2>
+        <p>${inviterName} has invited you to collaborate on the <strong>"${projectName}"</strong> project on Nudge.</p>
+        <p>Click the button below to accept the invitation:</p>
+        <a href="${invitationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">Accept Invitation</a>
+        <p>This invitation will expire in 24 hours.</p>
+        <p>If you did not expect this invitation, please ignore this email.</p>
+        <p>If the button doesn't work, you can copy and paste this link into your browser: ${invitationUrl}</p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}

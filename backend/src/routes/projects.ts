@@ -1,5 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient, ProjectStatus } from "@prisma/client";
+import crypto from "crypto";
+import { sendProjectInvitationEmail } from "../utils/email";
 
 const prisma = new PrismaClient();
 const projectsRouter: Router = express.Router();
@@ -264,7 +266,6 @@ projectsRouter.post("/:id/tasks", function (req: Request, res: Response) {
           .json({ message: "Description must be less than 2000 characters" });
       }
 
-      // Check if project exists
       const project = await prisma.project.findUnique({
         where: { id },
         include: {
@@ -276,16 +277,18 @@ projectsRouter.post("/:id/tasks", function (req: Request, res: Response) {
         return res.status(404).json({ message: "Project not found" });
       }
 
-      // Check if user is authorized to create tasks
+      // Check if user is authorized to create tasks (Admin or Editor only)
       const isCreator = project.creatorId === creatorId;
-      const isMember = project.members.some(
+      const userMember = project.members.find(
         (member: any) => member.userId === creatorId
       );
 
-      if (!isCreator && !isMember) {
+      const isAdmin = isCreator || userMember?.role === "ADMIN";
+      const isEditor = userMember?.role === "EDITOR";
+
+      if (!isAdmin && !isEditor) {
         return res.status(403).json({
-          message:
-            "You do not have permission to create tasks for this project",
+          message: "Only project admins and editors can create tasks",
         });
       }
 
@@ -548,9 +551,22 @@ projectsRouter.delete(
 
         const userRole = userMember?.role || null;
         const isAdmin = userRole === "ADMIN";
+        const isEditor = userRole === "EDITOR";
 
-        // Only task creator, project creator, or admins can delete tasks
-        if (!isTaskCreator && !isProjectCreator && !isAdmin) {
+        // Check if task was created by a project admin
+        const taskCreatorMember = task.project.members.find(
+          (member: any) => member.userId === task.creatorId
+        );
+        const isTaskCreatorAdmin =
+          taskCreatorMember?.role === "ADMIN" ||
+          task.creatorId === task.project.creatorId;
+
+        if (
+          !isTaskCreator &&
+          !isProjectCreator &&
+          !isAdmin &&
+          !(isEditor && !isTaskCreatorAdmin)
+        ) {
           return res.status(403).json({
             message: "You don't have permission to delete this task",
           });
@@ -564,6 +580,238 @@ projectsRouter.delete(
       } catch (error) {
         console.error("Error deleting task:", error);
         res.status(500).json({ message: "Failed to delete task" });
+      }
+    })();
+  }
+);
+
+// POST /api/projects/:id/invite - Invite a user to a project
+projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
+  const { id } = req.params;
+  const { email, role, userId } = req.body;
+
+  (async () => {
+    try {
+      console.log(
+        `Processing invite request for project ${id}, email: ${email}, role: ${role}`
+      );
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      if (!role) {
+        return res.status(400).json({ message: "Role is required" });
+      }
+
+      if (!["ADMIN", "EDITOR", "MEMBER"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // user permission check (project creator or admin)
+      const isCreator = project.creatorId === userId;
+      const isAdmin = project.members.some(
+        (member: any) => member.userId === userId && member.role === "ADMIN"
+      );
+
+      if (!isCreator && !isAdmin) {
+        return res.status(403).json({
+          message:
+            "You do not have permission to invite members to this project",
+        });
+      }
+
+      const invitedUser = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (!invitedUser) {
+        return res.status(404).json({
+          message: "User with this email does not exist",
+        });
+      }
+
+      const isAlreadyMember = project.members.some(
+        (member: any) => member.user.email === email
+      );
+
+      if (isAlreadyMember) {
+        return res.status(400).json({
+          message: "This user is already a member of this project",
+        });
+      }
+
+      const existingInvitation = await prisma.projectInvitation.findFirst({
+        where: {
+          projectId: id,
+          email,
+        },
+      });
+
+      if (existingInvitation) {
+        return res.status(400).json({
+          message: "An invitation has already been sent to this email",
+        });
+      }
+
+      // invitation token creation, expiry (24 hours)
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      const invitation = await prisma.projectInvitation.create({
+        data: {
+          projectId: id,
+          email,
+          role,
+          token,
+          expiresAt,
+        },
+      });
+
+      // invitation email
+      await sendProjectInvitationEmail(
+        email,
+        token,
+        project.name,
+        project.creator.name || "A team member"
+      );
+
+      res.status(201).json({
+        message: "Invitation sent successfully",
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          role: invitation.role,
+          expiresAt: invitation.expiresAt,
+        },
+      });
+    } catch (error) {
+      console.error("Error sending project invitation:", error);
+      res.status(500).json({ message: "Failed to send invitation" });
+    }
+  })();
+});
+
+// GET /api/projects/:id/invitations - Get all invitations for a project
+projectsRouter.get("/:id/invitations", function (req: Request, res: Response) {
+  const { id } = req.params;
+  const userId = req.body.userId;
+
+  (async () => {
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          members: true,
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // user permission (project creator or admin)
+      const isCreator = project.creatorId === userId;
+      const isAdmin = project.members.some(
+        (member: any) => member.userId === userId && member.role === "ADMIN"
+      );
+
+      if (!isCreator && !isAdmin) {
+        return res.status(403).json({
+          message: "You do not have permission to view project invitations",
+        });
+      }
+
+      // all invitations for the project
+      const invitations = await prisma.projectInvitation.findMany({
+        where: { projectId: id },
+        orderBy: { createdAt: "desc" },
+      });
+
+      res.status(200).json(invitations);
+    } catch (error) {
+      console.error("Error fetching project invitations:", error);
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  })();
+});
+
+// DELETE /api/projects/:id/invitations/:invitationId - Cancel an invitation
+projectsRouter.delete(
+  "/:id/invitations/:invitationId",
+  function (req: Request, res: Response) {
+    const { id, invitationId } = req.params;
+    const userId = req.body.userId;
+
+    (async () => {
+      try {
+        // Check if project exists
+        const project = await prisma.project.findUnique({
+          where: { id },
+          include: {
+            members: true,
+          },
+        });
+
+        if (!project) {
+          return res.status(404).json({ message: "Project not found" });
+        }
+
+        // user permission (project creator or admin)
+        const isCreator = project.creatorId === userId;
+        const isAdmin = project.members.some(
+          (member: any) => member.userId === userId && member.role === "ADMIN"
+        );
+
+        if (!isCreator && !isAdmin) {
+          return res.status(403).json({
+            message: "You do not have permission to cancel invitations",
+          });
+        }
+
+        const invitation = await prisma.projectInvitation.findUnique({
+          where: { id: invitationId },
+        });
+
+        if (!invitation || invitation.projectId !== id) {
+          return res.status(404).json({ message: "Invitation not found" });
+        }
+
+        await prisma.projectInvitation.delete({
+          where: { id: invitationId },
+        });
+
+        res.status(200).json({ message: "Invitation cancelled successfully" });
+      } catch (error) {
+        console.error("Error cancelling invitation:", error);
+        res.status(500).json({ message: "Failed to cancel invitation" });
       }
     })();
   }

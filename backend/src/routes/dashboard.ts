@@ -11,13 +11,20 @@ dashboardRouter.get(
   "/projects/:userId",
   async (req: Request, res: Response) => {
     const { userId } = req.params;
+    const { limit } = req.query;
 
     try {
-      // projects where user is the creator or a member
+      const whereCondition = {
+        OR: [{ creatorId: userId }, { members: { some: { userId } } }],
+      };
+
+      // projects the user is part of
+      const totalProjectCount = await prisma.project.count({
+        where: whereCondition,
+      });
+
       const projects = await prisma.project.findMany({
-        where: {
-          OR: [{ creatorId: userId }, { members: { some: { userId } } }],
-        },
+        where: whereCondition,
         include: {
           creator: { select: { id: true, name: true, image: true } },
           members: {
@@ -34,10 +41,13 @@ dashboardRouter.get(
           },
         },
         orderBy: { updatedAt: "desc" },
-        take: 4, // 6 recent projects
+        take:
+          typeof limit === "string" && !isNaN(parseInt(limit))
+            ? parseInt(limit) // optional limit
+            : undefined,
       });
 
-      // completion percentage for each project
+      // project stats
       const projectsWithStats = projects.map((project: any) => {
         const totalTasks = project.tasks.length;
         const completedTasks = project.tasks.filter(
@@ -57,7 +67,10 @@ dashboardRouter.get(
         };
       });
 
-      res.status(200).json(projectsWithStats);
+      res.status(200).json({
+        total: totalProjectCount,
+        projects: projectsWithStats,
+      });
     } catch (error) {
       console.error("Error fetching projects:", error);
       res.status(500).json({ message: "Failed to fetch projects" });

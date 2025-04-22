@@ -20,6 +20,7 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isEditor, setIsEditor] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated" && projectId) {
@@ -52,6 +53,7 @@ export default function ProjectDetailPage() {
         );
         if (userMember) {
           setUserRole(userMember.role);
+          setIsEditor(userMember.role === "EDITOR");
           setIsAdmin(userMember.role === "ADMIN");
         }
       }
@@ -98,10 +100,11 @@ export default function ProjectDetailPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <ProjectHeader
             project={project}
             isAdmin={isAdmin}
+            isEditor={isEditor}
             onProjectUpdated={fetchProjectData}
           />
 
@@ -126,6 +129,7 @@ export default function ProjectDetailPage() {
                 projectId={projectId}
                 tasks={tasks}
                 isAdmin={isAdmin}
+                isEditor={isEditor}
                 project={project}
                 onTasksUpdated={(updatedTasks: any[]) => setTasks(updatedTasks)}
               />

@@ -21,6 +21,7 @@ interface ProjectTasksProps {
   projectId: string;
   tasks: any[];
   isAdmin: boolean;
+  isEditor?: boolean;
   onTasksUpdated: (tasks: any[]) => void;
 }
 
@@ -29,6 +30,7 @@ export default function ProjectTasks({
   projectId,
   tasks,
   isAdmin,
+  isEditor,
 }: ProjectTasksProps) {
   const [selectedView, setSelectedView] = useState<"list" | "kanban">("kanban");
 
@@ -197,7 +199,7 @@ export default function ProjectTasks({
           </Button>
         </div>
 
-        {isAdmin && (
+        {(isAdmin || isEditor) && (
           <Button
             size="sm"
             className="bg-violet-700 hover:bg-violet-800 text-white flex items-center"

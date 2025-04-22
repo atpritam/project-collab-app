@@ -15,6 +15,14 @@ export function WelcomeBanner({ userName }: { userName: string }) {
     greeting = "Good evening";
   }
 
+  const today = new Date();
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  };
+  const dateString = today.toLocaleDateString("en-US", options);
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -51,8 +59,8 @@ export function WelcomeBanner({ userName }: { userName: string }) {
             variants={itemVariants}
             className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur-sm"
           >
-            <Clock className="mr-1 h-3 w-3" />
-            <span>Monday, November 6</span>
+            <Clock className="mr-2 h-3 w-3" />
+            <span>{dateString}</span>
           </motion.div>
           <motion.h1 variants={itemVariants} className="text-3xl font-bold">
             {greeting}, {userName}!

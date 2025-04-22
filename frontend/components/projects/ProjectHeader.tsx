@@ -10,6 +10,11 @@ import {
   PlusCircle,
   Loader2,
   CheckIcon,
+  Search,
+  X,
+  AlertCircle,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -32,21 +37,27 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
 interface ProjectHeaderProps {
   project: any;
   isAdmin: boolean;
+  isEditor?: boolean;
   onProjectUpdated: () => void;
 }
 
 export default function ProjectHeader({
   project,
   isAdmin,
+  isEditor,
   onProjectUpdated,
 }: ProjectHeaderProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [inviteError, setInviteError] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
+  const [showRoleOptions, setShowRoleOptions] = useState(false);
 
   // Edit form state
   const [formData, setFormData] = useState({
@@ -55,6 +66,9 @@ export default function ProjectHeader({
     status: project.status || "IN_PROGRESS",
     dueDate: project.dueDate ? project.dueDate.substring(0, 10) : "",
   });
+
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("MEMBER");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -93,6 +107,60 @@ export default function ProjectHeader({
     }
   };
 
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsInviting(true);
+    setInviteError("");
+
+    if (!inviteEmail) {
+      setInviteError("Email address is required");
+      setIsInviting(false);
+      return;
+    }
+
+    if (!inviteRole) {
+      setInviteError("Role is required");
+      setIsInviting(false);
+      return;
+    }
+
+    try {
+      console.log(
+        `Sending invitation to: ${inviteEmail} with role: ${inviteRole}`
+      );
+
+      const response = await fetch(`/api/projects/${project.id}/invite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: inviteEmail,
+          role: inviteRole,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setInviteError(data.message || "Failed to send invitation");
+        setIsInviting(false);
+        return;
+      }
+
+      toast.success("Invitation sent successfully");
+      setIsInviteDialogOpen(false);
+      setInviteEmail("");
+      setInviteRole("MEMBER");
+      onProjectUpdated();
+    } catch (error) {
+      console.error("Error sending invitation:", error);
+      setInviteError("An unexpected error occurred");
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
   const formattedDueDate = project.dueDate
     ? format(new Date(project.dueDate), "MMM d, yyyy")
     : "No due date";
@@ -118,6 +186,19 @@ export default function ProjectHeader({
     }
   };
 
+  const getRoleDisplay = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return "Admin";
+      case "EDITOR":
+        return "Editor";
+      case "MEMBER":
+        return "Member";
+      default:
+        return "Select a role";
+    }
+  };
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center justify-between">
@@ -134,26 +215,35 @@ export default function ProjectHeader({
           </div>
         </div>
 
-        {isAdmin && (
-          <div className="flex gap-2 mt-4 md:mt-0">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center"
-              onClick={() => setIsEditDialogOpen(true)}
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center"
-              onClick={() => setIsInviteDialogOpen(true)}
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite
-            </Button>
+        <div className="flex gap-2 mt-4 md:mt-0">
+          {isAdmin && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center"
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center"
+                onClick={() => {
+                  setInviteEmail("");
+                  setInviteRole("MEMBER");
+                  setInviteError("");
+                  setIsInviteDialogOpen(true);
+                }}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite
+              </Button>
+            </>
+          )}
+          {(isAdmin || isEditor) && (
             <Button
               className="bg-violet-700 hover:bg-violet-800 text-white flex items-center"
               size="sm"
@@ -161,8 +251,8 @@ export default function ProjectHeader({
               <PlusCircle className="h-4 w-4 mr-2" />
               Create Task
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {project.description && (
@@ -271,19 +361,164 @@ export default function ProjectHeader({
         </DialogContent>
       </Dialog>
 
-      {/* Placeholder dialog for Invite */}
-      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-        <DialogContent>
+      <Dialog
+        open={isInviteDialogOpen}
+        onOpenChange={(open) => {
+          setIsInviteDialogOpen(open);
+          if (!open) {
+            setShowRoleOptions(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Invite Team Members</DialogTitle>
             <DialogDescription>
-              This feature is coming soon. You'll be able to invite team members
-              to collaborate on this project.
+              Invite team members to collaborate on this project
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setIsInviteDialogOpen(false)}>Close</Button>
-          </DialogFooter>
+
+          <form onSubmit={handleInvite} className="space-y-4 py-4">
+            {inviteError && (
+              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-start">
+                <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                <span>{inviteError}</span>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  className="pl-9"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter the email address of the user you want to invite
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+
+              {/* Custom Role Selector */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowRoleOptions(!showRoleOptions)}
+                  className="w-full flex items-center justify-between px-3 py-2 border border-input rounded-md bg-background text-sm"
+                  id="role"
+                >
+                  <span>{getRoleDisplay(inviteRole)}</span>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </button>
+
+                {showRoleOptions && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-popover shadow-md">
+                    <div className="py-1">
+                      <button
+                        type="button"
+                        className="relative w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setInviteRole("ADMIN");
+                          setShowRoleOptions(false);
+                        }}
+                      >
+                        <span className="mr-2 flex h-3.5 w-3.5 items-center justify-center">
+                          {inviteRole === "ADMIN" && (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </span>
+                        Admin
+                      </button>
+                      <button
+                        type="button"
+                        className="relative w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setInviteRole("EDITOR");
+                          setShowRoleOptions(false);
+                        }}
+                      >
+                        <span className="mr-2 flex h-3.5 w-3.5 items-center justify-center">
+                          {inviteRole === "EDITOR" && (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </span>
+                        Editor
+                      </button>
+                      <button
+                        type="button"
+                        className="relative w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setInviteRole("MEMBER");
+                          setShowRoleOptions(false);
+                        }}
+                      >
+                        <span className="mr-2 flex h-3.5 w-3.5 items-center justify-center">
+                          {inviteRole === "MEMBER" && (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </span>
+                        Member
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>
+                  <span className="font-medium">Admin:</span> Full control over
+                  the project
+                </p>
+                <p>
+                  <span className="font-medium">Editor:</span> Can edit tasks
+                  and project details
+                </p>
+                <p>
+                  <span className="font-medium">Member:</span> Can view and
+                  comment on tasks
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsInviteDialogOpen(false);
+                  setShowRoleOptions(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isInviting}
+                className="bg-violet-700 hover:bg-violet-800 text-white"
+              >
+                {isInviting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending Invitation...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Send Invitation
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

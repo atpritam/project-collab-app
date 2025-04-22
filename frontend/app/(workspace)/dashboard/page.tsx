@@ -9,6 +9,7 @@ import TasksSection from "@/components/dashboard/TasksSection";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
+import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function DashboardPage() {
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [showInvitations, setShowInvitations] = useState(false);
   const [stats, setStats] = useState({
     totalProjects: 0,
     completedTasks: 0,
@@ -29,6 +31,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (session?.user?.id) {
       fetchDashboardData();
+      checkPendingInvitations();
     }
   }, [session?.user?.id]);
 
@@ -36,7 +39,7 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       const [projectsRes, tasksRes, activityRes] = await Promise.all([
-        fetch("/api/dashboard/projects"),
+        fetch("/api/dashboard/projects?limit=4"),
         fetch("/api/dashboard/tasks"),
         fetch("/api/dashboard/activity"),
       ]);
@@ -44,10 +47,10 @@ export default function DashboardPage() {
       // Projects response
       if (projectsRes.ok) {
         const projectsData = await projectsRes.json();
-        setProjects(projectsData);
+        setProjects(projectsData.projects);
         setStats((prev) => ({
           ...prev,
-          totalProjects: projectsData.length,
+          totalProjects: projectsData.total,
         }));
       } else {
         toast.error("Failed to load projects");
@@ -99,6 +102,23 @@ export default function DashboardPage() {
     }
   };
 
+  const checkPendingInvitations = async () => {
+    try {
+      const response = await fetch("/api/invitations/pending");
+      if (response.ok) {
+        const data = await response.json();
+        setShowInvitations(data.length > 0);
+      }
+    } catch (error) {
+      console.error("Error checking pending invitations:", error);
+    }
+  };
+
+  const handleInvitationAction = () => {
+    checkPendingInvitations();
+    fetchDashboardData();
+  };
+
   if (isLoading || status === "loading") {
     return (
       <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
@@ -117,6 +137,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <WelcomeBanner userName={firstName} />
+      {showInvitations && (
+        <PendingInvitationsSection
+          onInvitationAction={handleInvitationAction}
+        />
+      )}
+
       {!isMobile && <DashboardStats stats={stats} />}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

@@ -2,21 +2,26 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(request: Request) {
+// GET /api/invitations/token/[token] - Validate an invitation token
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ token: string }> }
+) {
   try {
     const session = await getServerSession(authOptions);
+    const params = await context.params;
+    const token = params.token;
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!token) {
+      return NextResponse.json(
+        { message: "Token is required" },
+        { status: 400 }
+      );
     }
-
-    const userId = session.user.id;
-    const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit") ?? undefined;
 
     // Request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/projects/${userId}?limit=${limit}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/invitations/token/${token}`,
       {
         method: "GET",
         headers: {
@@ -29,14 +34,14 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { message: data.message || "Failed to fetch projects" },
+        { message: data.message || "Invalid invitation token" },
         { status: response.status }
       );
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Projects fetch error:", error);
+    console.error("Error validating invitation token:", error);
     return NextResponse.json(
       { message: "An unexpected error occurred" },
       { status: 500 }
