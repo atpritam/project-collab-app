@@ -4,14 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Calendar,
-  ArrowLeft,
   Edit,
   UserPlus,
   PlusCircle,
   Loader2,
   CheckIcon,
   Search,
-  X,
   AlertCircle,
   ChevronDown,
   Check,
@@ -245,11 +243,14 @@ export default function ProjectHeader({
           )}
           {(isAdmin || isEditor) && (
             <Button
+              asChild
               className="bg-violet-700 hover:bg-violet-800 text-white flex items-center"
               size="sm"
             >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Task
+              <Link href={`/tasks/create?projectId=${project.id}`}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Task
+              </Link>
             </Button>
           )}
         </div>
@@ -408,7 +409,6 @@ export default function ProjectHeader({
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
 
-              {/* Custom Role Selector */}
               <div className="relative">
                 <button
                   type="button"

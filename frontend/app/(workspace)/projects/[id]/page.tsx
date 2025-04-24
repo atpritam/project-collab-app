@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 export default function ProjectDetailPage() {
   const params = useParams();
-  const projectId = params.id as string;
+  const id = params.id as string;
   const { data: session, status } = useSession();
 
   const [project, setProject] = useState<any>(null);
@@ -23,15 +23,15 @@ export default function ProjectDetailPage() {
   const [isEditor, setIsEditor] = useState(false);
 
   useEffect(() => {
-    if (status === "authenticated" && projectId) {
+    if (status === "authenticated" && id) {
       fetchProjectData();
     }
-  }, [status, projectId]);
+  }, [status, id]);
 
   const fetchProjectData = async () => {
     setIsLoading(true);
     try {
-      const projectRes = await fetch(`/api/projects/${projectId}`);
+      const projectRes = await fetch(`/api/projects/${id}`);
 
       if (!projectRes.ok) {
         throw new Error("Failed to fetch project");
@@ -59,7 +59,7 @@ export default function ProjectDetailPage() {
       }
 
       // Fetch project tasks
-      const tasksRes = await fetch(`/api/projects/${projectId}/tasks`);
+      const tasksRes = await fetch(`/api/tasks/project/${id}`);
 
       if (tasksRes.ok) {
         const tasksData = await tasksRes.json();
@@ -71,6 +71,10 @@ export default function ProjectDetailPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTasksUpdated = (updatedTasks: any[]) => {
+    setTasks(updatedTasks);
   };
 
   if (status === "loading" || isLoading) {
@@ -126,12 +130,12 @@ export default function ProjectDetailPage() {
 
             <TabsContent value="tasks" className="mt-6">
               <ProjectTasks
-                projectId={projectId}
+                id={id}
+                project={project}
                 tasks={tasks}
                 isAdmin={isAdmin}
                 isEditor={isEditor}
-                project={project}
-                onTasksUpdated={(updatedTasks: any[]) => setTasks(updatedTasks)}
+                onTasksUpdated={handleTasksUpdated}
               />
             </TabsContent>
 

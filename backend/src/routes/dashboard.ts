@@ -30,7 +30,7 @@ dashboardRouter.get(
           members: {
             select: {
               userId: true,
-              user: { select: { name: true, image: true } },
+              user: { select: { id: true, name: true, image: true } },
             },
           },
           _count: { select: { tasks: true } },
@@ -77,32 +77,6 @@ dashboardRouter.get(
     }
   }
 );
-
-// GET /api/dashboard/tasks
-dashboardRouter.get("/tasks/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params;
-
-  try {
-    // tasks assigned to the user
-    const tasks = await prisma.task.findMany({
-      where: {
-        OR: [{ assigneeId: userId }, { creatorId: userId }],
-      },
-      include: {
-        project: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, image: true } },
-        assignee: { select: { id: true, name: true, image: true } },
-      },
-      orderBy: [{ dueDate: "asc" }, { updatedAt: "desc" }],
-      take: 6, // 6 tasks
-    });
-
-    res.status(200).json(tasks);
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    res.status(500).json({ message: "Failed to fetch tasks" });
-  }
-});
 
 // GET /api/dashboard/activity
 dashboardRouter.get(

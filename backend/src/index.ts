@@ -7,7 +7,10 @@ import userRouter from "./routes/user";
 import settingsRouter from "./routes/settings";
 import dashboardRouter from "./routes/dashboard";
 import projectsRouter from "./routes/projects";
-import invitationsRouter from "./routes/invitations"; // Import the new router
+import tasksRouter from "./routes/tasks";
+import invitationsRouter from "./routes/invitations";
+import calendarRouter from "./routes/calendar";
+import collaboratorsRouter from "./routes/collaborators";
 
 dotenv.config();
 
@@ -27,7 +30,10 @@ app.use("/api/user", userRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/projects", projectsRouter);
+app.use("/api/tasks", tasksRouter);
 app.use("/api/invitations", invitationsRouter);
+app.use("/api/calendar", calendarRouter);
+app.use("/api/collaborators", collaboratorsRouter);
 
 // Start server
 const PORT = process.env.PORT || 4000;

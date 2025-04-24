@@ -40,7 +40,7 @@ export default function DashboardPage() {
     try {
       const [projectsRes, tasksRes, activityRes] = await Promise.all([
         fetch("/api/dashboard/projects?limit=4"),
-        fetch("/api/dashboard/tasks"),
+        fetch("/api/tasks/assigned?limit=4"),
         fetch("/api/dashboard/activity"),
       ]);
 
@@ -148,7 +148,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
           <ProjectsSection projects={projects} />
-          <TasksSection tasks={tasks} />
+          <TasksSection tasks={tasks} currentUserId={session?.user?.id} />
         </div>
         <div>
           <ActivityFeed activities={activities} />

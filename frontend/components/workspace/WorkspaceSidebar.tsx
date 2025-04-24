@@ -117,7 +117,12 @@ export default function WorkspaceSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/tasks"}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={
+                    pathname === "/tasks" || pathname.startsWith("/tasks/")
+                  }
+                >
                   <Link href="/tasks">
                     <CheckSquare className="h-4 w-4" />
                     <span>Tasks</span>
