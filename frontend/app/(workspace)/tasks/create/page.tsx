@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Clipboard } from "lucide-react";
-import TaskForm from "@/components/tasks/TaskForm"; // Import the new TaskForm component
+import TaskForm from "@/components/tasks/TaskForm";
 
 interface Project {
   id: string;
@@ -59,7 +59,8 @@ export default function TaskPage() {
   };
 
   const handleTaskCreationSuccess = (taskId: string, projectId: string) => {
-    router.push(`/projects/${projectId}`);
+    setIsLoading(true);
+    router.push(`/tasks/${taskId}`);
   };
 
   if (status === "loading" || isLoading) {

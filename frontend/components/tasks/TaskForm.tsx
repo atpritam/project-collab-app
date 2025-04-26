@@ -26,6 +26,7 @@ import {
   Users,
   FolderKanban,
   Save,
+  Paperclip,
 } from "lucide-react";
 import {
   Tooltip,
@@ -37,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import TaskFileUpload from "@/components/tasks/TaskFileUpload";
 
 interface Project {
   id: string;
@@ -94,6 +96,7 @@ export default function TaskForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [attachedFiles, setAttachedFiles] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: initialTask?.title || "",
@@ -206,6 +209,13 @@ export default function TaskForm({
       let response;
       let successMessage;
 
+      const fileData = attachedFiles.map((file) => ({
+        name: file.name,
+        url: file.url,
+        size: file.size,
+        type: file.type,
+      }));
+
       if (mode === "create") {
         // Creating a new task
         response = await fetch(`/api/tasks/create/${formData.projectId}`, {
@@ -220,6 +230,7 @@ export default function TaskForm({
             dueDate: formData.dueDate || null,
             priority: formData.priority,
             status: formData.status,
+            files: fileData,
           }),
         });
         successMessage = "Task created successfully";
@@ -254,7 +265,7 @@ export default function TaskForm({
       if (onSuccess) {
         onSuccess(task.id, formData.projectId);
       } else {
-        router.push(`/projects/${formData.projectId}`);
+        router.push(`/task/${task.id}`);
       }
     } catch (error) {
       console.error(`Error ${mode}ing task:`, error);
@@ -615,6 +626,20 @@ export default function TaskForm({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="attachments"
+                className="text-base font-medium flex items-center"
+              >
+                <Paperclip className="h-4 w-4 mr-2 text-violet-600" />
+                Attachments
+              </Label>
+              <TaskFileUpload
+                files={attachedFiles}
+                setFiles={setAttachedFiles}
+                maxFiles={2}
+              />
             </div>
 
             <div className="pt-2">

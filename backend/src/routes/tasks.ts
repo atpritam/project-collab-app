@@ -113,8 +113,15 @@ tasksRouter.get("/project/:projectId", async (req: Request, res: Response) => {
 // POST /api/tasks/create/:projectId - Create a new task for a project
 tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
   const { projectId } = req.params;
-  const { title, description, assigneeId, dueDate, priority, creatorId } =
-    req.body;
+  const {
+    title,
+    description,
+    assigneeId,
+    dueDate,
+    priority,
+    creatorId,
+    files,
+  } = req.body;
   (async () => {
     try {
       if (!title || title.length < 3 || title.length > 100) {
@@ -158,25 +165,50 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
             .json({ message: "Assignee must be a project member" });
         }
       }
+      // Create the task with the files in a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        // Create the task
+        const newTask = await tx.task.create({
+          data: {
+            title,
+            description,
+            projectId,
+            creatorId,
+            assigneeId: assigneeId || null,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            priority: priority || "MEDIUM",
+            status: "TODO",
+          },
+          include: {
+            creator: { select: { id: true, name: true, image: true } },
+            assignee: { select: { id: true, name: true, image: true } },
+          },
+        });
 
-      const newTask = await prisma.task.create({
-        data: {
-          title,
-          description,
-          projectId,
-          creatorId,
-          assigneeId: assigneeId || null,
-          dueDate: dueDate ? new Date(dueDate) : null,
-          priority: priority || "MEDIUM",
-          status: "TODO",
-        },
-        include: {
-          creator: { select: { id: true, name: true, image: true } },
-          assignee: { select: { id: true, name: true, image: true } },
-        },
+        // If files are provided, create file records
+        if (files && Array.isArray(files) && files.length > 0) {
+          const filePromises = files.map((file) =>
+            tx.file.create({
+              data: {
+                name: file.name,
+                url: file.url,
+                size: file.size,
+                type: file.type,
+                uploaderId: creatorId,
+                projectId,
+                taskId: newTask.id,
+                isTaskDeliverable: false, // context file, not a deliverable
+              },
+            })
+          );
+
+          await Promise.all(filePromises);
+        }
+
+        return { newTask };
       });
 
-      res.status(201).json(newTask);
+      res.status(201).json(result.newTask);
     } catch (error) {
       console.error("Error creating task:", error);
       res.status(500).json({ message: "Failed to create task" });
@@ -352,6 +384,7 @@ tasksRouter.get("/:taskId", function (req: Request, res: Response) {
           },
           creator: { select: { id: true, name: true, image: true } },
           assignee: { select: { id: true, name: true, image: true } },
+          taskFiles: true,
         },
       });
       if (!task) {

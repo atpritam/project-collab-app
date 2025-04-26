@@ -29,6 +29,30 @@ export const ourFileRouter = {
         fileUrl: fileUrl,
       };
     }),
+
+  taskAttachment: f({
+    image: { maxFileSize: "2MB" },
+    pdf: { maxFileSize: "2MB" },
+    text: { maxFileSize: "2MB" },
+    audio: { maxFileSize: "2MB" },
+    video: { maxFileSize: "8MB" },
+  })
+    .middleware(async ({ req }) => {
+      const session = await getServerSession(authOptions);
+      if (!session || !session.user.id) throw new Error("Unauthorized");
+      return { userId: session.user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("Task attachment uploaded for userId:", metadata.userId);
+      return {
+        uploadedBy: metadata.userId,
+        url: file.url,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        key: file.key,
+      };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

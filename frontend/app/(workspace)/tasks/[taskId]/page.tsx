@@ -16,7 +16,6 @@ import {
   Clock,
   Circle,
   FileText,
-  Users,
   Ban,
   Save,
   X,
@@ -36,7 +35,6 @@ import {
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
   CardDescription,
@@ -54,6 +52,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import TaskAttachments from "@/components/tasks/TaskAttachments";
 
 export default function TaskDetailsPage() {
   const router = useRouter();
@@ -70,6 +69,7 @@ export default function TaskDetailsPage() {
   const [permissionLevel, setPermissionLevel] = useState<
     "none" | "view" | "edit" | "admin"
   >("none");
+  const [taskFiles, setTaskFiles] = useState<any[]>([]);
 
   const taskId = params?.taskId as string;
 
@@ -112,9 +112,15 @@ export default function TaskDetailsPage() {
 
       const taskData = await taskResponse.json();
       setTask(taskData);
+
+      if (taskData.taskFiles && taskData.taskFiles.length > 0) {
+        setTaskFiles(taskData.taskFiles);
+      }
+
       const projectResponse = await fetch(
         `/api/projects/${taskData.project?.id}`
       );
+
       if (!projectResponse.ok) {
         const data = await projectResponse.json();
         throw new Error(data.message || "Failed to fetch project details");
@@ -479,29 +485,42 @@ export default function TaskDetailsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div className="flex items-center gap-2 flex-1">
-          <div>{getStatusIcon(task.status)}</div>
-
-          {isEditing ? (
-            <div className="w-full max-w-md">
-              <Input
-                value={editedTask.title}
-                onChange={(e) => handleEditField("title", e.target.value)}
-                className={cn(
-                  "text-xl font-bold border-violet-400 focus-visible:ring-violet-400",
-                  validationErrors.title && "border-red-500"
-                )}
-              />
-              {validationErrors.title && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.title}
-                </p>
-              )}
-            </div>
-          ) : (
-            <h1 className="text-2xl font-bold">{task.title}</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+        <div className="flex gap-4">
+          {task.status === "DONE" && (
+            <div className="pt-1.5">{getStatusIcon(task.status)}</div>
           )}
+          <div>
+            {isEditing ? (
+              <div className="w-full max-w-md">
+                <Input
+                  value={editedTask.title}
+                  onChange={(e) => handleEditField("title", e.target.value)}
+                  className={cn(
+                    "text-xl font-bold border-violet-400 focus-visible:ring-violet-400",
+                    validationErrors.title && "border-red-500"
+                  )}
+                />
+                {validationErrors.title && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {validationErrors.title}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <h1 className="text-2xl font-bold">{task.title}</h1>
+            )}
+            <div className="flex items-center gap-2 text-sm opacity-80">
+              <Link
+                href={`/projects/${project?.id}`}
+                className="hover:text-violet-800  dark:hover:text-violet-300  hover:underline"
+              >
+                {project.name}
+              </Link>
+              <span>•</span>
+              <span>Created by {task.creator.name}</span>
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-2 mt-4 md:mt-0">
@@ -639,6 +658,12 @@ export default function TaskDetailsPage() {
                       No description provided
                     </p>
                   )}
+                </>
+              )}
+              {taskFiles.length > 0 && (
+                <>
+                  <Separator className="my-4" />
+                  <TaskAttachments files={taskFiles} />
                 </>
               )}
             </CardContent>
@@ -861,23 +886,6 @@ export default function TaskDetailsPage() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="h-5 w-5 mr-2" />
-                Project
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Link
-                href={`/projects/${project?.id}`}
-                className="text-violet-700 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 font-medium hover:underline"
-              >
-                {project.name}
-              </Link>
             </CardContent>
           </Card>
         </div>

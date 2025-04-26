@@ -152,7 +152,7 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
                       {project.members.slice(0, 3).map((member) => (
                         <Avatar
                           key={member.user.Id + member.user.name}
-                          className="h-8 w-8 border-2 border-background"
+                          className="h-8 w-8 border-2 border-background hover:z-10 transition-transform hover:scale-105"
                         >
                           <AvatarImage
                             src={member?.user?.image!}
@@ -173,7 +173,7 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
                   </div>
                 </CardContent>
 
-                <CardFooter className="pt-0">
+                <CardFooter className="pt-0 mt-auto">
                   <div className="space-y-1 w-full">
                     <div className="flex justify-between text-xs">
                       <span>Progress</span>

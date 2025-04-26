@@ -18,6 +18,8 @@ export async function POST(
     const projectId = params.projectId;
     const body = await request.json();
 
+    const { files, ...taskData } = body;
+
     // Request to the backend service
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/tasks/create/${projectId}`,
@@ -27,9 +29,10 @@ export async function POST(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...body,
+          ...taskData,
           creatorId: session.user.id,
           projectId,
+          files,
         }),
       }
     );
