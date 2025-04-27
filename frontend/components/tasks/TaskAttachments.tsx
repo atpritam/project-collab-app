@@ -22,8 +22,8 @@ const TaskAttachments = ({
 
   return (
     <div className="space-y-3">
-      {files.map((file) => (
-        <div key={file.url} className="flex">
+      {files.map((file, idx) => (
+        <div key={idx} className="flex">
           <div className="flex items-center p-3 justify-between w-full bg-muted/50 rounded-md">
             <FileIcon className="h-5 w-5 mr-3" />
             <div

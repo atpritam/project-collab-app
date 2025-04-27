@@ -397,3 +397,154 @@ tasksRouter.get("/:taskId", function (req: Request, res: Response) {
     }
   })();
 });
+
+// POST /api/tasks/complete/:taskId - Add completion note and deliverables to a completed task
+tasksRouter.post("/complete/:taskId", function (req: Request, res: Response) {
+  const { taskId } = req.params;
+  const { completionNote, deliverables } = req.body;
+  const userId = req.body.userId;
+
+  (async () => {
+    try {
+      // Fetch the task to check permissions
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: { project: true },
+      });
+
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      if (task.assigneeId !== userId) {
+        return res.status(403).json({
+          message: "Only the assigned user can add completion details",
+        });
+      }
+      if (task.status !== "DONE") {
+        return res.status(400).json({
+          message:
+            "Task must be marked as done before adding completion details",
+        });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        // completion note
+        const updatedTask = await tx.task.update({
+          where: { id: taskId },
+          data: { completionNote },
+          include: { taskFiles: true },
+        });
+
+        // deliverables
+        if (Array.isArray(deliverables) && deliverables.length > 0) {
+          const existingFiles = await tx.file.findMany({
+            where: {
+              taskId: taskId,
+              isTaskDeliverable: true,
+              url: { in: deliverables.map((f: any) => f.url) },
+            },
+            select: { url: true },
+          });
+          const existingUrls = new Set(existingFiles.map((f: any) => f.url));
+
+          const newDeliverables = deliverables.filter(
+            (f) => !existingUrls.has(f.url)
+          );
+
+          if (newDeliverables.length > 0) {
+            const createPromises = newDeliverables.map((file: any) =>
+              tx.file.create({
+                data: {
+                  name: file.name,
+                  url: file.url,
+                  size: file.size,
+                  type: file.type,
+                  uploaderId: userId,
+                  projectId: task.projectId,
+                  taskId: taskId,
+                  isTaskDeliverable: true,
+                },
+              })
+            );
+            await Promise.all(createPromises);
+          }
+        }
+
+        const refreshedTask = await tx.task.findUnique({
+          where: { id: taskId },
+          include: { taskFiles: true },
+        });
+
+        return { updatedTask: refreshedTask! };
+      });
+
+      res.status(200).json(result.updatedTask);
+    } catch (error) {
+      console.error("Error updating task completion details:", error);
+      res.status(500).json({ message: "Failed to update completion details" });
+    }
+  })();
+});
+
+// DELETE /api/tasks/files/:fileId - Delete a task file
+tasksRouter.delete("/files/:fileId", function (req: Request, res: Response) {
+  const { fileId } = req.params;
+  const { userId } = req.body;
+
+  (async () => {
+    try {
+      const file = await prisma.file.findUnique({
+        where: { id: fileId },
+        include: {
+          task: {
+            include: {
+              project: {
+                include: {
+                  members: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      // Permission checks
+      const isUploader = file.uploaderId === userId;
+
+      let isAdminOrEditor = false;
+      const taskProject = file.task?.project;
+
+      if (taskProject) {
+        const isCreator = taskProject.creatorId === userId;
+        const membership = taskProject.members.find(
+          (m: any) => m.userId === userId
+        );
+        isAdminOrEditor =
+          isCreator ||
+          membership?.role === "ADMIN" ||
+          membership?.role === "EDITOR";
+      }
+
+      const isAssignee = file.task?.assigneeId === userId;
+
+      if (!isUploader && !isAdminOrEditor && !isAssignee) {
+        return res.status(403).json({
+          message: "You don't have permission to delete this file",
+        });
+      }
+
+      await prisma.file.delete({
+        where: { id: fileId },
+      });
+
+      res.status(200).json({ message: "File deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      res.status(500).json({ message: "Failed to delete file" });
+    }
+  })();
+});

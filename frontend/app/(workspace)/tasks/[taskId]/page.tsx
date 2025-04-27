@@ -53,6 +53,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import TaskAttachments from "@/components/tasks/TaskAttachments";
+import TaskCompletion from "@/components/tasks/TaskCompletion";
 
 export default function TaskDetailsPage() {
   const router = useRouter();
@@ -70,6 +71,8 @@ export default function TaskDetailsPage() {
     "none" | "view" | "edit" | "admin"
   >("none");
   const [taskFiles, setTaskFiles] = useState<any[]>([]);
+  const [taskDeliverables, setTaskDeliverables] = useState<any[]>([]);
+  const [isAssignee, setIsAssignee] = useState(false);
 
   const taskId = params?.taskId as string;
 
@@ -94,15 +97,29 @@ export default function TaskDetailsPage() {
         priority: task.priority || "MEDIUM",
         status: task.status || "TODO",
       });
+
+      const userId = session?.user?.id;
+      setIsAssignee(task.assigneeId === userId);
+
+      if (task.taskFiles && task.taskFiles.length > 0) {
+        const attachments = task.taskFiles.filter(
+          (file: any) => !file.isTaskDeliverable
+        );
+        const deliverables = task.taskFiles.filter(
+          (file: any) => file.isTaskDeliverable
+        );
+
+        setTaskFiles(attachments);
+        setTaskDeliverables(deliverables);
+      }
     }
-  }, [task]);
+  }, [task, session?.user?.id]);
 
   const fetchProjectAndTaskDetails = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Fetch task details
       const taskResponse = await fetch(`/api/tasks/${taskId}`);
 
       if (!taskResponse.ok) {
@@ -114,7 +131,18 @@ export default function TaskDetailsPage() {
       setTask(taskData);
 
       if (taskData.taskFiles && taskData.taskFiles.length > 0) {
-        setTaskFiles(taskData.taskFiles);
+        const attachments = taskData.taskFiles.filter(
+          (file: any) => !file.isTaskDeliverable
+        );
+        const deliverables = taskData.taskFiles.filter(
+          (file: any) => file.isTaskDeliverable
+        );
+
+        setTaskFiles(attachments);
+        setTaskDeliverables(deliverables);
+      } else {
+        setTaskFiles([]);
+        setTaskDeliverables([]);
       }
 
       const projectResponse = await fetch(
@@ -134,6 +162,10 @@ export default function TaskDetailsPage() {
 
       // user permissions
       const userId = session?.user?.id;
+
+      // check if the user is the assignee
+      const userIsAssignee = taskData.assigneeId === userId;
+      setIsAssignee(userIsAssignee);
 
       const isAdmin =
         projectData.creatorId === userId ||
@@ -347,6 +379,15 @@ export default function TaskDetailsPage() {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleCompletionNoteUpdate = async (note: string) => {
+    setTask((prev: any) => ({
+      ...prev,
+      completionNote: note,
+    }));
+
+    fetchProjectAndTaskDetails();
   };
 
   const getInitials = (name: string | null) => {
@@ -663,11 +704,28 @@ export default function TaskDetailsPage() {
               {taskFiles.length > 0 && (
                 <>
                   <Separator className="my-4" />
-                  <TaskAttachments files={taskFiles} />
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium mb-2">Attachments</h3>
+                    <TaskAttachments files={taskFiles} />
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
+
+          {task.status === "DONE" && (
+            <Card>
+              <CardContent>
+                <TaskCompletion
+                  taskId={taskId}
+                  isAssignee={isAssignee}
+                  existingNote={task.completionNote}
+                  onNoteUpdated={handleCompletionNoteUpdate}
+                  deliverables={taskDeliverables}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {(permissionLevel === "admin" || permissionLevel === "edit") && (
             <Card>
