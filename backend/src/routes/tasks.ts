@@ -548,3 +548,35 @@ tasksRouter.delete("/files/:fileId", function (req: Request, res: Response) {
     }
   })();
 });
+
+// GET /api/tasks/:taskId/files - Get all files for a task
+tasksRouter.get("/:taskId/files", function (req: Request, res: Response) {
+  const { taskId } = req.params;
+
+  (async () => {
+    try {
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+      });
+
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+
+      // Get all files for this task
+      const files = await prisma.file.findMany({
+        where: {
+          taskId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      res.status(200).json({ files });
+    } catch (error) {
+      console.error("Error fetching task files:", error);
+      res.status(500).json({ message: "Failed to fetch task files" });
+    }
+  })();
+});

@@ -9,19 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader2,
   Calendar,
-  ArrowLeft,
   FolderPlus,
   CheckCircle2,
   Users,
@@ -29,13 +22,9 @@ import {
   FileText,
   Lightbulb,
   AlertTriangle,
+  Paperclip,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import ProjectFileUpload from "@/components/projects/ProjectFileUpload";
 
 export default function NewProjectPage() {
   const { data: session, status } = useSession();
@@ -46,6 +35,7 @@ export default function NewProjectPage() {
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [projectFiles, setProjectFiles] = useState<any[]>([]);
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {
@@ -74,6 +64,7 @@ export default function NewProjectPage() {
           name: projectName,
           description: projectDescription,
           dueDate: dueDate || null,
+          files: projectFiles,
         }),
       });
 
@@ -207,6 +198,24 @@ export default function NewProjectPage() {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label
+                  htmlFor="project-files"
+                  className="text-base font-medium flex items-center"
+                >
+                  <Paperclip className="h-4 w-4 mr-2 text-violet-600" />
+                  Project Files (Optional)
+                </Label>
+                <ProjectFileUpload
+                  files={projectFiles}
+                  setFiles={setProjectFiles}
+                  maxFiles={5}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add project documentation or reference materials for your team
+                </p>
+              </div>
+
               <div className="pt-4">
                 <Separator className="mb-6" />
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
@@ -286,6 +295,18 @@ export default function NewProjectPage() {
                     You can invite team members after creating the project
                   </p>
                 </div>
+
+                {projectFiles.length > 0 && (
+                  <div>
+                    <h3 className="font-medium text-sm text-muted-foreground mb-1.5">
+                      Attached Files
+                    </h3>
+                    <div className="flex items-center text-sm">
+                      <Paperclip className="h-4 w-4 mr-2 text-violet-600" />
+                      <span>{projectFiles.length} file(s) attached</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

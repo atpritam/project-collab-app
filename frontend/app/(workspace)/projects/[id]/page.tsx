@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectOverview from "@/components/projects/ProjectOverview";
 import ProjectTasks from "@/components/projects/ProjectTasks";
 import ProjectHeader from "@/components/projects/ProjectHeader";
+import ProjectFiles from "@/components/projects/ProjectFiles";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -140,14 +141,7 @@ export default function ProjectDetailPage() {
             </TabsContent>
 
             <TabsContent value="files" className="mt-6">
-              <div className="text-center py-12 border border-dashed rounded-lg">
-                <h3 className="text-lg font-medium">
-                  Files Feature Coming Soon
-                </h3>
-                <p className="text-muted-foreground mt-2">
-                  This feature is currently under development.
-                </p>
-              </div>
+              <ProjectFiles projectId={id} />
             </TabsContent>
 
             <TabsContent value="chat" className="mt-6">

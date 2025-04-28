@@ -2,19 +2,19 @@ import { useState, useCallback } from "react";
 import { AlertTriangle } from "lucide-react";
 import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "sonner";
-import TaskAttachments from "./TaskAttachments";
+import TaskAttachments from "@/components/tasks/TaskAttachments";
 
-interface TaskFileUploadProps {
+interface ProjectFileUploadProps {
   files: any[];
   setFiles: (files: any[]) => void;
   maxFiles?: number;
 }
 
-export default function TaskFileUpload({
+export default function ProjectFileUpload({
   files,
   setFiles,
-  maxFiles = 2,
-}: TaskFileUploadProps) {
+  maxFiles = 5,
+}: ProjectFileUploadProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleRemoveFile = useCallback(
@@ -97,7 +97,7 @@ export default function TaskFileUpload({
       {files.length < maxFiles && (
         <div className="">
           <UploadButton
-            endpoint="taskAttachment"
+            endpoint="projectFile"
             onClientUploadComplete={handleUploadComplete}
             onUploadError={handleUploadError}
             appearance={{

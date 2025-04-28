@@ -690,10 +690,8 @@ export default function TaskForm({
 
       <div className="space-y-6">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Task Preview</CardTitle>
-          </CardHeader>
           <CardContent>
+            <div className="text-lg pb-3">Task Preview</div>
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-sm text-muted-foreground mb-1.5">
@@ -787,10 +785,8 @@ export default function TaskForm({
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Quick Tips</CardTitle>
-          </CardHeader>
           <CardContent>
+            <div className="text-lg pb-3">Quick Tips</div>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start">
                 <CheckCircle2 className="h-4 w-4 mr-2 text-green-600 mt-0.5 flex-shrink-0" />

@@ -17,7 +17,6 @@ export const ourFileRouter = {
       return { userId: session.user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // This code runs on your server after upload
       console.log("Profile image uploaded for userId:", metadata.userId);
 
       // Use a consistent property name for the URL
@@ -27,6 +26,31 @@ export const ourFileRouter = {
       return {
         uploadedBy: metadata.userId,
         fileUrl: fileUrl,
+      };
+    }),
+
+  projectFile: f({
+    image: { maxFileSize: "2MB" },
+    pdf: { maxFileSize: "2MB" },
+    text: { maxFileSize: "2MB" },
+    audio: { maxFileSize: "2MB" },
+    video: { maxFileSize: "8MB" },
+  })
+    .middleware(async ({ req }) => {
+      const session = await getServerSession(authOptions);
+      if (!session || !session.user.id) throw new Error("Unauthorized");
+      return { userId: session.user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("Project file uploaded for userId:", metadata.userId);
+      const fileUrl = file.ufsUrl;
+      return {
+        uploadedBy: metadata.userId,
+        url: fileUrl,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        key: file.key,
       };
     }),
 
@@ -44,9 +68,10 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("Task attachment uploaded for userId:", metadata.userId);
+      const fileUrl = file.ufsUrl;
       return {
         uploadedBy: metadata.userId,
-        url: file.url,
+        url: fileUrl,
         name: file.name,
         size: file.size,
         type: file.type,

@@ -10,7 +10,7 @@ export default projectsRouter;
 
 // POST /api/projects/new
 projectsRouter.post("/new", function (req: Request, res: Response) {
-  const { name, description, dueDate, creatorId } = req.body;
+  const { name, description, dueDate, creatorId, files } = req.body;
 
   (async () => {
     if (!name) {
@@ -22,47 +22,72 @@ projectsRouter.post("/new", function (req: Request, res: Response) {
     }
 
     try {
-      // Create new project
-      const newProject = await prisma.project.create({
-        data: {
-          name,
-          description,
-          dueDate: dueDate ? new Date(dueDate) : null,
-          creatorId,
-          status: "IN_PROGRESS" as ProjectStatus,
-          // Also add the creator as a project member with ADMIN role
-          members: {
-            create: {
-              userId: creatorId,
-              role: "ADMIN",
+      // Create new project with files in a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        // Create the project
+        const newProject = await tx.project.create({
+          data: {
+            name,
+            description,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            creatorId,
+            status: "IN_PROGRESS" as ProjectStatus,
+            // Also add the creator as a project member with ADMIN role
+            members: {
+              create: {
+                userId: creatorId,
+                role: "ADMIN",
+              },
             },
           },
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
+          include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
             },
-          },
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    image: true,
+                  },
                 },
               },
             },
           },
-        },
+        });
+
+        // file records
+        if (files && Array.isArray(files) && files.length > 0) {
+          const filePromises = files.map((file: any) =>
+            tx.file.create({
+              data: {
+                name: file.name,
+                url: file.url,
+                size: file.size,
+                type: file.type,
+                uploaderId: creatorId,
+                projectId: newProject.id,
+                taskId: null, // project-level file, not associated with a task
+                isTaskDeliverable: false,
+              },
+            })
+          );
+
+          await Promise.all(filePromises);
+        }
+
+        return { newProject };
       });
 
-      res.status(201).json(newProject);
+      res.status(201).json(result.newProject);
     } catch (error) {
       console.error("Error creating project:", error);
       res.status(500).json({ message: "Failed to create project" });
@@ -430,6 +455,166 @@ projectsRouter.delete(
       } catch (error) {
         console.error("Error cancelling invitation:", error);
         res.status(500).json({ message: "Failed to cancel invitation" });
+      }
+    })();
+  }
+);
+
+// GET /api/projects/:id/files - Get all files for a project
+projectsRouter.get("/:id/files", function (req: Request, res: Response) {
+  const { id } = req.params;
+
+  (async () => {
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id },
+      });
+
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Get all project files (not linked to any task)
+      const projectFiles = await prisma.file.findMany({
+        where: {
+          projectId: id,
+          taskId: null,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      res.status(200).json({ projectFiles });
+    } catch (error) {
+      console.error("Error fetching project files:", error);
+      res.status(500).json({ message: "Failed to fetch project files" });
+    }
+  })();
+});
+
+projectsRouter.post("/:id/files/add", function (req: Request, res: Response) {
+  const { id } = req.params;
+  const { files, userId } = req.body;
+
+  (async () => {
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: {
+          members: true,
+        },
+      });
+
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Check if user is a admin or  editor of the project
+      const membership = project.members.find((m: any) => m.userId === userId);
+      const isAdmin = membership?.role === "ADMIN";
+      const isEditor = membership?.role === "EDITOR";
+
+      if (!isAdmin && !isEditor) {
+        return res.status(403).json({
+          message: "You do not have permission to add files to this project",
+        });
+      }
+
+      // Add files to the project
+      if (files && Array.isArray(files) && files.length > 0) {
+        const filePromises = files.map((file: any) =>
+          prisma.file.create({
+            data: {
+              name: file.name,
+              url: file.url,
+              size: file.size,
+              type: file.type,
+              uploaderId: userId,
+              projectId: id,
+              taskId: null, // project-level file
+              isTaskDeliverable: false,
+            },
+          })
+        );
+
+        const createdFiles = await Promise.all(filePromises);
+
+        return res.status(201).json({
+          message: "Files added successfully",
+          files: createdFiles,
+        });
+      }
+
+      return res.status(400).json({ message: "No files provided" });
+    } catch (error) {
+      console.error("Error adding files to project:", error);
+      res.status(500).json({ message: "Failed to add files to project" });
+    }
+  })();
+});
+
+// DELETE /api/projects/:id/files/:fileId - Delete a project file
+projectsRouter.delete(
+  "/:id/files/:fileId",
+  function (req: Request, res: Response) {
+    const { id: projectId, fileId } = req.params;
+    const { userId } = req.body;
+
+    (async () => {
+      try {
+        const project = await prisma.project.findUnique({
+          where: { id: projectId },
+          include: {
+            members: true,
+          },
+        });
+
+        if (!project) {
+          return res.status(404).json({ message: "Project not found" });
+        }
+
+        // the file
+        const file = await prisma.file.findUnique({
+          where: { id: fileId },
+        });
+
+        if (!file) {
+          return res.status(404).json({ message: "File not found" });
+        }
+
+        if (file.projectId !== projectId) {
+          return res
+            .status(400)
+            .json({ message: "File does not belong to this project" });
+        }
+
+        // permissions - allow file deletion by:
+        // 1. The file uploader
+        // 2. Project Admin
+        // 3. Project Editor
+        const isUploader = file.uploaderId === userId;
+        const membership = project.members.find(
+          (m: any) => m.userId === userId
+        );
+        const isAdmin = membership?.role === "ADMIN";
+        const isEditor = membership?.role === "EDITOR";
+
+        if (!isUploader && !isAdmin && !isEditor) {
+          return res.status(403).json({
+            message: "You don't have permission to delete this file",
+          });
+        }
+
+        // Delete
+        await prisma.file.delete({
+          where: { id: fileId },
+        });
+
+        res.status(200).json({ message: "File deleted successfully" });
+      } catch (error) {
+        console.error("Error deleting project file:", error);
+        res.status(500).json({ message: "Failed to delete file" });
       }
     })();
   }

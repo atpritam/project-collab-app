@@ -423,7 +423,7 @@ export default function TaskDetailsPage() {
       case "DONE":
         return (
           <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Completed
+            Done
           </Badge>
         );
       case "IN_PROGRESS":
