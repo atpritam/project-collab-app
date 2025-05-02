@@ -13,6 +13,8 @@ import {
   AlertCircle,
   ChevronDown,
   Check,
+  MessageSquare,
+  Menu,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -36,6 +38,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProjectHeaderProps {
   project: any;
@@ -198,22 +206,34 @@ export default function ProjectHeader({
   };
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-1">
+    <div className="w-full px-2 sm:px-4">
+      <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-full">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1 break-words">
             {project.name}
           </h1>
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {getStatusBadge(project.status)}
             <span className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1" />
+              <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
               {formattedDueDate}
             </span>
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4 md:mt-0">
+        {/* Desktop Actions */}
+        <div className="hidden md:flex md:flex-row gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center"
+            asChild
+          >
+            <Link href={`/messages?projectId=${project.id}`}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Team
+            </Link>
+          </Button>
           {isAdmin && (
             <>
               <Button
@@ -254,16 +274,74 @@ export default function ProjectHeader({
             </Button>
           )}
         </div>
+
+        {/* Mobile Actions */}
+        <div className="flex md:hidden justify-between gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 flex items-center justify-center"
+            asChild
+          >
+            <Link href={`/messages?projectId=${project.id}`}>
+              <MessageSquare className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="sm:inline">Team</span>
+            </Link>
+          </Button>
+
+          {isAdmin && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Menu className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="sm:inline">Actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Project
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setInviteEmail("");
+                    setInviteRole("MEMBER");
+                    setInviteError("");
+                    setIsInviteDialogOpen(true);
+                  }}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite Member
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {(isAdmin || isEditor) && (
+            <Button
+              asChild
+              className="flex-1 bg-violet-700 hover:bg-violet-800 text-white flex items-center justify-center"
+              size="sm"
+            >
+              <Link href={`/tasks/create?projectId=${project.id}`}>
+                <PlusCircle className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="sm:inline">Task</span>
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {project.description && (
-        <div className="mt-4 max-w-3xl">
-          <p className="text-foreground/80">{project.description}</p>
+        <div className="mt-4 max-w-full">
+          <p className="text-sm sm:text-base text-foreground/80 break-words">
+            {project.description}
+          </p>
         </div>
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg mx-auto">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
             <DialogDescription>
@@ -299,7 +377,7 @@ export default function ProjectHeader({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="status" className="text-sm font-medium">
                   Status
@@ -334,17 +412,18 @@ export default function ProjectHeader({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button
               onClick={updateProject}
               disabled={isUpdating}
-              className="bg-violet-700 hover:bg-violet-800 text-white"
+              className="w-full sm:w-auto bg-violet-700 hover:bg-violet-800 text-white"
             >
               {isUpdating ? (
                 <>
@@ -371,7 +450,7 @@ export default function ProjectHeader({
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-xs sm:max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle>Invite Team Members</DialogTitle>
             <DialogDescription>
@@ -489,7 +568,7 @@ export default function ProjectHeader({
               </div>
             </div>
 
-            <DialogFooter className="mt-6">
+            <DialogFooter className="mt-6 flex-col sm:flex-row gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="outline"
@@ -497,18 +576,19 @@ export default function ProjectHeader({
                   setIsInviteDialogOpen(false);
                   setShowRoleOptions(false);
                 }}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isInviting}
-                className="bg-violet-700 hover:bg-violet-800 text-white"
+                className="w-full sm:w-auto bg-violet-700 hover:bg-violet-800 text-white"
               >
                 {isInviting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending Invitation...
+                    Sending...
                   </>
                 ) : (
                   <>

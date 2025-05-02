@@ -71,7 +71,7 @@ export function WelcomeBanner({ userName }: { userName: string }) {
         </div>
 
         <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
-          <Link href="/calender">
+          <Link href="/calendar">
             <Button
               size="sm"
               className="rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm dark:text-accent-foreground cursor-pointer"

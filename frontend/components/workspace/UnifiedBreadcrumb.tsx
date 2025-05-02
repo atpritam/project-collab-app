@@ -24,7 +24,7 @@ export function UnifiedBreadcrumb() {
   const projectId = params?.id as string;
   const taskId = params?.taskId as string;
 
-  const showBreadcrumbs = pathname !== "/dashboard";
+  const showBreadcrumbs = pathname !== "/dashboard" && pathname !== "/messages";
 
   useEffect(() => {
     if (projectId && !projectName) {

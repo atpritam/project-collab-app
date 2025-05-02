@@ -1,8 +1,10 @@
+// project-collab-app/frontend/app/(workspace)/projects/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectOverview from "@/components/projects/ProjectOverview";
 import ProjectTasks from "@/components/projects/ProjectTasks";
@@ -13,6 +15,7 @@ import { toast } from "sonner";
 
 export default function ProjectDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
   const { data: session, status } = useSession();
 
@@ -106,19 +109,22 @@ export default function ProjectDetailPage() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto">
-          <ProjectHeader
-            project={project}
-            isAdmin={isAdmin}
-            isEditor={isEditor}
-            onProjectUpdated={fetchProjectData}
-          />
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div className="flex-1">
+              <ProjectHeader
+                project={project}
+                isAdmin={isAdmin}
+                isEditor={isEditor}
+                onProjectUpdated={fetchProjectData}
+              />
+            </div>
+          </div>
 
-          <Tabs defaultValue="overview" className="mt-8">
+          <Tabs defaultValue="overview" className="mt-6">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
               <TabsTrigger value="files">Files</TabsTrigger>
-              <TabsTrigger value="chat">Chat</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-6">
@@ -142,17 +148,6 @@ export default function ProjectDetailPage() {
 
             <TabsContent value="files" className="mt-6">
               <ProjectFiles projectId={id} />
-            </TabsContent>
-
-            <TabsContent value="chat" className="mt-6">
-              <div className="text-center py-12 border border-dashed rounded-lg">
-                <h3 className="text-lg font-medium">
-                  Chat Feature Coming Soon
-                </h3>
-                <p className="text-muted-foreground mt-2">
-                  This feature is currently under development.
-                </p>
-              </div>
             </TabsContent>
           </Tabs>
         </div>

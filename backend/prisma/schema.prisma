@@ -35,6 +35,9 @@ model User {
 
   // File-related - Added this relation to fix the error
   uploadedFiles File[] @relation("FileUploader")
+
+  sentMessages     DirectMessage[] @relation("MessageSender")
+  receivedMessages DirectMessage[] @relation("MessageReceiver")
 }
 
 model Account {
@@ -262,4 +265,19 @@ model File {
   project  Project @relation("ProjectFiles", fields: [projectId], references: [id], onDelete: Cascade)
   task     Task?   @relation("TaskFiles", fields: [taskId], references: [id], onDelete: SetNull)
   uploader User    @relation("FileUploader", fields: [uploaderId], references: [id])
+}
+
+// Direct messaging
+model DirectMessage {
+  id        String   @id @default(cuid())
+  content   String
+  senderId  String
+  receiverId String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver  User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 }

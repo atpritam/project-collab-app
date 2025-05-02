@@ -1,10 +1,8 @@
-// Update project-collab-app/frontend/app/api/collaborators/route.ts
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,34 +12,32 @@ export async function GET(request: Request) {
 
     const userId = session.user.id;
 
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
-
-    let url = `${process.env.NEXT_PUBLIC_API_URL}/api/collaborators?userId=${userId}`;
-    if (search) {
-      url += `&search=${encodeURIComponent(search)}`;
-    }
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
 
     // Request to the backend service
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const data = await response.json();
+    const response = await fetch(
+      `${apiUrl}/api/messages/conversations/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
-        { message: data.message || "Failed to fetch collaborators" },
+        { message: errorData.message || "Failed to fetch conversations" },
         { status: response.status }
       );
     }
 
+    const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching collaborators:", error);
+    console.error("Error fetching conversations:", error);
     return NextResponse.json(
       { message: "An unexpected error occurred" },
       { status: 500 }

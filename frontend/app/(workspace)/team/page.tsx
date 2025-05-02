@@ -87,7 +87,7 @@ export default function TeamPage() {
   const fetchCollaborators = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/collaborators");
+      const response = await fetch("/api/collaborators/team");
       if (response.ok) {
         const data = await response.json();
         setCollaborators(data.collaborators || []);

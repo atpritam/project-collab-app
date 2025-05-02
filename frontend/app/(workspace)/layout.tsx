@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -19,6 +19,7 @@ export default function WorkspaceLayout({
 }) {
   const { status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Redirect unauthenticated users to sign-in page
   useEffect(() => {
@@ -40,19 +41,24 @@ export default function WorkspaceLayout({
       <SidebarProvider>
         <div className="flex h-screen overflow-hidden bg-background w-full">
           <WorkspaceSidebar />
-          <main className="flex-1 overflow-auto">
+          <main
+            className={`flex-1 overflow-auto ${
+              pathname === "/messages" ? "overflow-hidden" : "overflow-auto"
+            }`}
+          >
             <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
               <UnifiedBreadcrumb />
 
               <div className="pt-2">{children}</div>
-
-              <footer>
-                <div className="mt-12 pt-6">
-                  <p className="text-center text-sm text-muted-foreground">
-                    © {new Date().getFullYear()} Nudge. All rights reserved.
-                  </p>
-                </div>
-              </footer>
+              {pathname !== "/messages" && (
+                <footer>
+                  <div className="mt-12 pt-6">
+                    <p className="text-center text-sm text-muted-foreground">
+                      © {new Date().getFullYear()} Nudge. All rights reserved.
+                    </p>
+                  </div>
+                </footer>
+              )}
             </div>
           </main>
         </div>

@@ -18,6 +18,8 @@ services:
     depends_on:
       - backend
     command: npm run dev
+    networks:
+      - app-network
 
   backend:
     build:
@@ -34,8 +36,11 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/project_collab_db
+      - CORS_ORIGIN=http://frontend-service:3000,http://localhost:3000,*
     depends_on:
       - db
+    networks:
+      - app-network
 
   db:
     image: postgres:15
@@ -49,6 +54,12 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app-network
 
 volumes:
   postgres-data:
+
+networks:
+  app-network:
+    driver: bridge

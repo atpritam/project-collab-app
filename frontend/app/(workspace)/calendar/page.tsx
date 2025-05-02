@@ -20,9 +20,9 @@ import { toast } from "sonner";
 export default function CalendarPage() {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedView, setSelectedView] = useState<
-    "calendar" | "gantt" | "deadlines"
-  >("calendar");
+  const [selectedView, setSelectedView] = useState<"calendar" | "deadlines">(
+    "calendar"
+  );
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState<any>(null);
   const [deadlinesData, setDeadlinesData] = useState<any[]>([]);
@@ -152,7 +152,6 @@ export default function CalendarPage() {
       >
         <TabsList className="mb-4">
           <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-          <TabsTrigger value="gantt">Gantt Chart</TabsTrigger>
           <TabsTrigger value="deadlines">Deadlines</TabsTrigger>
         </TabsList>
 
@@ -175,19 +174,6 @@ export default function CalendarPage() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-
-        <TabsContent value="gantt" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gantt Chart</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <p className="text-muted-foreground">
-                Gantt chart feature is under development.
-              </p>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="deadlines" className="mt-4">

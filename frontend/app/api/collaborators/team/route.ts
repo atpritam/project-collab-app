@@ -1,10 +1,8 @@
-// Update project-collab-app/frontend/app/api/collaborators/route.ts
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,21 +12,16 @@ export async function GET(request: Request) {
 
     const userId = session.user.id;
 
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
-
-    let url = `${process.env.NEXT_PUBLIC_API_URL}/api/collaborators?userId=${userId}`;
-    if (search) {
-      url += `&search=${encodeURIComponent(search)}`;
-    }
-
     // Request to the backend service
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/collaborators/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const data = await response.json();
 

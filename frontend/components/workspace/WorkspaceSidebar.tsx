@@ -45,9 +45,7 @@ import {
 export default function WorkspaceSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (session?.user?.id) {

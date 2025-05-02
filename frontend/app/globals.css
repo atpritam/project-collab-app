@@ -188,3 +188,43 @@
 .animation-delay-1000 {
   animation-delay: 1s;
 }
+
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  margin: 0 1px;
+  background-color: hsl(var(--foreground) / 0.4);
+  display: block;
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+.typing-indicator span:nth-of-type(1) {
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-of-type(2) {
+  animation: typing 1s infinite ease-in-out 0.2s;
+}
+
+.typing-indicator span:nth-of-type(3) {
+  animation: typing 1s infinite ease-in-out 0.4s;
+}
+
+@keyframes typing {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
