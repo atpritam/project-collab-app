@@ -68,7 +68,7 @@ const MessagesLayout = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showConversationList, setShowConversationList] = useState(
-    !isMobile || (!searchParams.get("userId") && !searchParams.get("projectId"))
+    !isMobile || (!searchParams.get("email") && !searchParams.get("projectId"))
   );
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -82,11 +82,11 @@ const MessagesLayout = () => {
       fetchTeamConversations();
 
       // URL params for chat selection
-      const userId = searchParams.get("userId");
+      const email = searchParams.get("email");
       const projectId = searchParams.get("projectId");
 
-      if (userId) {
-        fetchUserInfo(userId);
+      if (email) {
+        fetchUserInfo(email);
       } else if (projectId) {
         fetchProjectInfo(projectId);
       }
@@ -213,19 +213,19 @@ const MessagesLayout = () => {
     }
   };
 
-  const fetchUserInfo = async (userId: string) => {
-    if (fetchingUserRef.current.has(userId)) {
+  const fetchUserInfo = async (email: string) => {
+    if (fetchingUserRef.current.has(email)) {
       return;
     }
 
-    if (selectedUser?.id === userId) {
+    if (selectedUser?.email === email) {
       return;
     }
 
-    fetchingUserRef.current.add(userId);
+    fetchingUserRef.current.add(email);
 
     try {
-      const response = await fetch(`/api/user/${userId}`);
+      const response = await fetch(`/api/user/byEmail?email=${email}`);
 
       if (response.ok) {
         const user = await response.json();
@@ -240,7 +240,7 @@ const MessagesLayout = () => {
     } catch (error) {
       console.error("Error fetching user info:", error);
     } finally {
-      fetchingUserRef.current.delete(userId);
+      fetchingUserRef.current.delete(email);
     }
   };
 

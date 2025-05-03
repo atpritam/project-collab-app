@@ -351,7 +351,7 @@ export default function TeamPage() {
                       </Badge>
 
                       <Link
-                        href={`/messages/compose?to=${collaborator.email}`}
+                        href={`/messages?email=${collaborator.email}`}
                         className="cursor-pointer"
                       >
                         <MessageSquare className="h-5 w-5 mr-2" />
