@@ -10,18 +10,24 @@ import {
   subMonths,
 } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import CalendarView from "@/components/calendar/CalendarView";
 import DeadlinesList from "@/components/calendar/DeadlinesList";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CalendarPage() {
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
+  const defaultTab =
+    searchParams?.get("tab") === "deadlines" ? "deadlines" : "calendar";
   const [selectedView, setSelectedView] = useState<"calendar" | "deadlines">(
-    "calendar"
+    defaultTab
   );
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState<any>(null);
@@ -102,40 +108,56 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-8">
+      <div
+        className={
+          isMobile ? "flex flex-col gap-3" : "flex justify-between items-center"
+        }
+      >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your deadlines and project timelines
-          </p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Calendar className={isMobile ? "h-5 w-5" : "h-7 w-7"} />
+            Calendar
+          </h1>
+          {!isMobile && (
+            <p className="text-muted-foreground mt-1">
+              Manage your deadlines and project timelines
+            </p>
+          )}
         </div>
 
         {selectedView === "calendar" && (
-          <div className="flex items-center gap-4">
+          <div
+            className={
+              isMobile
+                ? "self-start flex items-center gap-2"
+                : "flex items-center gap-4"
+            }
+          >
             <div className="flex items-center bg-muted rounded-md">
               <Button
                 variant="ghost"
-                size="icon"
+                size={isMobile ? "sm" : "icon"}
                 onClick={handlePreviousMonth}
                 className="text-muted-foreground"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
               </Button>
-              <span className="px-2 font-medium">
-                {format(selectedDate, "MMMM yyyy")}
+              <span className={isMobile ? "px-1 text-sm" : "px-2 font-medium"}>
+                {format(selectedDate, isMobile ? "MMM yyyy" : "MMMM yyyy")}
               </span>
               <Button
                 variant="ghost"
-                size="icon"
+                size={isMobile ? "sm" : "icon"}
                 onClick={handleNextMonth}
                 className="text-muted-foreground"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
               </Button>
             </div>
             <Button
               variant="outline"
+              size={isMobile ? "sm" : "default"}
               onClick={() => setSelectedDate(new Date())}
             >
               Today
@@ -150,9 +172,13 @@ export default function CalendarPage() {
         onValueChange={(value) => setSelectedView(value as any)}
         className="w-full"
       >
-        <TabsList className="mb-4">
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-          <TabsTrigger value="deadlines">Deadlines</TabsTrigger>
+        <TabsList className={isMobile ? "w-full mb-3" : "mb-4"}>
+          <TabsTrigger value="calendar" className={isMobile ? "flex-1" : ""}>
+            Calendar View
+          </TabsTrigger>
+          <TabsTrigger value="deadlines" className={isMobile ? "flex-1" : ""}>
+            Deadlines
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="calendar" className="mt-4">

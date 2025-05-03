@@ -407,7 +407,11 @@ const MessagesLayout = () => {
   }
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] overflow-hidden bg-background rounded-lg border">
+    <div
+      className={`flex ${
+        isMobile ? "h-[calc(100vh-9rem)]" : "h-[calc(100vh-7rem)]"
+      } overflow-hidden bg-background rounded-lg border w-auto`}
+    >
       {showConversationList && (
         <div
           className={`${isMobile ? "w-full" : "w-80"} border-r flex flex-col`}

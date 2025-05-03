@@ -17,7 +17,8 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [projects, setProjects] = useState([]);
-  const [tasks, setTasks] = useState([]);
+  const [displayTasks, setDisplayTasks] = useState<any[]>([]);
+  const [allTasks, setAllTasks] = useState([]);
   const [activities, setActivities] = useState([]);
   const [showInvitations, setShowInvitations] = useState(false);
   const [stats, setStats] = useState({
@@ -38,9 +39,9 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [projectsRes, tasksRes, activityRes] = await Promise.all([
+      const [projectsRes, allTasksRes, activityRes] = await Promise.all([
         fetch("/api/dashboard/projects?limit=4"),
-        fetch("/api/tasks/assigned?limit=4"),
+        fetch("/api/tasks/all"),
         fetch("/api/dashboard/activity"),
       ]);
 
@@ -56,25 +57,29 @@ export default function DashboardPage() {
         toast.error("Failed to load projects");
       }
 
-      // Tasks response
-      if (tasksRes.ok) {
-        const tasksData = await tasksRes.json();
-        setTasks(tasksData);
+      if (allTasksRes.ok) {
+        const allTasksData = await allTasksRes.json();
+        setAllTasks(allTasksData);
 
-        // Calculate task stats
-        const completed = tasksData.filter(
+        const currentUserId = session?.user?.id;
+        const assignedTasks = allTasksData.filter(
+          (task: any) => task.assignee && task.assignee.id === currentUserId
+        );
+
+        const completed = assignedTasks.filter(
           (t: any) => t.status === "DONE"
         ).length;
-        const pending = tasksData.filter(
+        const pending = assignedTasks.filter(
           (t: any) => t.status !== "DONE"
         ).length;
-        const upcoming = tasksData.filter((t: any) => {
+
+        const upcoming = allTasksData.filter((t: any) => {
           if (!t.dueDate || t.status === "DONE") return false;
           const dueDate = new Date(t.dueDate);
           const today = new Date();
-          const threeDaysLater = new Date();
-          threeDaysLater.setDate(today.getDate() + 3);
-          return dueDate >= today && dueDate <= threeDaysLater;
+          const sevenDaysLater = new Date();
+          sevenDaysLater.setDate(today.getDate() + 7);
+          return dueDate >= today && dueDate <= sevenDaysLater;
         }).length;
 
         setStats((prev) => ({
@@ -83,8 +88,29 @@ export default function DashboardPage() {
           pendingTasks: pending,
           upcomingDeadlines: upcoming,
         }));
+        const sortedAssignedTasks = [...assignedTasks].sort((a, b) => {
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+
+          const dateComparison =
+            new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+
+          if (dateComparison === 0) {
+            if (!a.updatedAt && !b.updatedAt) return 0;
+            if (!a.updatedAt) return 1;
+            if (!b.updatedAt) return -1;
+            return (
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            );
+          }
+
+          return dateComparison;
+        });
+
+        setDisplayTasks(sortedAssignedTasks.slice(0, 4));
       } else {
-        toast.error("Failed to load tasks");
+        toast.error("Failed to load tasks data");
       }
 
       // Activity response
@@ -148,7 +174,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
           <ProjectsSection projects={projects} />
-          <TasksSection tasks={tasks} currentUserId={session?.user?.id} />
+          <TasksSection
+            tasks={displayTasks}
+            currentUserId={session?.user?.id}
+          />
         </div>
         <div>
           <ActivityFeed activities={activities} />

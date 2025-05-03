@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { usePathname, useParams } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -11,7 +12,16 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { HomeIcon, FolderIcon, CheckSquareIcon, PlusIcon } from "lucide-react";
+import {
+  HomeIcon,
+  FolderIcon,
+  CheckSquareIcon,
+  PlusIcon,
+  CalendarIcon,
+  UsersIcon,
+  UserIcon,
+  SettingsIcon,
+} from "lucide-react";
 
 export function UnifiedBreadcrumb() {
   const pathname = usePathname();
@@ -25,6 +35,11 @@ export function UnifiedBreadcrumb() {
   const taskId = params?.taskId as string;
 
   const showBreadcrumbs = pathname !== "/dashboard" && pathname !== "/messages";
+
+  useEffect(() => {
+    setProjectName(null);
+    setTaskName(null);
+  }, [pathname, params]);
 
   useEffect(() => {
     if (projectId && !projectName) {
@@ -52,9 +67,7 @@ export function UnifiedBreadcrumb() {
       const fetchTaskDetails = async () => {
         setIsLoading(true);
         try {
-          const response = await fetch(
-            `/api/projects/${projectId}/tasks/${taskId}`
-          );
+          const response = await fetch(`/api/tasks/${taskId}`);
           if (response.ok) {
             const data = await response.json();
             setTaskName(data.title);
@@ -68,11 +81,40 @@ export function UnifiedBreadcrumb() {
 
       fetchTaskDetails();
     }
-  }, [taskId, taskName, projectId]);
+  }, [taskId, taskName]);
 
   if (!showBreadcrumbs) {
     return null;
   }
+
+  const getBreadcrumbIcon = (segment: string) => {
+    switch (segment) {
+      case "projects":
+        return <FolderIcon className="h-4 w-4 mr-1" />;
+      case "tasks":
+        return <CheckSquareIcon className="h-4 w-4 mr-1" />;
+      case "calendar":
+        return <CalendarIcon className="h-4 w-4 mr-1" />;
+      case "team":
+        return <UsersIcon className="h-4 w-4 mr-1" />;
+      case "profile":
+        return <UserIcon className="h-4 w-4 mr-1" />;
+      case "settings":
+        return <SettingsIcon className="h-4 w-4 mr-1" />;
+      case "create":
+        return <PlusIcon className="h-4 w-4 mr-1" />;
+      default:
+        return null;
+    }
+  };
+
+  const formatSegmentName = (segment: string) => {
+    if (segment === "taskId") return "Task";
+
+    return (
+      segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
+    );
+  };
 
   return (
     <Breadcrumb className="pb-2 pt-2">
@@ -88,40 +130,47 @@ export function UnifiedBreadcrumb() {
           </BreadcrumbLink>
         </BreadcrumbItem>
 
-        {segments.includes("projects") && (
-          <>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              {segments.length > 1 && segments[1] !== "projects" ? (
-                <BreadcrumbLink asChild>
-                  <Link href="/projects" className="flex items-center">
-                    <FolderIcon className="h-4 w-4 mr-1" />
-                    Projects
-                  </Link>
-                </BreadcrumbLink>
-              ) : (
-                <BreadcrumbPage className="flex items-center">
-                  <FolderIcon className="h-4 w-4 mr-1" />
-                  Projects
-                </BreadcrumbPage>
-              )}
-            </BreadcrumbItem>
-          </>
-        )}
+        {segments.map((segment, index) => {
+          if (segment === "(workspace)") return null;
 
-        {segments.includes("create") && segments.includes("projects") && (
-          <>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="flex items-center">
-                <PlusIcon className="h-4 w-4 mr-1" />
-                Create Project
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </>
-        )}
+          if (
+            segment === "id" ||
+            segment === "taskId" ||
+            segment === projectId ||
+            segment === taskId
+          )
+            return null;
 
-        {projectId && !segments.includes("create") && (
+          if (segment === "create" && segments[index + 1] === projectId)
+            return null;
+
+          const isLast = index === segments.length - 1 && !projectId && !taskId;
+          const href = `/${segments.slice(0, index + 1).join("/")}`;
+
+          return (
+            <React.Fragment key={segment}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage className="flex items-center">
+                    {getBreadcrumbIcon(segment)}
+                    {formatSegmentName(segment)}
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link href={href} className="flex items-center">
+                      {getBreadcrumbIcon(segment)}
+                      {formatSegmentName(segment)}
+                    </Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </React.Fragment>
+          );
+        })}
+
+        {/* Project specific breadcrumb */}
+        {projectId && (
           <>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -151,6 +200,7 @@ export function UnifiedBreadcrumb() {
           </>
         )}
 
+        {/* Task specific breadcrumb */}
         {taskId && (
           <>
             <BreadcrumbSeparator />
@@ -167,7 +217,33 @@ export function UnifiedBreadcrumb() {
           </>
         )}
 
-        {/* more section-specific breadcrumbs will be added here */}
+        {segments.includes("create") && (
+          <>
+            {segments.includes("projects") && !segments.includes("tasks") && (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="flex items-center">
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Create Project
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            )}
+
+            {segments.includes("tasks") && (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="flex items-center">
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Create Task
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            )}
+          </>
+        )}
       </BreadcrumbList>
     </Breadcrumb>
   );

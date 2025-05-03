@@ -18,6 +18,7 @@ project-collab-app/backend/src/utils/email.ts
 project-collab-app/backend/src/routes/dashboard.ts
 project-collab-app/backend/src/routes/tasks.ts
 project-collab-app/backend/src/routes/projects.ts
+project-collab-app/backend/src/routes/teamMessages.ts
 project-collab-app/backend/src/routes/invitations.ts
 project-collab-app/backend/src/routes/settings.ts
 project-collab-app/backend/src/routes/calendar.ts
@@ -105,13 +106,15 @@ project-collab-app/frontend/components/layout/Header.tsx
 project-collab-app/frontend/components/layout/Footer.tsx
 project-collab-app/frontend/components/layout/ThemeToggle.tsx
 project-collab-app/frontend/components/messages/Chat.tsx
+project-collab-app/frontend/components/messages/TeamChat.tsx
+project-collab-app/frontend/components/messages/MessageAdapter.tsx
 project-collab-app/frontend/components/messages/NewMessageButton.tsx
 project-collab-app/frontend/components/messages/MessagesLayout.tsx
 project-collab-app/frontend/components/messages/ChatMessage.tsx
-project-collab-app/frontend/components/messages/MessagesBadge.tsx
 project-collab-app/frontend/components/messages/EmptyState.tsx
 project-collab-app/frontend/components/messages/ConversationList.tsx
 project-collab-app/frontend/components/messages/ChatHeader.tsx
+project-collab-app/frontend/components/messages/TeamChatHeader.tsx
 project-collab-app/frontend/components/messages/ChatInput.tsx
 project-collab-app/frontend/components/calendar/DeadlinesList.tsx
 project-collab-app/frontend/components/calendar/CalendarView.tsx
@@ -191,6 +194,9 @@ project-collab-app/frontend/app/api/auth/[...nextauth]/route.ts
 project-collab-app/frontend/app/api/auth/verify-email/route.ts
 project-collab-app/frontend/app/api/auth/register/route.ts
 project-collab-app/frontend/app/api/auth/forgot-password/route.ts
+project-collab-app/frontend/app/api/team-messages/project/[projectId]/route.ts
+project-collab-app/frontend/app/api/team-messages/projects/route.ts
+project-collab-app/frontend/app/api/team-messages/send/route.ts
 project-collab-app/frontend/app/profile/page.tsx
 project-collab-app/frontend/app/invitations/accept/page.tsx
 project-collab-app/frontend/app/auth/verification-success/page.tsx

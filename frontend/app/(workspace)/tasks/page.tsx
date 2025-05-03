@@ -16,6 +16,7 @@ import {
   X,
   ArrowUp,
   ArrowDown,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,6 +34,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TaskCard from "@/components/tasks/TaskCard";
+import { useIsMobile } from "@/hooks/use-mobile";
+import TaskStatsAccordion from "@/components/tasks/TaskStatsAccordion";
+import TaskStats from "@/components/tasks/TaskStats";
 
 interface Task {
   id: string;
@@ -71,6 +75,8 @@ export default function TasksPage() {
   const [activeTab, setActiveTab] = useState<"assigned" | "created">(
     "assigned"
   );
+
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -295,9 +301,12 @@ export default function TasksPage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <CheckSquare className="h-7 w-7" />
+            My Tasks
+          </h1>
           <p className="text-muted-foreground mt-1">
             View and manage all your tasks across projects
           </p>
@@ -316,10 +325,10 @@ export default function TasksPage() {
 
       <Tabs
         defaultValue="assigned"
-        className="w-full"
+        className="flex gap-4 w-full"
         onValueChange={(value) => setActiveTab(value as "assigned" | "created")}
       >
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
           <TabsList className="mb-0">
             <TabsTrigger value="assigned">
               Assigned ({getTaskCount("assigned")})
@@ -329,14 +338,14 @@ export default function TasksPage() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-4 items-end md:items-center">
-            <div className="relative flex-1 md:w-80">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col lg:flex-row gap-4 flex-1 w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-11"
+                className="pl-10"
               />
               {searchQuery && (
                 <Button
@@ -350,10 +359,13 @@ export default function TasksPage() {
               )}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 ">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center h-11">
+                  <Button
+                    variant="outline"
+                    className="flex items-center flex-1"
+                  >
                     <Filter className="h-4 w-4 mr-2" />
                     Filter
                     <ChevronDown className="h-4 w-4 ml-2" />
@@ -418,7 +430,7 @@ export default function TasksPage() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center h-11">
+                  <Button variant="outline" className="flex items-center">
                     <div className="flex items-center">
                       Sort by
                       {sortBy === "dueDate" && (
@@ -569,73 +581,18 @@ export default function TasksPage() {
           </div>
         )}
 
-        {/* Task Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          <Card>
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {activeTab === "assigned"
-                    ? "Assigned Tasks"
-                    : "Created Tasks"}
-                </p>
-                <p className="text-2xl font-bold">{getTaskCount(activeTab)}</p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                {activeTab === "assigned" ? (
-                  <PlusCircle className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                ) : (
-                  <PlusCircle className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  To Do
-                </p>
-                <p className="text-2xl font-bold">
-                  {getTaskCount(activeTab, "TODO")}
-                </p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <Circle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  In Progress
-                </p>
-                <p className="text-2xl font-bold">
-                  {getTaskCount(activeTab, "IN_PROGRESS")}
-                </p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Completed
-                </p>
-                <p className="text-2xl font-bold">
-                  {getTaskCount(activeTab, "DONE")}
-                </p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {isMobile ? (
+          <TaskStatsAccordion
+            activeTab={activeTab}
+            getTaskCount={getTaskCount}
+          />
+        ) : (
+          <TaskStats
+            activeTab={activeTab}
+            getTaskCount={getTaskCount}
+            className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6"
+          />
+        )}
 
         <TabsContent value="assigned" className="mt-6">
           {filteredTasks.length === 0 ? (

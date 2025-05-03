@@ -7,24 +7,14 @@ import {
   Loader2,
   Search,
   UserPlus,
-  Shield,
-  PenSquare,
-  User,
   MessageSquare,
   Mail,
-  Send,
-  Plus,
   MoreHorizontal,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -164,7 +154,10 @@ export default function TeamPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Members</h1>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Users className="h-7 w-7" />
+            Team Members
+          </h1>
           <p className="text-muted-foreground mt-1">
             People you've collaborated with across projects
           </p>
