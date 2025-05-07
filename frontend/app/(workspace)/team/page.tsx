@@ -357,13 +357,13 @@ export default function TeamPage() {
                         <MessageSquare className="h-5 w-5 mr-2" />
                       </Link>
                       <Link
-                        href={`/projects/create?invite=${collaborator.email}`}
+                        href={`mailto:${collaborator.email}`}
                         className="cursor-pointer"
                       >
                         <Mail className="h-5 w-5 mr-2" />
                       </Link>
                       <Link
-                        href={`/projects/create?invite=${collaborator.email}`}
+                        href={`/projects/create`}
                         className="cursor-pointer"
                       >
                         <UserPlus className="h-5 w-5 mr-2" />

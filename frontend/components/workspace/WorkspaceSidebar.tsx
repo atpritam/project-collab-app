@@ -6,7 +6,6 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
-  Home,
   LayoutDashboard,
   CheckSquare,
   Calendar,
@@ -20,6 +19,8 @@ import {
   Menu,
   ChevronRight,
   FolderIcon,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -34,6 +35,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,13 +53,18 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function WorkspaceSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [userData, setUserData] = useState<any>(null);
-  const isMobile = useIsMobile();
+  const { state, toggleSidebar } = useSidebar();
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -315,16 +322,32 @@ export default function WorkspaceSidebar() {
 
   // Desktop sidebar
   const DesktopSidebar = () => (
-    <Sidebar className="hidden md:flex">
-      <SidebarHeader className="border-b border-border/40 p-4">
+    <Sidebar className="hidden md:flex" collapsible="icon">
+      <SidebarHeader
+        className={`border-b border-border/40 p-4 flex items-center justify-between ${
+          state == "expanded" ? "flex-row" : "flex-col"
+        }`}
+      >
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-violet-700 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full bg-violet-700 flex items-center justify-center group-data-[collapsible=icon]:mx-auto">
             <Zap className="h-4 w-4 text-white" />
           </div>
-          <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-700 to-purple-600">
+          <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-700 to-purple-600 transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden">
             Nudge
           </span>
         </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-full hidden md:flex cursor-pointer"
+          onClick={toggleSidebar}
+        >
+          {state === "expanded" ? (
+            <PanelLeftClose className="h-4 w-4" />
+          ) : (
+            <PanelLeft className="h-4 w-4" />
+          )}
+        </Button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -334,12 +357,30 @@ export default function WorkspaceSidebar() {
             <SidebarMenu>
               {navigationLinks.map((link) => (
                 <SidebarMenuItem key={link.href}>
-                  <SidebarMenuButton asChild isActive={link.isActive}>
-                    <Link href={link.href}>
-                      {link.icon}
-                      <span>{link.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={link.isActive}
+                          tooltip={link.label}
+                        >
+                          <Link href={link.href}>
+                            {link.icon}
+                            <span>{link.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      {state === "collapsed" && (
+                        <TooltipContent
+                          side="right"
+                          className="group-data-[state=expanded]:hidden"
+                        >
+                          {link.label}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -363,11 +404,30 @@ export default function WorkspaceSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isLinkActive("/projects")}>
-                  <Link href="/projects">
-                    <span>View all projects</span>
-                  </Link>
-                </SidebarMenuButton>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isLinkActive("/projects")}
+                        tooltip="View all projects"
+                      >
+                        <Link href="/projects">
+                          <ChevronRight className="h-4 w-4" />
+                          <span>View all projects</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    {state === "collapsed" && (
+                      <TooltipContent
+                        side="right"
+                        className="group-data-[state=expanded]:hidden"
+                      >
+                        View all projects
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -375,12 +435,18 @@ export default function WorkspaceSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border/40 p-4">
-        <div className="flex items-center justify-between">
+        <div
+          className={`flex items-center justify-between ${
+            state === "collapsed" ? "flex-col" : ""
+          }`}
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 p-2 w-full justify-start"
+                className={`flex items-center gap-2 p-2 w-full cursor-pointer ${
+                  state === "collapsed" ? "justify-center" : "justify-start"
+                }`}
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage
@@ -392,9 +458,13 @@ export default function WorkspaceSidebar() {
                     {getInitials(userName)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col items-start text-sm">
+                <div
+                  className={`flex flex-col items-start text-sm ${
+                    state === "collapsed" ? "hidden" : ""
+                  }`}
+                >
                   <span className="font-medium">{userName.split(" ")[0]}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground truncate max-w-[150px]">
                     {userEmail}
                   </span>
                 </div>

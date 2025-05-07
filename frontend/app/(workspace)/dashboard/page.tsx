@@ -162,7 +162,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <WelcomeBanner userName={firstName} />
+      <WelcomeBanner
+        userName={firstName}
+        tasksDue={stats.upcomingDeadlines}
+        projectsDue={stats.totalProjects}
+      />
       {showInvitations && (
         <PendingInvitationsSection
           onInvitationAction={handleInvitationAction}

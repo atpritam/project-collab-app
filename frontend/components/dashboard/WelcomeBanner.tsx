@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Clock, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
-export function WelcomeBanner({ userName }: { userName: string }) {
+export function WelcomeBanner({
+  userName,
+  tasksDue,
+  projectsDue,
+}: {
+  userName: string;
+  tasksDue: number;
+  projectsDue: number;
+}) {
   const hours = new Date().getHours();
   let greeting = "Good morning";
 
@@ -66,7 +74,9 @@ export function WelcomeBanner({ userName }: { userName: string }) {
             {greeting}, {userName}!
           </motion.h1>
           <motion.p variants={itemVariants} className="text-white/80">
-            You have 8 tasks and 3 projects due this week.
+            You have <span className="font-semibold">{tasksDue} tasks</span> and{" "}
+            <span className="font-semibold">{projectsDue} projects</span> due
+            today.
           </motion.p>
         </div>
 

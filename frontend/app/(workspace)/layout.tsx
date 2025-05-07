@@ -44,7 +44,7 @@ export default function WorkspaceLayout({
           <main
             className={`flex-1 overflow-auto ${
               pathname === "/messages" ? "overflow-hidden" : "overflow-auto"
-            }`}
+            } md:pt-0 pt-14`}
           >
             <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
               <UnifiedBreadcrumb />
