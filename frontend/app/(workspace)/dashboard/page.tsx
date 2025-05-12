@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ProjectsSection from "@/components/dashboard/ProjectsSection";
 import TasksSection from "@/components/dashboard/TasksSection";
@@ -12,6 +12,36 @@ import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
 import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+interface Activity {
+  id: string;
+  type:
+    | "PROJECT_CREATED"
+    | "PROJECT_UPDATED"
+    | "TASK_CREATED"
+    | "TASK_UPDATED"
+    | "TASK_COMPLETED"
+    | "MEMBER_ADDED";
+  projectId: string;
+  projectName: string;
+  userId: string;
+  userName: string | null;
+  userImage: string | null;
+  createdAt: string;
+  entityId?: string | null;
+  entityTitle?: string | null;
+  targetUser?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  } | null;
+  details?: {
+    status?: string;
+    oldStatus?: string;
+    newStatus?: string;
+    role?: string;
+  } | null;
+}
+
 export default function DashboardPage() {
   const isMobile = useIsMobile();
   const { data: session, status } = useSession();
@@ -19,7 +49,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [displayTasks, setDisplayTasks] = useState<any[]>([]);
   const [allTasks, setAllTasks] = useState([]);
-  const [activities, setActivities] = useState([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [showInvitations, setShowInvitations] = useState(false);
   const [stats, setStats] = useState({
     totalProjects: 0,

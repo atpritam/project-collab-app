@@ -81,86 +81,284 @@ dashboardRouter.get(
 // GET /api/dashboard/activity
 dashboardRouter.get(
   "/activity/:userId",
-  async (req: Request, res: Response) => {
+  function (req: Request, res: Response) {
     const { userId } = req.params;
 
-    try {
-      // projects the user is part of
-      const userProjects = await prisma.projectMember.findMany({
-        where: { userId },
-        select: { projectId: true },
-      });
+    (async () => {
+      try {
+        // projects the user is part of
+        const userProjects = await prisma.projectMember.findMany({
+          where: { userId },
+          select: { projectId: true },
+        });
 
-      const projectIds = userProjects.map((p) => p.projectId);
+        const createdProjects = await prisma.project.findMany({
+          where: { creatorId: userId },
+          select: { id: true },
+        });
 
-      // Activity from chat messages
-      const chatMessages = await prisma.chatMessage.findMany({
-        where: { projectId: { in: projectIds } },
-        include: {
-          user: { select: { id: true, name: true, image: true } },
-          project: { select: { id: true, name: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      });
+        const allProjectIds = [
+          ...userProjects.map((p) => p.projectId),
+          ...createdProjects.map((p) => p.id),
+        ];
+        const uniqueProjectIds = [...new Set(allProjectIds)];
 
-      // Activity from task comments
-      const taskComments = await prisma.taskComment.findMany({
-        where: {
-          task: {
-            projectId: { in: projectIds },
+        if (uniqueProjectIds.length === 0) {
+          return res.status(200).json([]);
+        }
+
+        // recent project creations
+        const projectCreations = await prisma.project.findMany({
+          where: {
+            id: { in: uniqueProjectIds },
+            createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
           },
-        },
-        include: {
-          user: { select: { id: true, name: true, image: true } },
-          task: {
-            select: {
-              id: true,
-              title: true,
-              projectId: true,
-              project: { select: { id: true, name: true } },
+          select: {
+            id: true,
+            name: true,
+            creatorId: true,
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        });
+
+        // recent project member additions
+        const memberAdditions = await prisma.projectMember.findMany({
+          where: {
+            projectId: { in: uniqueProjectIds },
+            joinedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
+          },
+          select: {
+            projectId: true,
+            userId: true,
+            role: true,
+            joinedAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            project: {
+              select: {
+                id: true,
+                name: true,
+                creatorId: true,
+                creator: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                  },
+                },
+              },
             },
           },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      });
+          orderBy: { joinedAt: "desc" },
+          take: 10,
+        });
 
-      const activities = [
-        ...chatMessages.map((msg: any) => ({
-          type: "CHAT_MESSAGE",
-          id: msg.id,
-          content: msg.content,
-          projectId: msg.projectId,
-          projectName: msg.project.name,
-          userId: msg.userId,
-          userName: msg.user.name,
-          userImage: msg.user.image,
-          createdAt: msg.createdAt,
-          entityId: null,
-          entityTitle: null,
-        })),
-        ...taskComments.map((comment: any) => ({
-          type: "TASK_COMMENT",
-          id: comment.id,
-          content: comment.content,
-          projectId: comment.task.projectId,
-          projectName: comment.task.project.name,
-          userId: comment.userId,
-          userName: comment.user.name,
-          userImage: comment.user.image,
-          createdAt: comment.createdAt,
-          entityId: comment.task.id,
-          entityTitle: comment.task.title,
-        })),
-      ]
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(0, 10); // 10 most recent activities
+        // recent task creations
+        const taskCreations = await prisma.task.findMany({
+          where: {
+            projectId: { in: uniqueProjectIds },
+            createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
+          },
+          select: {
+            id: true,
+            title: true,
+            projectId: true,
+            creatorId: true,
+            createdAt: true,
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        });
 
-      res.status(200).json(activities);
-    } catch (error) {
-      console.error("Error fetching activity feed:", error);
-      res.status(500).json({ message: "Failed to fetch activity feed" });
-    }
+        // recently completed tasks
+        const completedTasks = await prisma.task.findMany({
+          where: {
+            projectId: { in: uniqueProjectIds },
+            status: "DONE",
+            updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
+          },
+          select: {
+            id: true,
+            title: true,
+            projectId: true,
+            assigneeId: true,
+            updatedAt: true,
+            assignee: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        });
+
+        const taskUpdates = await prisma.task.findMany({
+          where: {
+            projectId: { in: uniqueProjectIds },
+            status: { not: "DONE" },
+            updatedAt: { gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) }, // Last 14 days
+            createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+          },
+          select: {
+            id: true,
+            title: true,
+            projectId: true,
+            assigneeId: true,
+            status: true,
+            updatedAt: true,
+            assignee: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        });
+
+        const activities = [
+          // Project creations
+          ...projectCreations
+            .filter((p: any) => p.creatorId === userId) // Only show projects created by this user
+            .map((project: any) => ({
+              id: `project-created-${project.id}`,
+              type: "PROJECT_CREATED",
+              projectId: project.id,
+              projectName: project.name,
+              userId: project.creatorId,
+              userName: project.creator.name,
+              userImage: project.creator.image,
+              createdAt: project.createdAt,
+            })),
+
+          // Member additions
+          ...memberAdditions
+            .filter(
+              (m: any) => m.user.id === userId || m.project.creatorId === userId
+            )
+            .map((member: any) => ({
+              id: `member-added-${member.projectId}-${member.userId}`,
+              type: "MEMBER_ADDED",
+              projectId: member.projectId,
+              projectName: member.project.name,
+              userId: member.project.creatorId,
+              userName: member.project.creator.name,
+              userImage: member.project.creator.image,
+              createdAt: member.joinedAt,
+              targetUser: member.user,
+              details: {
+                role: member.role,
+              },
+            })),
+
+          // Task creations
+          ...taskCreations
+            .filter(
+              (t: any) => t.creatorId === userId || t.creatorId === userId
+            )
+            .map((task: any) => ({
+              id: `task-created-${task.id}`,
+              type: "TASK_CREATED",
+              projectId: task.projectId,
+              projectName: task.project.name,
+              userId: task.creatorId,
+              userName: task.creator.name,
+              userImage: task.creator.image,
+              createdAt: task.createdAt,
+              entityId: task.id,
+              entityTitle: task.title,
+            })),
+
+          // Task completions
+          ...completedTasks
+            .filter((t: any) => t.assigneeId === userId)
+            .map((task: any) => ({
+              id: `task-completed-${task.id}`,
+              type: "TASK_COMPLETED",
+              projectId: task.projectId,
+              projectName: task.project.name,
+              userId: task.assigneeId || "",
+              userName: task.assignee?.name || "Unknown",
+              userImage: task.assignee?.image || null,
+              createdAt: task.updatedAt,
+              entityId: task.id,
+              entityTitle: task.title,
+            })),
+
+          // Task updates
+          ...taskUpdates
+            .filter((t: any) => t.assigneeId === userId) // Only show tasks assigned to this user
+            .map((task: any) => ({
+              id: `task-updated-${task.id}-${task.updatedAt.getTime()}`,
+              type: "TASK_UPDATED",
+              projectId: task.projectId,
+              projectName: task.project.name,
+              userId: task.assigneeId || "",
+              userName: task.assignee?.name || "Unknown",
+              userImage: task.assignee?.image || null,
+              createdAt: task.updatedAt,
+              entityId: task.id,
+              entityTitle: task.title,
+              details: {
+                newStatus: task.status,
+              },
+            })),
+        ]
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .slice(0, 10); // 10 most recent activities
+
+        res.status(200).json(activities);
+      } catch (error) {
+        console.error("Error fetching activity feed:", error);
+        res.status(500).json({ message: "Failed to fetch activity feed" });
+      }
+    })();
   }
 );

@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -12,31 +12,32 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    // Request to the backend service
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/activity/${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const data = await response.json();
+    const uri = process.env.BACKEND_URL || "http://backend-service:4000";
+    const response = await fetch(`${uri}/api/dashboard/activity/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
 
     if (!response.ok) {
+      console.error(
+        "Failed to fetch activity data from backend:",
+        await response.text()
+      );
       return NextResponse.json(
-        { message: data.message || "Failed to fetch activity" },
+        { message: "Failed to fetch activity data" },
         { status: response.status }
       );
     }
 
+    const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Activity fetch error:", error);
+    console.error("Error in activity route:", error);
     return NextResponse.json(
-      { message: "An unexpected error occurred" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

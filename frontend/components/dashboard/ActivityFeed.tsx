@@ -1,20 +1,43 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, FileText } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  FileText,
+  Plus,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 
 interface Activity {
-  type: "CHAT_MESSAGE" | "TASK_COMMENT";
   id: string;
-  content: string;
+  type:
+    | "PROJECT_CREATED"
+    | "PROJECT_UPDATED"
+    | "TASK_CREATED"
+    | "TASK_UPDATED"
+    | "TASK_COMPLETED"
+    | "MEMBER_ADDED";
   projectId: string;
   projectName: string;
   userId: string;
   userName: string | null;
   userImage: string | null;
   createdAt: string;
-  entityId: string | null;
-  entityTitle: string | null;
+  entityId?: string | null;
+  entityTitle?: string | null;
+  targetUser?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  } | null;
+  details?: {
+    status?: string;
+    oldStatus?: string;
+    newStatus?: string;
+    role?: string;
+  } | null;
 }
 
 interface ActivityFeedProps {
@@ -61,10 +84,162 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
       .toUpperCase();
   };
 
-  const truncateText = (text: string, maxLength = 100) => {
-    return text.length > maxLength
-      ? `${text.substring(0, maxLength)}...`
-      : text;
+  const renderActivityIcon = (type: string) => {
+    switch (type) {
+      case "PROJECT_CREATED":
+        return (
+          <Plus className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-emerald-500" />
+        );
+      case "MEMBER_ADDED":
+        return (
+          <UserPlus className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-blue-500" />
+        );
+      case "TASK_CREATED":
+        return (
+          <FileText className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-violet-500" />
+        );
+      case "TASK_UPDATED":
+        return (
+          <Clock className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-amber-500" />
+        );
+      case "TASK_COMPLETED":
+        return (
+          <CheckCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-green-500" />
+        );
+      case "PROJECT_UPDATED":
+        return (
+          <Users className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-indigo-500" />
+        );
+      default:
+        return (
+          <FileText className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-violet-500" />
+        );
+    }
+  };
+
+  const renderActivityContent = (activity: Activity) => {
+    switch (activity.type) {
+      case "PROJECT_CREATED":
+        return (
+          <span>
+            Created project{" "}
+            <Link
+              href={`/projects/${activity.projectId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.projectName}
+            </Link>
+          </span>
+        );
+      case "MEMBER_ADDED":
+        return (
+          <span>
+            Added{" "}
+            <span className="font-medium">
+              {activity.targetUser?.name || "a new user"}
+            </span>{" "}
+            to project{" "}
+            <Link
+              href={`/projects/${activity.projectId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.projectName}
+            </Link>
+            {activity.details?.role && (
+              <span className="text-muted-foreground">
+                {" "}
+                as {activity.details.role.toLowerCase()}
+              </span>
+            )}
+          </span>
+        );
+      case "TASK_CREATED":
+        return (
+          <span>
+            Created task{" "}
+            <Link
+              href={`/tasks/${activity.entityId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.entityTitle}
+            </Link>{" "}
+            in project{" "}
+            <Link
+              href={`/projects/${activity.projectId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.projectName}
+            </Link>
+          </span>
+        );
+      case "TASK_UPDATED":
+        return (
+          <span>
+            Updated task{" "}
+            <Link
+              href={`/tasks/${activity.entityId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.entityTitle}
+            </Link>
+            {activity.details?.oldStatus && activity.details?.newStatus && (
+              <span>
+                {" "}
+                from{" "}
+                <span className="font-medium">
+                  {activity.details.oldStatus.toLowerCase()}
+                </span>{" "}
+                to{" "}
+                <span className="font-medium">
+                  {activity.details.newStatus.toLowerCase()}
+                </span>
+              </span>
+            )}
+          </span>
+        );
+      case "TASK_COMPLETED":
+        return (
+          <span>
+            Completed task{" "}
+            <Link
+              href={`/tasks/${activity.entityId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.entityTitle}
+            </Link>{" "}
+            in project{" "}
+            <Link
+              href={`/projects/${activity.projectId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.projectName}
+            </Link>
+          </span>
+        );
+      case "PROJECT_UPDATED":
+        return (
+          <span>
+            Updated project{" "}
+            <Link
+              href={`/projects/${activity.projectId}`}
+              className="text-violet-700 hover:underline font-medium"
+            >
+              {activity.projectName}
+            </Link>
+            {activity.details?.status && (
+              <span>
+                {" "}
+                to{" "}
+                <span className="font-medium">
+                  {activity.details.status.toLowerCase()}
+                </span>
+              </span>
+            )}
+          </span>
+        );
+      default:
+        return <span>Activity in project {activity.projectName}</span>;
+    }
   };
 
   return (
@@ -99,41 +274,9 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
                       {formatTime(activity.createdAt)}
                     </span>
                   </div>
-                  <div className="text-sm mt-1">
-                    <span>
-                      {activity.type === "CHAT_MESSAGE" ? (
-                        <>Posted in </>
-                      ) : (
-                        <>Commented on </>
-                      )}
-                      <Link
-                        href={`/projects/${activity.projectId}`}
-                        className="text-violet-700 hover:underline"
-                      >
-                        {activity.projectName}
-                      </Link>
-                      {activity.type === "TASK_COMMENT" &&
-                        activity.entityId && (
-                          <>
-                            {" "}
-                            task{" "}
-                            <Link
-                              href={`/projects/${activity.projectId}/tasks/${activity.entityId}`}
-                              className="text-violet-700 hover:underline"
-                            >
-                              {activity.entityTitle}
-                            </Link>
-                          </>
-                        )}
-                    </span>
-                  </div>
                   <div className="mt-1 p-2 bg-muted rounded-md text-sm text-foreground/90 flex">
-                    {activity.type === "CHAT_MESSAGE" ? (
-                      <MessageSquare className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-violet-500" />
-                    ) : (
-                      <FileText className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-violet-500" />
-                    )}
-                    <p>{truncateText(activity.content)}</p>
+                    {renderActivityIcon(activity.type)}
+                    <p>{renderActivityContent(activity)}</p>
                   </div>
                 </div>
               </div>

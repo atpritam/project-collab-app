@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -11,29 +11,35 @@ export async function GET(request: Request) {
     }
 
     const userId = session.user.id;
-    const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit") ?? undefined;
+    const searchParams = new URL(req.url).searchParams;
+    const limit = searchParams.get("limit");
 
-    // Request to the backend service
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/projects/${userId}?limit=${limit}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const backendUrl = process.env.BACKEND_URL || "http://backend-service:4000";
+    const url = new URL(`${backendUrl}/api/dashboard/projects/${userId}`);
 
-    const data = await response.json();
+    if (limit) {
+      url.searchParams.append("limit", limit);
+    }
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
 
     if (!response.ok) {
+      console.error(
+        "Failed to fetch projects data from backend:",
+        await response.text()
+      );
       return NextResponse.json(
-        { message: data.message || "Failed to fetch projects" },
+        { message: "Failed to fetch projects data" },
         { status: response.status }
       );
     }
 
+    const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error("Projects fetch error:", error);
