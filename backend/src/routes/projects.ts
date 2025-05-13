@@ -2,6 +2,13 @@ import express, { Router, Request, Response } from "express";
 import { PrismaClient, ProjectStatus } from "@prisma/client";
 import crypto from "crypto";
 import { sendProjectInvitationEmail } from "../utils/email";
+import {
+  canManageProject,
+  canInviteProjectMembers,
+  canManageFile,
+  canViewProjectFiles,
+  isProjectMember,
+} from "../utils/permissions";
 
 const prisma = new PrismaClient();
 const projectsRouter: Router = express.Router();
@@ -109,10 +116,21 @@ projectsRouter.get("/test", (req: Request, res: Response) => {
 // GET /api/projects/:id - Get a project by ID
 projectsRouter.get("/:id", function (req: Request, res: Response) {
   const { id } = req.params;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
     if (!id) {
       return res.status(400).json({ message: "Project ID is required" });
+    }
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    if (!(await isProjectMember(id, userId))) {
+      return res.status(403).json({
+        message: "You do not have permission to view this project",
+      });
     }
     try {
       const project = await prisma.project.findUnique({
@@ -162,26 +180,14 @@ projectsRouter.patch("/:id", function (req: Request, res: Response) {
     if (!id) {
       return res.status(400).json({ message: "Project ID is required" });
     }
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
     try {
-      // authorize user
-      const project = await prisma.project.findUnique({
-        where: { id },
-        include: {
-          members: true,
-        },
-      });
-
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-
-      // check ADMIN role
-      const isCreator = project.creatorId === userId;
-      const isAdmin = project.members.some(
-        (member: any) => member.userId === userId && member.role === "ADMIN"
-      );
-
-      if (!isCreator && !isAdmin) {
+      // permission check
+      if (!(await canManageProject(id, userId))) {
         return res.status(403).json({
           message: "You do not have permission to update this project",
         });
@@ -251,6 +257,18 @@ projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
         return res.status(400).json({ message: "Invalid role" });
       }
 
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      // permission check
+      if (!(await canInviteProjectMembers(id, userId))) {
+        return res.status(403).json({
+          message:
+            "You do not have permission to invite members to this project",
+        });
+      }
+
       const project = await prisma.project.findUnique({
         where: { id },
         include: {
@@ -276,19 +294,6 @@ projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
 
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
-      }
-
-      // user permission check (project creator or admin)
-      const isCreator = project.creatorId === userId;
-      const isAdmin = project.members.some(
-        (member: any) => member.userId === userId && member.role === "ADMIN"
-      );
-
-      if (!isCreator && !isAdmin) {
-        return res.status(403).json({
-          message:
-            "You do not have permission to invite members to this project",
-        });
       }
 
       const invitedUser = await prisma.user.findUnique({
@@ -463,9 +468,21 @@ projectsRouter.delete(
 // GET /api/projects/:id/files - Get all files for a project
 projectsRouter.get("/:id/files", function (req: Request, res: Response) {
   const { id } = req.params;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
     try {
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      if (!(await canViewProjectFiles(id, userId))) {
+        return res.status(403).json({
+          message: "You do not have permission to view files for this project",
+        });
+      }
+
       const project = await prisma.project.findUnique({
         where: { id },
       });
@@ -563,18 +580,10 @@ projectsRouter.delete(
 
     (async () => {
       try {
-        const project = await prisma.project.findUnique({
-          where: { id: projectId },
-          include: {
-            members: true,
-          },
-        });
-
-        if (!project) {
-          return res.status(404).json({ message: "Project not found" });
+        if (!userId) {
+          return res.status(400).json({ message: "User ID is required" });
         }
 
-        // the file
         const file = await prisma.file.findUnique({
           where: { id: fileId },
         });
@@ -589,18 +598,7 @@ projectsRouter.delete(
             .json({ message: "File does not belong to this project" });
         }
 
-        // permissions - allow file deletion by:
-        // 1. The file uploader
-        // 2. Project Admin
-        // 3. Project Editor
-        const isUploader = file.uploaderId === userId;
-        const membership = project.members.find(
-          (m: any) => m.userId === userId
-        );
-        const isAdmin = membership?.role === "ADMIN";
-        const isEditor = membership?.role === "EDITOR";
-
-        if (!isUploader && !isAdmin && !isEditor) {
+        if (!(await canManageFile(fileId, userId))) {
           return res.status(403).json({
             message: "You don't have permission to delete this file",
           });

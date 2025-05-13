@@ -62,7 +62,6 @@ export default function WorkspaceLayout({
             </div>
           </main>
         </div>
-        <Toaster position="top-right" />
       </SidebarProvider>
     </ThemeProvider>
   );

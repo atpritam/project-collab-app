@@ -21,6 +21,8 @@ model User {
   UserInfo      UserInfo[]
   UserSettings  UserSettings?
 
+  @@index([email])
+
   // Project-related
   projectMembers  ProjectMember[] // Link to projects
   createdProjects Project[]       @relation("ProjectCreator")
@@ -137,6 +139,8 @@ model Project {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  @@index([creatorId])
+
   // Relations
   creator      User                @relation("ProjectCreator", fields: [creatorId], references: [id])
   members      ProjectMember[]
@@ -158,6 +162,9 @@ model ProjectMember {
   userId    String
   role      ProjectRole @default(MEMBER)
   joinedAt  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([projectId, role])
 
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -202,6 +209,11 @@ model Task {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  @@index([projectId]) 
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+
   // Relations
   project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   creator      User          @relation("TaskCreator", fields: [creatorId], references: [id])
@@ -243,6 +255,9 @@ model ChatMessage {
   mentionsJson String? // JSON string of mentions (users, projects, tasks)
   createdAt    DateTime @default(now())
 
+  @@index([projectId])
+  @@index([userId])
+
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -261,6 +276,10 @@ model File {
   isTaskDeliverable Boolean  @default(false) // Whether this is a deliverable for task completion
   createdAt         DateTime @default(now())
 
+  @@index([projectId])
+  @@index([taskId])
+  @@index([uploaderId])
+
   // Relations
   project  Project @relation("ProjectFiles", fields: [projectId], references: [id], onDelete: Cascade)
   task     Task?   @relation("TaskFiles", fields: [taskId], references: [id], onDelete: SetNull)
@@ -276,6 +295,9 @@ model DirectMessage {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
 
   // Relations
   sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)

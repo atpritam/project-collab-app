@@ -1,5 +1,14 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import {
+  canManageTask,
+  canUpdateTaskStatus,
+  canCreateTasks,
+  canManageFile,
+  canViewTaskFiles,
+  canViewTask,
+  isProjectMember,
+} from "../utils/permissions";
 
 const prisma = new PrismaClient();
 const tasksRouter: Router = express.Router();
@@ -90,24 +99,38 @@ tasksRouter.get("/created/:userId", async (req: Request, res: Response) => {
 });
 
 // GET /api/tasks/project/:projectId - Get all tasks for a project
-tasksRouter.get("/project/:projectId", async (req: Request, res: Response) => {
+tasksRouter.get("/project/:projectId", function (req: Request, res: Response) {
   const { projectId } = req.params;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
+  (async () => {
+    try {
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
 
-  try {
-    const tasks = await prisma.task.findMany({
-      where: { projectId },
-      include: {
-        creator: { select: { id: true, name: true, image: true } },
-        assignee: { select: { id: true, name: true, image: true } },
-      },
-      orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }],
-    });
+      if (!(await isProjectMember(projectId, userId))) {
+        return res.status(403).json({
+          message: "You do not have permission to view tasks for this project",
+        });
+      }
 
-    res.status(200).json(tasks);
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    res.status(500).json({ message: "Failed to fetch tasks" });
-  }
+      // Get tasks for this project
+      const tasks = await prisma.task.findMany({
+        where: { projectId },
+        include: {
+          creator: { select: { id: true, name: true, image: true } },
+          assignee: { select: { id: true, name: true, image: true } },
+        },
+        orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }],
+      });
+
+      res.status(200).json(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  })();
 });
 
 // POST /api/tasks/create/:projectId - Create a new task for a project
@@ -122,6 +145,7 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
     creatorId,
     files,
   } = req.body;
+
   (async () => {
     try {
       if (!title || title.length < 3 || title.length > 100) {
@@ -135,24 +159,24 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
           .json({ message: "Description must be less than 2000 characters" });
       }
 
-      const project = await prisma.project.findUnique({
-        where: { id: projectId },
-        include: { members: true, creator: true },
-      });
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
+      if (!creatorId) {
+        return res.status(400).json({ message: "Creator ID is required" });
       }
 
-      const isCreator = project.creatorId === creatorId;
-      const membership = project.members.find(
-        (m: any) => m.userId === creatorId
-      );
-      const isAdmin = isCreator || membership?.role === "ADMIN";
-      const isEditor = membership?.role === "EDITOR";
-      if (!isAdmin && !isEditor) {
+      // permission check
+      if (!(await canCreateTasks(projectId, creatorId))) {
         return res
           .status(403)
           .json({ message: "Only admins or editors can create tasks" });
+      }
+
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: { members: true },
+      });
+
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
       }
 
       if (assigneeId) {
@@ -165,6 +189,7 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
             .json({ message: "Assignee must be a project member" });
         }
       }
+
       // Create the task with the files in a transaction
       const result = await prisma.$transaction(async (tx) => {
         // Create the task
@@ -224,33 +249,31 @@ tasksRouter.patch("/update/:taskId", function (req: Request, res: Response) {
 
   (async () => {
     try {
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      // Check if task exists
       const task = await prisma.task.findUnique({
         where: { id: taskId },
         include: {
           project: { include: { members: true } },
-          creator: true,
         },
       });
+
       if (!task) {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      const isTaskCreator = task.creatorId === userId;
-      const isProjectCreator = task.project.creatorId === userId;
-      const member = task.project.members.find((m: any) => m.userId === userId);
-      const isAdmin = member?.role === "ADMIN";
-      const isEditor = member?.role === "EDITOR";
-      const isAssignee = task.assigneeId === userId;
-      const canFullEdit =
-        isTaskCreator || isProjectCreator || isAdmin || isEditor;
-      const canUpdateStatus = canFullEdit || isAssignee;
+      // Status-only update
+      if (Object.keys(req.body).length === 2 && status !== undefined) {
+        // permission check
+        if (!(await canUpdateTaskStatus(taskId, userId))) {
+          return res.status(403).json({
+            message: "You don't have permission to update this task status",
+          });
+        }
 
-      // status-only update
-      if (
-        Object.keys(req.body).length === 2 &&
-        status !== undefined &&
-        canUpdateStatus
-      ) {
         const updated = await prisma.task.update({
           where: { id: taskId },
           data: { status },
@@ -259,16 +282,18 @@ tasksRouter.patch("/update/:taskId", function (req: Request, res: Response) {
             assignee: { select: { id: true, name: true, image: true } },
           },
         });
+
         return res.status(200).json(updated);
       }
 
-      if (!canFullEdit) {
+      // permission check
+      if (!(await canManageTask(taskId, userId))) {
         return res
           .status(403)
           .json({ message: "You don't have permission to modify this task" });
       }
 
-      // validate inputs
+      // Validate inputs
       if (title !== undefined) {
         if (!title.trim() || title.length < 3 || title.length > 100) {
           return res
@@ -276,11 +301,13 @@ tasksRouter.patch("/update/:taskId", function (req: Request, res: Response) {
             .json({ message: "Title must be between 3 and 100 characters" });
         }
       }
+
       if (description !== undefined && description.length > 2000) {
         return res
           .status(400)
           .json({ message: "Description must be less than 2000 characters" });
       }
+
       if (assigneeId !== undefined && assigneeId !== null) {
         const ok = task.project.members.some(
           (m: any) => m.userId === assigneeId
@@ -328,34 +355,12 @@ tasksRouter.delete("/delete/:taskId", function (req: Request, res: Response) {
 
   (async () => {
     try {
-      const task = await prisma.task.findUnique({
-        where: { id: taskId },
-        include: {
-          project: { include: { members: true } },
-        },
-      });
-      if (!task) {
-        return res.status(404).json({ message: "Task not found" });
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
       }
 
-      const isTaskCreator = task.creatorId === userId;
-      const isProjectCreator = task.project.creatorId === userId;
-      const member = task.project.members.find((m: any) => m.userId === userId);
-      const isAdmin = member?.role === "ADMIN";
-      const isEditor = member?.role === "EDITOR";
-      const creatorMember = task.project.members.find(
-        (m: any) => m.userId === task.creatorId
-      );
-      const isTaskCreatorAdmin =
-        creatorMember?.role === "ADMIN" ||
-        task.creatorId === task.project.creatorId;
-
-      if (
-        !isTaskCreator &&
-        !isProjectCreator &&
-        !isAdmin &&
-        !(isEditor && !isTaskCreatorAdmin)
-      ) {
+      // permission check
+      if (!(await canManageTask(taskId, userId))) {
         return res
           .status(403)
           .json({ message: "You don't have permission to delete this task" });
@@ -373,9 +378,22 @@ tasksRouter.delete("/delete/:taskId", function (req: Request, res: Response) {
 // GET /api/tasks/:taskId - Get a task by ID
 tasksRouter.get("/:taskId", function (req: Request, res: Response) {
   const { taskId } = req.params;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
     try {
+      // Ensure userId is provided
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      if (!(await canViewTask(taskId, userId))) {
+        return res.status(403).json({
+          message: "You do not have permission to view this task",
+        });
+      }
+
       const task = await prisma.task.findUnique({
         where: { id: taskId },
         include: {
@@ -387,9 +405,11 @@ tasksRouter.get("/:taskId", function (req: Request, res: Response) {
           taskFiles: true,
         },
       });
+
       if (!task) {
         return res.status(404).json({ message: "Task not found" });
       }
+
       res.status(200).json(task);
     } catch (error) {
       console.error("Error retrieving task:", error);
@@ -493,45 +513,12 @@ tasksRouter.delete("/files/:fileId", function (req: Request, res: Response) {
 
   (async () => {
     try {
-      const file = await prisma.file.findUnique({
-        where: { id: fileId },
-        include: {
-          task: {
-            include: {
-              project: {
-                include: {
-                  members: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (!file) {
-        return res.status(404).json({ message: "File not found" });
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
       }
 
-      // Permission checks
-      const isUploader = file.uploaderId === userId;
-
-      let isAdminOrEditor = false;
-      const taskProject = file.task?.project;
-
-      if (taskProject) {
-        const isCreator = taskProject.creatorId === userId;
-        const membership = taskProject.members.find(
-          (m: any) => m.userId === userId
-        );
-        isAdminOrEditor =
-          isCreator ||
-          membership?.role === "ADMIN" ||
-          membership?.role === "EDITOR";
-      }
-
-      const isAssignee = file.task?.assigneeId === userId;
-
-      if (!isUploader && !isAdminOrEditor && !isAssignee) {
+      // permission check
+      if (!(await canManageFile(fileId, userId))) {
         return res.status(403).json({
           message: "You don't have permission to delete this file",
         });
@@ -552,15 +539,19 @@ tasksRouter.delete("/files/:fileId", function (req: Request, res: Response) {
 // GET /api/tasks/:taskId/files - Get all files for a task
 tasksRouter.get("/:taskId/files", function (req: Request, res: Response) {
   const { taskId } = req.params;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
     try {
-      const task = await prisma.task.findUnique({
-        where: { id: taskId },
-      });
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
 
-      if (!task) {
-        return res.status(404).json({ message: "Task not found" });
+      if (!(await canViewTaskFiles(taskId, userId))) {
+        return res.status(403).json({
+          message: "You do not have permission to view files for this task",
+        });
       }
 
       // Get all files for this task

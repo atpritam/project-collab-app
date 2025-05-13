@@ -8,8 +8,9 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,12 +19,13 @@ export async function GET(
 
     // Request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}?userId=${userId}`,
       {
         method: "GET",
-        headers: {
+        headers: new Headers({
           "Content-Type": "application/json",
-        },
+          "x-user-id": userId,
+        }),
       }
     );
 

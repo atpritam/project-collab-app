@@ -9,7 +9,9 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    const userId = session?.user?.id;
+
+    if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -22,6 +24,7 @@ export async function GET(
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
       }
     );

@@ -290,13 +290,6 @@ export default function FileExplorer({
 
     try {
       const fileKey = fileToDelete.url.split("/").pop() || "";
-      // delete from uploadthing
-      await fetch("/api/uploadthing/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileKey: fileKey }),
-      });
-
       // delete from project or task in db
       const isTaskFile = !!fileToDelete.taskId;
       const endpoint = isTaskFile
@@ -314,6 +307,14 @@ export default function FileExplorer({
         const data = await response.json();
         throw new Error(data.message || "Failed to delete file");
       }
+
+      // delete from uploadthing
+      await fetch("/api/uploadthing/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileKey: fileKey }),
+      });
+
       if (isTaskFile && fileToDelete.taskId) {
         setTasks((prevTasks) => {
           return prevTasks.map((task) => {
