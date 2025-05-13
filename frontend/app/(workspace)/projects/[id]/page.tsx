@@ -30,14 +30,9 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     if (status === "authenticated" && id) {
       fetchProjectData();
-    }
-  }, [status, id]);
-
-  useEffect(() => {
-    if (status === "authenticated" && id && activeTab === "tasks") {
       fetchTasksData();
     }
-  }, [status, id, activeTab]);
+  }, [status, id]);
 
   const fetchProjectData = async () => {
     setIsProjectLoading(true);
@@ -100,6 +95,8 @@ export default function ProjectDetailPage() {
   const handleTasksUpdated = (updatedTasks: any[]) => {
     setTasks(updatedTasks);
   };
+
+  // Session loading state
   if (status === "loading") {
     return (
       <div className="flex flex-col min-h-screen">
@@ -109,6 +106,8 @@ export default function ProjectDetailPage() {
       </div>
     );
   }
+
+  // Project loading state or not found
   if (isProjectLoading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -171,6 +170,7 @@ export default function ProjectDetailPage() {
               {isTasksLoading ? (
                 <div className="flex justify-center items-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-violet-700 mr-2" />
+                  <span>Loading tasks...</span>
                 </div>
               ) : (
                 <ProjectTasks
