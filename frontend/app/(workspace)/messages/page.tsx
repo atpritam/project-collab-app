@@ -1,12 +1,16 @@
 "use client";
 
-import React from "react";
-import { MessageSquare } from "lucide-react";
-import MessagesLayout from "@/components/messages/MessagesLayout";
+import React, { Suspense, lazy } from "react";
+import { MessageSquare, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+const MessagesLayout = lazy(
+  () => import("@/components/messages/MessagesLayout")
+);
 
 export default function MessagesPage() {
   const isMobile = useIsMobile();
+
   return (
     <div className="space-y-4">
       <div>
@@ -24,8 +28,15 @@ export default function MessagesPage() {
           </p>
         )}
       </div>
-
-      <MessagesLayout />
+      <Suspense
+        fallback={
+          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+          </div>
+        }
+      >
+        <MessagesLayout />
+      </Suspense>
     </div>
   );
 }

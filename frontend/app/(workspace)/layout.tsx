@@ -7,7 +7,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { Toaster } from "sonner";
 import WorkspaceSidebar from "@/components/workspace/WorkspaceSidebar";
 import { Loader2 } from "lucide-react";
 import { UnifiedBreadcrumb } from "@/components/workspace/UnifiedBreadcrumb";

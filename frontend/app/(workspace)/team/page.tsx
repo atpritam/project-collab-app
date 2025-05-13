@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Interface for collaborator data
 interface Collaborator {
@@ -57,10 +58,15 @@ export default function TeamPage() {
     Collaborator[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialRender, setIsInitialRender] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    setIsInitialRender(false);
+  }, []);
 
   // Fetch all collaborators when authenticated
   useEffect(() => {
@@ -142,7 +148,15 @@ export default function TeamPage() {
       .toUpperCase();
   };
 
-  if (isLoading || status === "loading") {
+  if (status === "loading") {
+    return (
+      <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+      </div>
+    );
+  }
+
+  if (isLoading && isInitialRender) {
     return (
       <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
@@ -173,39 +187,47 @@ export default function TeamPage() {
               className="pl-9 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
           <div className="flex flex-col gap-2 w-full">
-            <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Filter by project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isLoading ? (
+              <Skeleton className="w-full h-10 rounded-md" />
+            ) : (
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Filter by project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="EDITOR">Editor</SelectItem>
-                <SelectItem value="MEMBER">Member</SelectItem>
-              </SelectContent>
-            </Select>
+            {isLoading ? (
+              <Skeleton className="w-full h-10 rounded-md" />
+            ) : (
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="EDITOR">Editor</SelectItem>
+                  <SelectItem value="MEMBER">Member</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
       ) : (
-        /* Desktop view for filters - kept original */
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -214,41 +236,63 @@ export default function TeamPage() {
               className="pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={isLoading}
             />
           </div>
           <div className="flex gap-2">
-            <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isLoading ? (
+              <Skeleton className="w-[180px] h-10 rounded-md" />
+            ) : (
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="EDITOR">Editor</SelectItem>
-                <SelectItem value="MEMBER">Member</SelectItem>
-              </SelectContent>
-            </Select>
+            {isLoading ? (
+              <Skeleton className="w-[150px] h-10 rounded-md" />
+            ) : (
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="EDITOR">Editor</SelectItem>
+                  <SelectItem value="MEMBER">Member</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
       )}
 
       <Card>
         <CardContent className={isMobile ? "p-3 pt-0 pb-0" : "p-6 pt-0 pb-0"}>
-          {filteredCollaborators.length === 0 ? (
+          {isLoading ? (
+            <div className="py-4 space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-3 w-[150px]" />
+                  </div>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : filteredCollaborators.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {collaborators.length === 0
@@ -258,7 +302,7 @@ export default function TeamPage() {
             </div>
           ) : (
             <div>
-              {filteredCollaborators.map((collaborator) => (
+              {filteredCollaborators.map((collaborator: any) => (
                 <div
                   key={collaborator.id}
                   className={
@@ -316,15 +360,13 @@ export default function TeamPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/messages/compose?to=${collaborator.email}`}
+                              href={`/messages?email=${collaborator.email}`}
                             >
                               <MessageSquare className="h-4 w-4 mr-2" /> Message
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link
-                              href={`/projects/create?invite=${collaborator.email}`}
-                            >
+                            <Link href={`mailto:${collaborator.email}`}>
                               <Mail className="h-4 w-4 mr-2" /> Email
                             </Link>
                           </DropdownMenuItem>
@@ -363,7 +405,7 @@ export default function TeamPage() {
                         <Mail className="h-5 w-5 mr-2" />
                       </Link>
                       <Link
-                        href={`/projects/create`}
+                        href={`/projects/create?invite=${collaborator.email}`}
                         className="cursor-pointer"
                       >
                         <UserPlus className="h-5 w-5 mr-2" />
@@ -376,6 +418,12 @@ export default function TeamPage() {
           )}
         </CardContent>
       </Card>
+
+      {isLoading && !isInitialRender && (
+        <div className="fixed bottom-4 right-4 bg-background shadow-lg rounded-full p-2 z-50 border">
+          <Loader2 className="h-6 w-6 animate-spin text-violet-700" />
+        </div>
+      )}
     </div>
   );
 }

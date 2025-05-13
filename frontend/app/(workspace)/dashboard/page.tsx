@@ -11,6 +11,7 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
 import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Activity {
   id: string;
@@ -46,6 +47,7 @@ export default function DashboardPage() {
   const isMobile = useIsMobile();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialRender, setIsInitialRender] = useState(true);
   const [projects, setProjects] = useState([]);
   const [displayTasks, setDisplayTasks] = useState<any[]>([]);
   const [allTasks, setAllTasks] = useState([]);
@@ -57,6 +59,10 @@ export default function DashboardPage() {
     pendingTasks: 0,
     upcomingDeadlines: 0,
   });
+
+  useEffect(() => {
+    setIsInitialRender(false);
+  }, []);
 
   // Fetch dashboard data when authenticated
   useEffect(() => {
@@ -175,7 +181,7 @@ export default function DashboardPage() {
     fetchDashboardData();
   };
 
-  if (isLoading || status === "loading") {
+  if (status === "loading") {
     return (
       <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
@@ -184,11 +190,14 @@ export default function DashboardPage() {
   }
 
   const firstName = session?.user?.name?.split(" ")[0] || "there";
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+
+  if (isLoading && isInitialRender) {
+    return (
+      <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -197,26 +206,57 @@ export default function DashboardPage() {
         tasksDue={stats.upcomingDeadlines}
         projectsDue={stats.totalProjects}
       />
-      {showInvitations && (
-        <PendingInvitationsSection
-          onInvitationAction={handleInvitationAction}
-        />
-      )}
 
-      {!isMobile && <DashboardStats stats={stats} />}
+      {showInvitations &&
+        (isLoading ? (
+          <Skeleton className="w-full h-24 rounded-lg" />
+        ) : (
+          <PendingInvitationsSection
+            onInvitationAction={handleInvitationAction}
+          />
+        ))}
+
+      {!isMobile &&
+        (isLoading ? (
+          <div className="grid grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="w-full h-24 rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <DashboardStats stats={stats} />
+        ))}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
-          <ProjectsSection projects={projects} />
-          <TasksSection
-            tasks={displayTasks}
-            currentUserId={session?.user?.id}
-          />
+          {isLoading ? (
+            <Skeleton className="w-full h-64 rounded-lg" />
+          ) : (
+            <ProjectsSection projects={projects} />
+          )}
+
+          {isLoading ? (
+            <Skeleton className="w-full h-64 rounded-lg" />
+          ) : (
+            <TasksSection
+              tasks={displayTasks}
+              currentUserId={session?.user?.id}
+            />
+          )}
         </div>
-        <div>
+
+        {isLoading ? (
+          <Skeleton className="w-full h-[500px] rounded-lg" />
+        ) : (
           <ActivityFeed activities={activities} />
-        </div>
+        )}
       </div>
+
+      {isLoading && !isInitialRender && (
+        <div className="fixed bottom-4 right-4 bg-background shadow-lg rounded-full p-2 z-50 border">
+          <Loader2 className="h-6 w-6 animate-spin text-violet-700" />
+        </div>
+      )}
     </div>
   );
 }

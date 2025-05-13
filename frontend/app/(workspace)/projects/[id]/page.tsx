@@ -1,4 +1,3 @@
-// project-collab-app/frontend/app/(workspace)/projects/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,10 +20,12 @@ export default function ProjectDetailPage() {
 
   const [project, setProject] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isProjectLoading, setIsProjectLoading] = useState(true);
+  const [isTasksLoading, setIsTasksLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEditor, setIsEditor] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     if (status === "authenticated" && id) {
@@ -32,8 +33,14 @@ export default function ProjectDetailPage() {
     }
   }, [status, id]);
 
+  useEffect(() => {
+    if (status === "authenticated" && id && activeTab === "tasks") {
+      fetchTasksData();
+    }
+  }, [status, id, activeTab]);
+
   const fetchProjectData = async () => {
-    setIsLoading(true);
+    setIsProjectLoading(true);
     try {
       const projectRes = await fetch(`/api/projects/${id}`);
 
@@ -61,8 +68,21 @@ export default function ProjectDetailPage() {
           setIsAdmin(userMember.role === "ADMIN");
         }
       }
+    } catch (error) {
+      console.error("Error fetching project data:", error);
+      toast.error("Failed to load project data");
+    } finally {
+      setIsProjectLoading(false);
+    }
+  };
 
-      // Fetch project tasks
+  const fetchTasksData = async () => {
+    if (tasks.length > 0) {
+      return;
+    }
+
+    setIsTasksLoading(true);
+    try {
       const tasksRes = await fetch(`/api/tasks/project/${id}`);
 
       if (tasksRes.ok) {
@@ -70,18 +90,26 @@ export default function ProjectDetailPage() {
         setTasks(tasksData);
       }
     } catch (error) {
-      console.error("Error fetching project data:", error);
-      toast.error("Failed to load project data");
+      console.error("Error fetching tasks data:", error);
+      toast.error("Failed to load tasks data");
     } finally {
-      setIsLoading(false);
+      setIsTasksLoading(false);
     }
   };
 
   const handleTasksUpdated = (updatedTasks: any[]) => {
     setTasks(updatedTasks);
   };
-
-  if (status === "loading" || isLoading) {
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </div>
+    );
+  }
+  if (isProjectLoading) {
     return (
       <div className="flex flex-col min-h-screen">
         <div className="flex-grow flex items-center justify-center">
@@ -120,7 +148,11 @@ export default function ProjectDetailPage() {
             </div>
           </div>
 
-          <Tabs defaultValue="overview" className="mt-6">
+          <Tabs
+            defaultValue="overview"
+            className="mt-6"
+            onValueChange={(value) => setActiveTab(value)}
+          >
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -136,14 +168,20 @@ export default function ProjectDetailPage() {
             </TabsContent>
 
             <TabsContent value="tasks" className="mt-6">
-              <ProjectTasks
-                id={id}
-                project={project}
-                tasks={tasks}
-                isAdmin={isAdmin}
-                isEditor={isEditor}
-                onTasksUpdated={handleTasksUpdated}
-              />
+              {isTasksLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-violet-700 mr-2" />
+                </div>
+              ) : (
+                <ProjectTasks
+                  id={id}
+                  project={project}
+                  tasks={tasks}
+                  isAdmin={isAdmin}
+                  isEditor={isEditor}
+                  onTasksUpdated={handleTasksUpdated}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="files" className="mt-6">

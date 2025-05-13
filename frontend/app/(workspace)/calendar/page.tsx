@@ -18,12 +18,14 @@ import DeadlinesList from "@/components/calendar/DeadlinesList";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CalendarPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialRender, setIsInitialRender] = useState(true);
   const defaultTab =
     searchParams?.get("tab") === "deadlines" ? "deadlines" : "calendar";
   const [selectedView, setSelectedView] = useState<"calendar" | "deadlines">(
@@ -32,6 +34,11 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState<any>(null);
   const [deadlinesData, setDeadlinesData] = useState<any[]>([]);
+
+  // Mark initial render complete after first render
+  useEffect(() => {
+    setIsInitialRender(false);
+  }, []);
 
   // Fetch calendar data when the selected date changes
   useEffect(() => {
@@ -81,7 +88,7 @@ export default function CalendarPage() {
     setSelectedDate((prevDate) => addMonths(prevDate, 1));
   };
 
-  if (status === "loading" || isLoading) {
+  if (status === "loading") {
     return (
       <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
@@ -106,6 +113,14 @@ export default function CalendarPage() {
         toast.error("Failed to load deadlines");
       });
   };
+
+  if (isLoading && isInitialRender) {
+    return (
+      <div className="flex h-[calc(100vh-2rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-8">
@@ -140,6 +155,7 @@ export default function CalendarPage() {
                 size={isMobile ? "sm" : "icon"}
                 onClick={handlePreviousMonth}
                 className="text-muted-foreground"
+                disabled={isLoading}
               >
                 <ChevronLeft className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
               </Button>
@@ -151,6 +167,7 @@ export default function CalendarPage() {
                 size={isMobile ? "sm" : "icon"}
                 onClick={handleNextMonth}
                 className="text-muted-foreground"
+                disabled={isLoading}
               >
                 <ChevronRight className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
               </Button>
@@ -159,6 +176,7 @@ export default function CalendarPage() {
               variant="outline"
               size={isMobile ? "sm" : "default"}
               onClick={() => setSelectedDate(new Date())}
+              disabled={isLoading}
             >
               Today
             </Button>
@@ -173,16 +191,26 @@ export default function CalendarPage() {
         className="w-full"
       >
         <TabsList className={isMobile ? "w-full mb-3" : "mb-4"}>
-          <TabsTrigger value="calendar" className={isMobile ? "flex-1" : ""}>
+          <TabsTrigger
+            value="calendar"
+            className={isMobile ? "flex-1" : ""}
+            disabled={isLoading}
+          >
             Calendar View
           </TabsTrigger>
-          <TabsTrigger value="deadlines" className={isMobile ? "flex-1" : ""}>
+          <TabsTrigger
+            value="deadlines"
+            className={isMobile ? "flex-1" : ""}
+            disabled={isLoading}
+          >
             Deadlines
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="calendar" className="mt-4">
-          {calendarData ? (
+          {isLoading ? (
+            <Skeleton className="w-full h-[500px] rounded-lg" />
+          ) : calendarData ? (
             <CalendarView
               events={calendarData.calendar || []}
               selectedDate={selectedDate}
@@ -203,12 +231,27 @@ export default function CalendarPage() {
         </TabsContent>
 
         <TabsContent value="deadlines" className="mt-4">
-          <DeadlinesList
-            deadlines={deadlinesData}
-            onTimeFrameChange={onDeadlineTimeFrameChange}
-          />
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="w-full h-12 rounded-lg" />
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="w-full h-24 rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <DeadlinesList
+              deadlines={deadlinesData}
+              onTimeFrameChange={onDeadlineTimeFrameChange}
+            />
+          )}
         </TabsContent>
       </Tabs>
+
+      {isLoading && !isInitialRender && (
+        <div className="fixed bottom-4 right-4 bg-background shadow-lg rounded-full p-2 z-50 border">
+          <Loader2 className="h-6 w-6 animate-spin text-violet-700" />
+        </div>
+      )}
     </div>
   );
 }
