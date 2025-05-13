@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,7 +23,13 @@ import { checkPassword } from "@/lib/utils";
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLoading: settingsLoading } = useUserSettings();
+
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    tabParam === "settings" ? "settings" : "profile"
+  );
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,8 +50,12 @@ export default function ProfilePage() {
   const [hasPasswordAuth, setHasPasswordAuth] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
-
   const [OAuthProviders, setOAuthProviders] = useState<string[]>([]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/profile?tab=${value}`);
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -97,7 +107,14 @@ export default function ProfilePage() {
 
       fetchUserProfile();
     }
-  }, [status, router]);
+  }, [status, router, session]);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "settings" || tab === "profile") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -236,7 +253,11 @@ export default function ProfilePage() {
         <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
           <ProfileHeader isSaving={isSaving} onSave={handleSubmit} />
 
-          <Tabs defaultValue="profile" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
             <TabsList className="mb-8">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="settings">Account Settings</TabsTrigger>

@@ -279,7 +279,7 @@ export default function WorkspaceSidebar() {
                     <DropdownMenuItem asChild>
                       <SheetClose asChild>
                         <Link
-                          href="/settings"
+                          href="/profile?tab=settings"
                           className="cursor-pointer w-full"
                         >
                           <Settings className="h-4 w-4 mr-2" />
@@ -494,7 +494,7 @@ export default function WorkspaceSidebar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="cursor-pointer">
+                <Link href="/profile?tab=settings" className="cursor-pointer">
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </Link>
