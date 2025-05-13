@@ -74,9 +74,13 @@ export function WelcomeBanner({
             {greeting}, {userName}!
           </motion.h1>
           <motion.p variants={itemVariants} className="text-white/80">
-            You have <span className="font-semibold">{tasksDue} tasks</span> and{" "}
-            <span className="font-semibold">{projectsDue} projects</span> due
-            today.
+            You have{" "}
+            <Link href="/calendar?tab=deadlines">
+              <span className="font-semibold">
+                {tasksDue} task{tasksDue > 1 && "s"}
+              </span>
+            </Link>{" "}
+            due this week.
           </motion.p>
         </div>
 

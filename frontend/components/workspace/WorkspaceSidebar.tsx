@@ -197,17 +197,7 @@ export default function WorkspaceSidebar() {
 
                 <div className="mt-6 px-3">
                   <div className="flex justify-between items-center text-sm font-medium text-muted-foreground px-4 py-2">
-                    <span>Recent Projects</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 rounded-full"
-                      asChild
-                    >
-                      <Link href="/projects/create">
-                        <PlusCircle className="h-4 w-4 text-muted-foreground hover:text-violet-700" />
-                      </Link>
-                    </Button>
+                    <span>Quick Links</span>
                   </div>
                   <SheetClose asChild>
                     <Button
@@ -215,9 +205,33 @@ export default function WorkspaceSidebar() {
                       className="w-full justify-start mt-1"
                       asChild
                     >
-                      <Link href="/projects">
+                      <Link href="/projects/create">
                         <ChevronRight className="h-4 w-4 mr-1" />
-                        <span>View all projects</span>
+                        <span>Create Project</span>
+                      </Link>
+                    </Button>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start mt-1"
+                      asChild
+                    >
+                      <Link href="/tasks/create">
+                        <ChevronRight className="h-4 w-4 mr-1" />
+                        <span>Create Task</span>
+                      </Link>
+                    </Button>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start mt-1"
+                      asChild
+                    >
+                      <Link href="/calendar?tab=deadlines">
+                        <ChevronRight className="h-4 w-4 mr-1" />
+                        <span>Deadlines</span>
                       </Link>
                     </Button>
                   </SheetClose>
@@ -389,45 +403,45 @@ export default function WorkspaceSidebar() {
 
         <SidebarGroup>
           <SidebarGroupLabel className="flex justify-between items-center">
-            <span>Recent Projects</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 rounded-full"
-              asChild
-            >
-              <Link href="/projects/create">
-                <PlusCircle className="h-4 w-4 text-muted-foreground hover:text-violet-700" />
-              </Link>
-            </Button>
+            <span>Quick Actions</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isLinkActive("/projects")}
-                        tooltip="View all projects"
-                      >
-                        <Link href="/projects">
-                          <ChevronRight className="h-4 w-4" />
-                          <span>View all projects</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    {state === "collapsed" && (
-                      <TooltipContent
-                        side="right"
-                        className="group-data-[state=expanded]:hidden"
-                      >
-                        View all projects
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isLinkActive("/projects")}
+                  tooltip="Create Project"
+                >
+                  <Link href="/projects/create">
+                    <ChevronRight className="h-4 w-4" />
+                    <span>Create Project</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isLinkActive("/tasks")}
+                  tooltip="Create Task"
+                >
+                  <Link href="/tasks/create">
+                    <ChevronRight className="h-4 w-4" />
+                    <span>Create Task</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isLinkActive("/calendar")}
+                  tooltip="Deadlines"
+                >
+                  <Link href="/calendar?tab=deadlines">
+                    <ChevronRight className="h-4 w-4" />
+                    <span>Deadlines</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
