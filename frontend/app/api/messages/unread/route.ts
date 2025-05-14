@@ -16,10 +16,11 @@ export async function GET() {
       process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
 
     // Request to the backend service
-    const response = await fetch(`${apiUrl}/api/messages/unread/${userId}`, {
+    const response = await fetch(`${apiUrl}/api/messages/unread`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-user-id": userId,
       },
     });
 

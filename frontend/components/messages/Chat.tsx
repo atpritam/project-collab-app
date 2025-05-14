@@ -90,7 +90,13 @@ const Chat: React.FC<ChatProps> = ({
       }
 
       try {
-        const response = await fetch(`/api/messages/${selectedUser.id}`);
+        const response = await fetch(`/api/messages/direct`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-other-user-id": selectedUser.id,
+          },
+        });
 
         if (response.ok) {
           const data = await response.json();
@@ -218,8 +224,12 @@ const Chat: React.FC<ChatProps> = ({
     if (!selectedUser) return;
 
     try {
-      await fetch(`/api/messages/mark-read/${selectedUser.id}`, {
+      await fetch(`/api/messages/mark-read`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-other-user-id": selectedUser.id,
+        },
       });
 
       if (socket && isConnected) {

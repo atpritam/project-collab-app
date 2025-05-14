@@ -3,10 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { userId: string } }
-) {
+export async function PATCH(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -15,21 +12,26 @@ export async function PATCH(
     }
 
     const currentUserId = session.user.id;
-    const otherUserId = params.userId;
+    const otherUserId = request.headers.get("x-other-user-id");
+    if (!otherUserId) {
+      return NextResponse.json(
+        { message: "Missing other user ID" },
+        { status: 400 }
+      );
+    }
 
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
 
     // Request to the backend service
-    const response = await fetch(
-      `${apiUrl}/api/messages/mark-read/${currentUserId}/${otherUserId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${apiUrl}/api/messages/mark-read`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": currentUserId,
+        "x-other-user-id": otherUserId,
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

@@ -255,9 +255,9 @@ messagesRouter.post("/send", function (req: Request, res: Response) {
   })();
 });
 
-// GET /api/messages/unread/:userId - Get count of unread messages
-messagesRouter.get("/unread/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params;
+// GET /api/messages/unread - Get count of unread messages
+messagesRouter.get("/unread", async (req: Request, res: Response) => {
+  const userId = req.headers["x-user-id"] as string;
 
   try {
     const unreadCount = await prisma.directMessage.count({
@@ -292,35 +292,33 @@ messagesRouter.get("/unread/:userId", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/messages/mark-read/:userId/:otherUserId - Mark messages as read
-messagesRouter.patch(
-  "/mark-read/:userId/:otherUserId",
-  async (req: Request, res: Response) => {
-    const { userId, otherUserId } = req.params;
+messagesRouter.patch("/mark-read", async (req: Request, res: Response) => {
+  const userId = req.headers["x-user-id"] as string;
+  const otherUserId = req.headers["x-other-user-id"] as string;
 
-    try {
-      await prisma.directMessage.updateMany({
-        where: {
-          senderId: otherUserId,
-          receiverId: userId,
-          read: false,
-        },
-        data: {
-          read: true,
-        },
+  try {
+    await prisma.directMessage.updateMany({
+      where: {
+        senderId: otherUserId,
+        receiverId: userId,
+        read: false,
+      },
+      data: {
+        read: true,
+      },
+    });
+
+    // we notify the other user that their messages have been read via Socket.io
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user:${otherUserId}`).emit("messages_read", {
+        userId: userId,
       });
-
-      // we notify the other user that their messages have been read via Socket.io
-      const io = req.app.get("io");
-      if (io) {
-        io.to(`user:${otherUserId}`).emit("messages_read", {
-          userId: userId,
-        });
-      }
-
-      res.status(200).json({ message: "Messages marked as read" });
-    } catch (error) {
-      console.error("Error marking messages as read:", error);
-      res.status(500).json({ message: "Failed to mark messages as read" });
     }
+
+    res.status(200).json({ message: "Messages marked as read" });
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    res.status(500).json({ message: "Failed to mark messages as read" });
   }
-);
+});

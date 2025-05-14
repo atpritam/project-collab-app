@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { userId: string } }
-) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -15,7 +12,13 @@ export async function GET(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const otherUserId = params.userId;
+    const otherUserId = request.headers.get("x-other-user-id");
+    if (!otherUserId) {
+      return NextResponse.json(
+        { message: "Missing other user ID" },
+        { status: 400 }
+      );
+    }
 
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";

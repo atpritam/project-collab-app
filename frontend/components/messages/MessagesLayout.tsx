@@ -314,7 +314,7 @@ const MessagesLayout = () => {
     if (conversation && conversation.user) {
       setSelectedUser(conversation.user);
       setSelectedProject(null);
-      router.push(`/messages?userId=${userId}`);
+      router.push(`/messages`);
       if (isMobile) {
         setShowConversationList(false);
       }
@@ -355,7 +355,7 @@ const MessagesLayout = () => {
   const handleNewMessage = (user: User) => {
     setSelectedUser(user);
     setSelectedProject(null);
-    router.push(`/messages?userId=${user.id}`);
+    router.push(`/messages`);
     if (isMobile) {
       setShowConversationList(false);
     }
