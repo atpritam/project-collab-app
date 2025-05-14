@@ -234,18 +234,6 @@ enum TaskPriority {
   HIGH
 }
 
-model TaskComment {
-  id        String   @id @default(cuid())
-  content   String
-  taskId    String
-  userId    String
-  createdAt DateTime @default(now())
-
-  // Relations
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
 // Chat system
 model ChatMessage {
   id           String   @id @default(cuid())

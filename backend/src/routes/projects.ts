@@ -174,7 +174,9 @@ projectsRouter.get("/:id", function (req: Request, res: Response) {
 // PATCH /api/projects/:id - Update a project
 projectsRouter.patch("/:id", function (req: Request, res: Response) {
   const { id } = req.params;
-  const { name, description, status, dueDate, userId } = req.body;
+  const { name, description, status, dueDate } = req.body;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
     if (!id) {
@@ -230,6 +232,59 @@ projectsRouter.patch("/:id", function (req: Request, res: Response) {
     } catch (error) {
       console.error("Error updating project:", error);
       res.status(500).json({ message: "Failed to update project" });
+    }
+  })();
+});
+
+// DELETE /api/projects/:id - Delete a project
+projectsRouter.delete("/:id", function (req: Request, res: Response) {
+  const { id } = req.params;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
+  (async () => {
+    if (!id) {
+      return res.status(400).json({ message: "Project ID is required" });
+    }
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    try {
+      // permission check
+      if (!(await canManageProject(id, userId))) {
+        return res.status(403).json({
+          message: "You do not have permission to delete this project",
+        });
+      }
+      // Delete the project
+      const deletedProject = await prisma.project.delete({
+        where: { id },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      res.status(200).json(deletedProject);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Failed to delete project" });
     }
   })();
 });

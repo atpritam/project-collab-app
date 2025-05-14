@@ -19,7 +19,7 @@ export async function GET(
 
     // Request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}?userId=${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`,
       {
         method: "GET",
         headers: new Headers({
@@ -79,11 +79,9 @@ export async function PATCH(
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": session.user.id,
         },
-        body: JSON.stringify({
-          ...body,
-          userId: session.user.id,
-        }),
+        body: JSON.stringify(body),
       }
     );
 
@@ -108,6 +106,60 @@ export async function PATCH(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Project update error:", error);
+    return NextResponse.json(
+      { message: "An unexpected error occurred" },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete project
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const params = await context.params;
+    const id = params.id;
+
+    // Request to the backend service
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": session.user.id,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        return NextResponse.json(
+          { message: errorData.message || "Failed to delete project" },
+          { status: response.status }
+        );
+      } else {
+        const errorText = await response.text();
+        return NextResponse.json(
+          { message: "Failed to delete project" },
+          { status: response.status }
+        );
+      }
+    }
+
+    return NextResponse.json({ message: "Project deleted successfully" });
+  } catch (error) {
+    console.error("Project delete error:", error);
     return NextResponse.json(
       { message: "An unexpected error occurred" },
       { status: 500 }

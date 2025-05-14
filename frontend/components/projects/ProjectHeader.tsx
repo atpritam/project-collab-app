@@ -15,6 +15,7 @@ import {
   Check,
   MessageSquare,
   Menu,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 interface ProjectHeaderProps {
   project: any;
@@ -64,6 +66,10 @@ export default function ProjectHeader({
   const [inviteError, setInviteError] = useState("");
   const [isInviting, setIsInviting] = useState(false);
   const [showRoleOptions, setShowRoleOptions] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const router = useRouter();
 
   // Edit form state
   const [formData, setFormData] = useState({
@@ -205,6 +211,27 @@ export default function ProjectHeader({
     }
   };
 
+  async function handleDeleteProject() {
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete project");
+      }
+
+      toast.success("Project deleted successfully");
+      setIsEditDialogOpen(false);
+      router.push("/projects");
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      toast.error("Failed to delete project");
+    } finally {
+      setIsDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
   return (
     <div className="w-full px-2 sm:px-4">
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
@@ -340,7 +367,15 @@ export default function ProjectHeader({
         </div>
       )}
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) {
+            setConfirmDelete(false);
+          }
+        }}
+      >
         <DialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg mx-auto">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
@@ -411,32 +446,61 @@ export default function ProjectHeader({
               </div>
             </div>
           </div>
-
-          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={updateProject}
-              disabled={isUpdating}
-              className="w-full sm:w-auto bg-violet-700 hover:bg-violet-800 text-white"
-            >
-              {isUpdating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
+          <DialogFooter className="flex flex-col sm:flex-row gap-4 sm:gap-0 mt-2">
+            <div className="flex flex-col sm:flex-row w-full justify-between items-center gap-4">
+              <Button
+                onClick={() => {
+                  if (confirmDelete) {
+                    setIsDeleting(true);
+                    handleDeleteProject();
+                  } else {
+                    setConfirmDelete(true);
+                  }
+                }}
+                className="w-full sm:w-auto dark:bg-red-600/70 dark:hover:bg-red-600/80 text-white bg-red-600 hover:bg-red-700 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    {confirmDelete ? "Are you sure?" : "Delete Project"}
+                  </>
+                )}
+              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-2 w-full sm:w-auto justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setConfirmDelete(false);
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={updateProject}
+                  disabled={isUpdating}
+                  className="w-full sm:w-auto bg-violet-700 hover:bg-violet-800 text-white"
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
