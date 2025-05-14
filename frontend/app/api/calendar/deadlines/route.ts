@@ -16,11 +16,12 @@ export async function GET(request: Request) {
 
     // Request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/calendar/deadlines/${userId}?days=${days}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/calendar/deadlines?days=${days}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
       }
     );

@@ -9,24 +9,24 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    const currentUserId = session?.user?.id;
+
+    if (!currentUserId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const currentUserId = session.user.id;
     const otherUserId = params.userId;
 
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
-    const response = await fetch(
-      `${apiUrl}/api/messages/${currentUserId}/${otherUserId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${apiUrl}/api/messages/direct`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": currentUserId,
+        "x-other-user-id": otherUserId,
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

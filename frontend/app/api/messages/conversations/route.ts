@@ -16,15 +16,13 @@ export async function GET() {
       process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
 
     // Request to the backend service
-    const response = await fetch(
-      `${apiUrl}/api/messages/conversations/${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${apiUrl}/api/messages/conversations`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

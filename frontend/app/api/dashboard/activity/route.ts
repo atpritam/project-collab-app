@@ -13,10 +13,11 @@ export async function GET(req: NextRequest) {
     const userId = session.user.id;
 
     const uri = process.env.BACKEND_URL || "http://backend-service:4000";
-    const response = await fetch(`${uri}/api/dashboard/activity/${userId}`, {
+    const response = await fetch(`${uri}/api/dashboard/activity`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-user-id": userId,
       },
       cache: "no-store",
     });

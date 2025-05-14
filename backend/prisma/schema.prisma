@@ -33,7 +33,6 @@ model User {
 
   // Chat and comments
   chatMessages ChatMessage[]
-  taskComments TaskComment[]
 
   // File-related - Added this relation to fix the error
   uploadedFiles File[] @relation("FileUploader")
@@ -219,7 +218,6 @@ model Task {
   creator      User          @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee     User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
   taskFiles    File[]        @relation("TaskFiles")
-  taskComments TaskComment[]
 }
 
 enum TaskStatus {

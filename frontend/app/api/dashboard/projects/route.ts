@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const limit = searchParams.get("limit");
 
     const backendUrl = process.env.BACKEND_URL || "http://backend-service:4000";
-    const url = new URL(`${backendUrl}/api/dashboard/projects/${userId}`);
+    const url = new URL(`${backendUrl}/api/dashboard/projects`);
 
     if (limit) {
       url.searchParams.append("limit", limit);
@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
     const response = await fetch(url.toString(), {
       headers: {
         "Content-Type": "application/json",
+        "x-user-id": userId,
       },
       cache: "no-store",
     });

@@ -14,11 +14,12 @@ export async function GET() {
 
     // Request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/collaborators/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/collaborators/team?userId=${userId}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
       }
     );

@@ -22,12 +22,13 @@ export async function GET(request: Request) {
     // Request to the backend service
     const url = `${
       process.env.NEXT_PUBLIC_API_URL
-    }/api/calendar/events/${userId}?${queryParams.toString()}`;
+    }/api/calendar/events/all?${queryParams.toString()}`;
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-user-id": userId,
       },
     });
 

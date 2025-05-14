@@ -6,9 +6,10 @@ const calendarRouter: Router = express.Router();
 
 export default calendarRouter;
 
-// GET /api/calendar/events/:userId - Get all calendar events for a user
-calendarRouter.get("/events/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params;
+// GET /api/calendar/events/all - Get all calendar events for a user
+calendarRouter.get("/events/all", async (req: Request, res: Response) => {
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
   const { startDate, endDate } = req.query;
 
   try {
@@ -181,116 +182,113 @@ calendarRouter.get("/events/:userId", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/calendar/deadlines/:userId - Get upcoming deadlines for a user
-calendarRouter.get(
-  "/deadlines/:userId",
-  async (req: Request, res: Response) => {
-    const { userId } = req.params;
-    const { days = "7" } = req.query;
+// GET /api/calendar/deadlines - Get upcoming deadlines for a user
+calendarRouter.get("/deadlines", async (req: Request, res: Response) => {
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
+  const { days = "7" } = req.query;
 
-    const daysAhead = parseInt(days as string);
+  const daysAhead = parseInt(days as string);
 
-    try {
-      const today = new Date();
-      const endDate = new Date();
-      endDate.setDate(today.getDate() + daysAhead);
+  try {
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + daysAhead);
 
-      const tasks = await prisma.task.findMany({
-        where: {
-          OR: [{ assigneeId: userId }, { creatorId: userId }],
-          dueDate: {
-            gte: today,
-            lte: endDate,
-          },
-          status: {
-            not: "DONE",
+    const tasks = await prisma.task.findMany({
+      where: {
+        OR: [{ assigneeId: userId }, { creatorId: userId }],
+        dueDate: {
+          gte: today,
+          lte: endDate,
+        },
+        status: {
+          not: "DONE",
+        },
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
           },
         },
-        include: {
-          project: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          assignee: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            },
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
           },
         },
-        orderBy: {
-          dueDate: "asc",
-        },
-      });
+      },
+      orderBy: {
+        dueDate: "asc",
+      },
+    });
 
-      // project deadlines
-      const projects = await prisma.project.findMany({
-        where: {
-          OR: [{ creatorId: userId }, { members: { some: { userId } } }],
-          dueDate: {
-            gte: today,
-            lte: endDate,
-          },
-          status: {
-            not: "COMPLETED",
+    // project deadlines
+    const projects = await prisma.project.findMany({
+      where: {
+        OR: [{ creatorId: userId }, { members: { some: { userId } } }],
+        dueDate: {
+          gte: today,
+          lte: endDate,
+        },
+        status: {
+          not: "COMPLETED",
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        dueDate: true,
+        status: true,
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
           },
         },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          dueDate: true,
-          status: true,
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-        },
-        orderBy: {
-          dueDate: "asc",
-        },
-      });
+      },
+      orderBy: {
+        dueDate: "asc",
+      },
+    });
 
-      // Combine and sort by date
-      const deadlines = [
-        ...tasks.map((task: any) => ({
-          id: `task-${task.id}`,
-          title: task.title,
-          dueDate: task.dueDate,
-          type: "task",
-          priority: task.priority,
-          project: {
-            id: task.project.id,
-            name: task.project.name,
-          },
-          assignee: task.assignee,
-        })),
-        ...projects.map((project: any) => ({
-          id: `project-${project.id}`,
-          title: project.name,
-          dueDate: project.dueDate,
-          type: "project",
-          project: {
-            id: project.id,
-            name: project.name,
-          },
-          description: project.description,
-        })),
-      ].sort(
-        (a, b) =>
-          new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()
-      );
+    // Combine and sort by date
+    const deadlines = [
+      ...tasks.map((task: any) => ({
+        id: `task-${task.id}`,
+        title: task.title,
+        dueDate: task.dueDate,
+        type: "task",
+        priority: task.priority,
+        project: {
+          id: task.project.id,
+          name: task.project.name,
+        },
+        assignee: task.assignee,
+      })),
+      ...projects.map((project: any) => ({
+        id: `project-${project.id}`,
+        title: project.name,
+        dueDate: project.dueDate,
+        type: "project",
+        project: {
+          id: project.id,
+          name: project.name,
+        },
+        description: project.description,
+      })),
+    ].sort(
+      (a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()
+    );
 
-      res.status(200).json(deadlines);
-    } catch (error) {
-      console.error("Error fetching deadlines:", error);
-      res.status(500).json({ message: "Failed to fetch deadline data" });
-    }
+    res.status(200).json(deadlines);
+  } catch (error) {
+    console.error("Error fetching deadlines:", error);
+    res.status(500).json({ message: "Failed to fetch deadline data" });
   }
-);
+});

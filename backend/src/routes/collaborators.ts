@@ -6,11 +6,15 @@ const collaboratorsRouter: Router = express.Router();
 
 export default collaboratorsRouter;
 
-// GET /api/collaborators/:userId
-collaboratorsRouter.get("/:userId", function (req: Request, res: Response) {
-  const { userId } = req.params;
+// GET /api/collaborators
+collaboratorsRouter.get("/team", function (req: Request, res: Response) {
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
     try {
       const userProjects = await prisma.projectMember.findMany({
         where: { userId },
@@ -92,7 +96,8 @@ collaboratorsRouter.get("/:userId", function (req: Request, res: Response) {
 
 collaboratorsRouter.get("/", function (req: Request, res: Response) {
   const { search } = req.query;
-  const userId = req.query.userId as string;
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
 
   (async () => {
     try {
