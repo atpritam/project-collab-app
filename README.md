@@ -6,6 +6,8 @@
 
 Nudge is a sophisticated project collaboration platform designed to streamline team workflows and enhance productivity through intuitive project management tools. This full-stack application provides teams with a centralized workspace to create, track, and complete projects with ease.
 
+**Accounts created with email/password require activation before login. You can sign up with Google or GitHub for instant verification.**
+
 ## ✨ Key Features
 
 - **Project Management**: Create, edit, and organize projects
@@ -21,6 +23,10 @@ Nudge is a sophisticated project collaboration platform designed to streamline t
 - **Responsive Design**: Fully mobile-responsive interface for collaboration on any device
 
 ![Nudge Logo](Photos/Messages.png)
+
+### Auto-Accept Team Invitation
+
+For demo and testing purposes, any invitation sent to "pritam.amit26@gmail.com" to join a project as a member will be automatically accepted.
 
 ## 🛠️ Technology Stack
 
