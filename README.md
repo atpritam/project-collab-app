@@ -1,6 +1,6 @@
 # Nudge - Project Collaboration Platform
 
-![Nudge Logo](Nudge.png)
+![Nudge Logo](Photos/Nudge.png)
 
 ## 📋 Overview
 
@@ -19,6 +19,8 @@ Nudge is a sophisticated project collaboration platform designed to streamline t
 - **Activity Feed**: Stay updated with recent project activities and changes
 - **Kanban Board View**: Drag-and-drop task management with visual workflow stages
 - **Responsive Design**: Fully mobile-responsive interface for collaboration on any device
+
+![Nudge Logo](Photos/Messages.png)
 
 ## 🛠️ Technology Stack
 
@@ -55,6 +57,8 @@ Nudge is built on a modern, microservices-oriented architecture:
 - **Database Container**: PostgreSQL instance for persistent storage
 
 The application uses a RESTful API for most operations, with Socket.io for real-time features like messaging and status updates.
+
+![Nudge Logo](Photos/File-System.png)
 
 ## 🚀 Getting Started
 
@@ -126,6 +130,8 @@ For local development without Docker:
    cd backend
    npm run dev
    ```
+
+![Nudge Logo](Photos/Dashboard.png)
 
 ## 📚 Learning Resources
 

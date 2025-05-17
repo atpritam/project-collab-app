@@ -120,10 +120,7 @@ export default function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/features/project-management"
-                      className="flex items-center gap-2"
-                    >
+                    <Link href="/" className="flex items-center gap-2">
                       <div className="h-8 w-8 rounded-md bg-violet-100 flex items-center justify-center">
                         <Zap className="h-4 w-4 text-violet-700" />
                       </div>
@@ -159,7 +156,7 @@ export default function Header() {
                 asChild
                 className="text-foreground/70 hover:text-violet-900"
               >
-                <Link href="/pricing">Pricing</Link>
+                <Link href="/">Pricing</Link>
               </Button>
 
               <Button
@@ -167,7 +164,7 @@ export default function Header() {
                 asChild
                 className="text-foreground/70 hover:text-violet-900"
               >
-                <Link href="/testimonials">Testimonials</Link>
+                <Link href="/">Testimonials</Link>
               </Button>
 
               <Button
@@ -175,7 +172,7 @@ export default function Header() {
                 asChild
                 className="text-foreground/70 hover:text-violet-900"
               >
-                <Link href="/faq">FAQ</Link>
+                <Link href="/">FAQ</Link>
               </Button>
 
               {isAuthenticated && (
@@ -290,28 +287,28 @@ export default function Header() {
           >
             <div className="pt-2 pb-3 space-y-1 px-4">
               <Link
-                href="/features"
+                href="/"
                 className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Features
               </Link>
               <Link
-                href="/pricing"
+                href="/"
                 className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link
-                href="/testimonials"
+                href="/"
                 className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Testimonials
               </Link>
               <Link
-                href="/faq"
+                href="/"
                 className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
                 onClick={() => setMobileMenuOpen(false)}
               >

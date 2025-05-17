@@ -98,19 +98,7 @@ export default function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Link
-                  href="#"
-                  className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
-                >
-                  <Twitter className="h-5 w-5" />
-                  <span className="sr-only">Twitter</span>
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ y: -1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <Link
-                  href="#"
+                  href="https://github.com/atpritam"
                   className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
                 >
                   <Github className="h-5 w-5" />
@@ -122,7 +110,7 @@ export default function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Link
-                  href="#"
+                  href="https://www.linkedin.com/in/atpritam/"
                   className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
                 >
                   <Linkedin className="h-5 w-5" />
@@ -134,7 +122,7 @@ export default function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Link
-                  href="mailto:contact@nudge.com"
+                  href="mailto:pritam@student.agh.edu.pl"
                   className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
                 >
                   <Mail className="h-5 w-5" />
