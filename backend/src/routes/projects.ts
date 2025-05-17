@@ -371,6 +371,20 @@ projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
         });
       }
 
+      if (invitedUser.email === "pritam.amit26@gmail.com") {
+        // auto accept invitation for this user
+        await prisma.projectMember.create({
+          data: {
+            userId: invitedUser.id,
+            projectId: project.id,
+            role,
+          },
+        });
+        return res.status(200).json({
+          message: "Member added successfully",
+        });
+      }
+
       const existingInvitation = await prisma.projectInvitation.findFirst({
         where: {
           projectId: id,
