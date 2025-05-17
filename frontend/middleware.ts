@@ -3,7 +3,15 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 // Paths that require authentication
-const protectedPaths = ["/dashboard", "/profile"];
+const protectedPaths = [
+  "/dashboard",
+  "/profile",
+  "/projects",
+  "/messages",
+  "/teams",
+  "/calendar",
+  "/tasks",
+];
 
 // Paths that do not require authentication
 const publicPaths = [
