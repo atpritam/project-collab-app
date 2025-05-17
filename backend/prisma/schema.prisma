@@ -34,7 +34,7 @@ model User {
   // Chat and comments
   chatMessages ChatMessage[]
 
-  // File-related - Added this relation to fix the error
+  // File-related
   uploadedFiles File[] @relation("FileUploader")
 
   sentMessages     DirectMessage[] @relation("MessageSender")

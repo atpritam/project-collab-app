@@ -8,7 +8,7 @@ const protectedPaths = [
   "/profile",
   "/projects",
   "/messages",
-  "/teams",
+  "/team",
   "/calendar",
   "/tasks",
 ];
