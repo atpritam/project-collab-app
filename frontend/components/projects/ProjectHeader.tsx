@@ -260,7 +260,10 @@ export default function ProjectHeader({
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1 break-words">
             {project.name}
           </h1>
-          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <div
+            onClick={() => setIsEditDialogOpen(true)}
+            className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground cursor-pointer"
+          >
             {getStatusBadge(project.status)}
             <span className="flex items-center">
               <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
