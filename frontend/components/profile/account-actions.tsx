@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Trash2 } from "lucide-react";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { toast } from "sonner";
 
 interface AccountActionsProps {
   hasPasswordAuth: boolean;
@@ -20,7 +21,38 @@ interface AccountActionsProps {
 export function AccountActions({
   hasPasswordAuth = false,
 }: AccountActionsProps) {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const getSavedDialogState = () => {
+    if (typeof window !== "undefined") {
+      const savedState = sessionStorage.getItem("deleteDialogOpen");
+      return savedState === "true";
+    }
+    return false;
+  };
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(
+    getSavedDialogState()
+  );
+
+  const handleDeleteModalChange = (isOpen: boolean) => {
+    setIsDeleteModalOpen(isOpen);
+
+    if (typeof window !== "undefined") {
+      if (isOpen) {
+        sessionStorage.setItem("deleteDialogOpen", "true");
+      } else {
+        sessionStorage.removeItem("deleteDialogOpen");
+        clearDeleteAccountStorage();
+      }
+    }
+  };
+
+  const clearDeleteAccountStorage = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("deleteDialogOpen");
+      sessionStorage.removeItem("deleteAccountState");
+      localStorage.removeItem("deleteDialogOpen");
+    }
+  };
 
   return (
     <Card>
@@ -42,6 +74,9 @@ export function AccountActions({
             <Button
               variant="outline"
               className="mt-4 border-border hover:bg-muted text-foreground"
+              onClick={() => {
+                toast.success("Export Data feature coming soon!");
+              }}
             >
               Export Data
             </Button>
@@ -60,7 +95,7 @@ export function AccountActions({
             <Button
               variant="outline"
               className="mt-4 text-red-600 dark:text-red-500 border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-800/50 transition-all"
-              onClick={() => setIsDeleteModalOpen(true)}
+              onClick={() => handleDeleteModalChange(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Account
@@ -68,7 +103,7 @@ export function AccountActions({
 
             <DeleteAccountDialog
               isOpen={isDeleteModalOpen}
-              onOpenChange={setIsDeleteModalOpen}
+              onOpenChange={handleDeleteModalChange}
               hasPasswordAuth={hasPasswordAuth}
             />
           </div>

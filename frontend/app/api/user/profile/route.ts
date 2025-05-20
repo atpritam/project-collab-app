@@ -13,11 +13,12 @@ export async function GET(request: Request) {
     const userId = session.user.id;
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
       }
     );

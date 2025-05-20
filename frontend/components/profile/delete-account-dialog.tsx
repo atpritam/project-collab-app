@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,11 +38,68 @@ export function DeleteAccountDialog({
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [verificationStep, setVerificationStep] = useState("initial"); // "initial", "code_sent", "code_verified"
+  const [verificationStep, setVerificationStep] = useState("initial");
   const [verificationCode, setVerificationCode] = useState("");
   const [codeExpiry, setCodeExpiry] = useState<Date | null>(null);
   const [isRequestingCode, setIsRequestingCode] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+
+  const stateRef = useRef({
+    verificationStep,
+    verificationCode,
+    codeExpiry,
+  });
+
+  useEffect(() => {
+    stateRef.current = {
+      verificationStep,
+      verificationCode,
+      codeExpiry,
+    };
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        "deleteAccountState",
+        JSON.stringify({
+          verificationStep,
+          verificationCode,
+          codeExpiry: codeExpiry ? codeExpiry.toISOString() : null,
+        })
+      );
+    }
+  }, [verificationStep, verificationCode, codeExpiry]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedState = sessionStorage.getItem("deleteAccountState");
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState);
+          setVerificationStep(parsedState.verificationStep || "initial");
+          setVerificationCode(parsedState.verificationCode || "");
+          setCodeExpiry(
+            parsedState.codeExpiry ? new Date(parsedState.codeExpiry) : null
+          );
+        } catch (e) {
+          console.error("Error parsing saved state:", e);
+        }
+      }
+    }
+  }, []);
+
+  const clearAllStorage = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("deleteAccountState");
+      sessionStorage.removeItem("deleteDialogOpen");
+      localStorage.removeItem("deleteDialogOpen");
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen && typeof window !== "undefined") {
+      clearAllStorage();
+    }
+  }, [isOpen]);
 
   const requestVerificationCode = async () => {
     setIsRequestingCode(true);
@@ -144,8 +201,6 @@ export function DeleteAccountDialog({
           verificationStep === "code_verified" ? verificationCode : undefined,
       };
 
-      console.log("Sending deletion request with payload:", payload);
-
       const response = await fetch("/api/user/delete-account", {
         method: "DELETE",
         headers: {
@@ -155,6 +210,7 @@ export function DeleteAccountDialog({
       });
 
       if (response.ok) {
+        clearAllStorage();
         toast.success("Account deleted successfully");
         await signOut({ callbackUrl: "/" });
       } else {
@@ -165,8 +221,12 @@ export function DeleteAccountDialog({
       }
     } catch (error) {
       console.error("Account deletion error:", error);
-      setDeleteError("An unexpected error occurred");
-      toast.error("An unexpected error occurred");
+      setDeleteError(
+        "An unexpected error occurred. It might be a timeout or server error. Please try again."
+      );
+      toast.error(
+        "An unexpected error occurred. It might be a timeout or server error. Please try again."
+      );
       setIsDeleting(false);
     }
   };
@@ -177,6 +237,11 @@ export function DeleteAccountDialog({
     setVerificationCode("");
     setVerificationStep("initial");
     setDeleteError("");
+
+    // Clear session storage
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("deleteAccountState");
+    }
   };
 
   const isActionButtonDisabled = () => {
@@ -291,8 +356,7 @@ export function DeleteAccountDialog({
             {verificationStep === "code_sent" && (
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
-                  A verification code has been sent to your email. Please enter
-                  it below.
+                  A verification code has been sent to your email.
                   {codeExpiry && (
                     <span className="block mt-1 font-medium">
                       Code expires at: {codeExpiry.toLocaleTimeString()}

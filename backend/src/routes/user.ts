@@ -8,9 +8,9 @@ const userRouter: Router = express.Router();
 
 export default userRouter;
 
-// GET /api/user/profile/:userId
-userRouter.get("/profile/:userId", function (req: Request, res: Response) {
-  const { userId } = req.params;
+// GET /api/user/profile
+userRouter.get("/profile", function (req: Request, res: Response) {
+  const userId = req.headers["x-user-id"] as string;
   (async () => {
     try {
       // user info
@@ -158,35 +158,32 @@ userRouter.post("/update-password", function (req: Request, res: Response) {
   })();
 });
 
-// PATCH /api/user/profile-image/:userId
-userRouter.patch(
-  "/profile-image/:userId",
-  function (req: Request, res: Response) {
-    const { userId } = req.params;
-    const { imageUrl } = req.body;
+// PATCH /api/user/profile-image
+userRouter.patch("/profile-image", function (req: Request, res: Response) {
+  const userId = req.headers["x-user-id"] as string;
+  const { imageUrl } = req.body;
 
-    (async () => {
-      try {
-        // Update user's image
-        const updatedUser = await prisma.user.update({
-          where: { id: userId },
-          data: { image: imageUrl },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        });
+  (async () => {
+    try {
+      // Update user's image
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { image: imageUrl },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      });
 
-        res.status(200).json(updatedUser);
-      } catch (error) {
-        console.error("Error updating profile image:", error);
-        res.status(500).json({ message: "Failed to update profile image" });
-      }
-    })();
-  }
-);
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error updating profile image:", error);
+      res.status(500).json({ message: "Failed to update profile image" });
+    }
+  })();
+});
 
 // GET /api/users/byEmail?email=user@example.com
 userRouter.get("/byEmail", function (req: Request, res: Response) {
@@ -305,9 +302,9 @@ userRouter.post("/verify-delete-code", function (req: Request, res: Response) {
   })();
 });
 
-// DELETE /api/user/:userId
-userRouter.delete("/:userId", function (req: Request, res: Response) {
-  const { userId } = req.params;
+// DELETE /api/user/delete - delete the user account and all associated data
+userRouter.delete("/delete", function (req: Request, res: Response) {
+  const userId = req.headers["x-user-id"] as string;
   const { password, verificationCode } = req.body;
   (async () => {
     try {
@@ -369,9 +366,168 @@ userRouter.delete("/:userId", function (req: Request, res: Response) {
         });
       }
 
-      // delete user
-      await prisma.user.delete({
-        where: { id: userId },
+      await prisma.$transaction(async (tx) => {
+        // STEP 1: User's files
+        await tx.file.deleteMany({
+          where: { uploaderId: userId },
+        });
+
+        // STEP 2: User's projects
+        const userProjects = await tx.project.findMany({
+          where: { creatorId: userId },
+          include: { members: true },
+        });
+
+        for (const project of userProjects) {
+          const otherAdmins = project.members.filter(
+            (member: any) => member.userId !== userId && member.role === "ADMIN"
+          );
+
+          // If there are other admins, transfer ownership to the first one
+          if (otherAdmins.length > 0) {
+            await tx.project.update({
+              where: { id: project.id },
+              data: { creatorId: otherAdmins[0].userId },
+            });
+            console.log(
+              `Project ${project.id} transferred to ${otherAdmins[0].userId}`
+            );
+          }
+          // If there are other members but no admins, promote one member to admin and transfer
+          else if (
+            project.members.some((member: any) => member.userId !== userId)
+          ) {
+            const newOwner = project.members.find(
+              (member: any) => member.userId !== userId
+            );
+            if (newOwner) {
+              // Update the member's role to ADMIN
+              await tx.projectMember.update({
+                where: {
+                  projectId_userId: {
+                    projectId: project.id,
+                    userId: newOwner.userId,
+                  },
+                },
+                data: { role: "ADMIN" },
+              });
+
+              // Update the project creator
+              await tx.project.update({
+                where: { id: project.id },
+                data: { creatorId: newOwner.userId },
+              });
+            }
+          }
+          // If there are no other members, delete the project and all related records
+          else {
+            await tx.file.deleteMany({
+              where: { projectId: project.id },
+            });
+
+            await tx.task.deleteMany({
+              where: { projectId: project.id },
+            });
+
+            await tx.chatMessage.deleteMany({
+              where: { projectId: project.id },
+            });
+
+            await tx.projectInvitation.deleteMany({
+              where: { projectId: project.id },
+            });
+
+            await tx.projectMember.deleteMany({
+              where: { projectId: project.id },
+            });
+
+            // delete the project
+            await tx.project.delete({
+              where: { id: project.id },
+            });
+          }
+        }
+
+        // STEP 3: User's tasks
+        // For tasks where user is creator but not assigned
+        await tx.task.updateMany({
+          where: {
+            creatorId: userId,
+            NOT: { assigneeId: userId },
+          },
+          data: {
+            creatorId: undefined,
+          },
+        });
+
+        const createdTasks = await tx.task.findMany({
+          where: { creatorId: userId },
+          include: { project: true },
+        });
+
+        for (const task of createdTasks) {
+          if (task.assigneeId && task.assigneeId !== userId) {
+            // If task has another assignee, transfer creation to them
+            await tx.task.update({
+              where: { id: task.id },
+              data: { creatorId: task.assigneeId },
+            });
+          } else {
+            // Otherwise, try to transfer to project creator if not the user
+            if (task.project.creatorId !== userId) {
+              await tx.task.update({
+                where: { id: task.id },
+                data: { creatorId: task.project.creatorId },
+              });
+            } else {
+              await tx.task.delete({
+                where: { id: task.id },
+              });
+            }
+          }
+        }
+
+        // Clear user as assignee from tasks
+        await tx.task.updateMany({
+          where: { assigneeId: userId },
+          data: { assigneeId: null },
+        });
+
+        // STEP 4: Chat messages
+        await tx.chatMessage.deleteMany({
+          where: { userId: userId },
+        });
+
+        // STEP 5: Direct messages
+        await tx.directMessage.deleteMany({
+          where: {
+            OR: [{ senderId: userId }, { receiverId: userId }],
+          },
+        });
+
+        // STEP 6: Project memberships
+        await tx.projectMember.deleteMany({
+          where: { userId: userId },
+        });
+
+        // STEP 7: User settings and info
+        await tx.userSettings.deleteMany({
+          where: { userId: userId },
+        });
+
+        await tx.userInfo.deleteMany({
+          where: { userId: userId },
+        });
+
+        // STEP 8: Accounts
+        await tx.account.deleteMany({
+          where: { userId: userId },
+        });
+
+        // STEP 9: Delete the user
+        await tx.user.delete({
+          where: { id: userId },
+        });
       });
 
       res.status(200).json({ message: "Account deleted successfully" });

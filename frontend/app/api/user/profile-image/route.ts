@@ -14,12 +14,13 @@ export async function PATCH(request: Request) {
     const body = await request.json();
 
     // request to the backend service
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile-image/${userId}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile-image`;
 
     const response = await fetch(backendUrl, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "x-user-id": userId,
       },
       body: JSON.stringify({ imageUrl: body.imageUrl }),
     });

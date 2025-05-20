@@ -2,8 +2,6 @@
 
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
-import { useUserSettings } from "@/components/context/UserSettingsContext";
-import { useEffect } from "react";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -14,21 +12,9 @@ import {
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const { settings, updateSetting, isLoading } = useUserSettings();
-
-  useEffect(() => {
-    if (!isLoading && settings) {
-      setTheme(settings.darkMode ? "dark" : "light");
-    }
-  }, [isLoading, settings, setTheme]);
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
-
-    // Only update settings if we're authenticated and have settings
-    if (settings) {
-      updateSetting("darkMode", newTheme === "dark");
-    }
   };
 
   return (

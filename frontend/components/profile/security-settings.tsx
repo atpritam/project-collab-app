@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PasswordForm } from "./password-form";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface SecuritySettingsProps {
   currentPassword: string;
@@ -96,6 +97,9 @@ export function SecuritySettings({
             <Button
               variant="outline"
               className="mt-4 border-border hover:bg-muted text-foreground"
+              onClick={() => {
+                toast.success("Two-Factor Authentication coming soon!");
+              }}
             >
               Enable Two-Factor Authentication
             </Button>

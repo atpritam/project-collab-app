@@ -27,9 +27,6 @@ interface UserSettings {
   inAppProjectUpdates: boolean;
   inAppRoleChanges: boolean;
 
-  // Theme Preferences
-  darkMode: boolean;
-
   createdAt: string;
   updatedAt: string;
 }
@@ -52,7 +49,6 @@ const defaultSettings: UserSettings = {
   emailComments: true,
   inAppProjectUpdates: true,
   inAppRoleChanges: true,
-  darkMode: false,
   createdAt: "",
   updatedAt: "",
 };

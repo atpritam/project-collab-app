@@ -41,9 +41,6 @@ settingsRouter.get("/:userId", function (req: Request, res: Response) {
           inAppProjectUpdates: true,
           inAppRoleChanges: true,
 
-          // Theme Preferences
-          darkMode: true,
-
           createdAt: true,
           updatedAt: true,
         },
@@ -116,12 +113,6 @@ settingsRouter.put("/:userId", function (req: Request, res: Response) {
             settingsData.inAppRoleChanges !== undefined
               ? settingsData.inAppRoleChanges
               : undefined,
-
-          // Theme Preferences
-          darkMode:
-            settingsData.darkMode !== undefined
-              ? settingsData.darkMode
-              : undefined,
         },
         create: {
           userId,
@@ -166,10 +157,6 @@ settingsRouter.put("/:userId", function (req: Request, res: Response) {
             settingsData.inAppRoleChanges !== undefined
               ? settingsData.inAppRoleChanges
               : true,
-
-          // Theme Preferences
-          darkMode:
-            settingsData.darkMode !== undefined ? settingsData.darkMode : false,
         },
       });
 

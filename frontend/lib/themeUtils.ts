@@ -1,15 +1,77 @@
-/**
- * Utility functions for working with theme colors in the app
- */
+"use client";
 
+/**
+ * Utility functions for working with theme colors and modes in the app
+ */
 import { twMerge } from "tailwind-merge";
 import { clsx, type ClassValue } from "clsx";
+
+// Check if we're on the client (browser) side
+const isClient = typeof window !== "undefined";
 
 /**
  * Combines multiple class names with tailwind-merge
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Get the current theme from localStorage
+ */
+export function getStoredTheme(): string | null {
+  if (!isClient) return null;
+  return localStorage.getItem("nudge-theme");
+}
+
+/**
+ * Set theme in localStorage
+ */
+export function setStoredTheme(theme: string): void {
+  if (!isClient) return;
+  localStorage.setItem("nudge-theme", theme);
+}
+
+/**
+ * Detect and return preferred color scheme from system
+ */
+export function getSystemTheme(): "dark" | "light" {
+  if (!isClient) return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+/**
+ * Apply theme to document element
+ */
+export function applyThemeMode(theme: string): void {
+  if (!isClient) return;
+
+  const root = document.documentElement;
+  root.classList.remove("light", "dark");
+
+  if (theme === "system") {
+    const systemTheme = getSystemTheme();
+    root.classList.add(systemTheme);
+  } else {
+    root.classList.add(theme);
+  }
+}
+
+/**
+ * Initialize theme on page load
+ */
+export function initializeTheme(): void {
+  if (!isClient) return;
+
+  const storedTheme = getStoredTheme();
+  if (storedTheme) {
+    applyThemeMode(storedTheme);
+  } else {
+    // Default to system preference if no stored theme
+    applyThemeMode("system");
+  }
 }
 
 /**
@@ -21,21 +83,17 @@ export const themeColors = {
   bgGray50: "bg-muted",
   bgGray100: "bg-muted",
   bgGray200: "bg-muted",
-
   // Text colors
   textGray700: "text-foreground",
   textGray600: "text-foreground",
   textGray500: "text-muted-foreground",
   textGray400: "text-muted-foreground",
-
   // Border colors
   borderGray300: "border-border",
   borderGray200: "border-border",
-
   // Accent colors
   violetPrimary: "bg-violet-600 dark:bg-violet-700",
   violetSecondary: "bg-violet-100 dark:bg-violet-900/30",
-
   // Special combinations
   card: "bg-card text-card-foreground border-border",
   input: "bg-background border-input focus:ring-ring",

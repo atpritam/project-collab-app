@@ -15,11 +15,12 @@ export async function DELETE(request: Request) {
 
     // request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/user/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/user/delete`,
       {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
         body: JSON.stringify({
           password: body.password,
@@ -37,7 +38,6 @@ export async function DELETE(request: Request) {
         { status: response.status }
       );
     }
-
     return NextResponse.json(data);
   } catch (error) {
     console.error("Account deletion error:", error);

@@ -33,6 +33,7 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [profileDataLoaded, setProfileDataLoaded] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -54,7 +55,10 @@ export default function ProfilePage() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    router.push(`/profile?tab=${value}`);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", value);
+    router.replace(url.pathname + url.search);
   };
 
   useEffect(() => {
@@ -62,52 +66,10 @@ export default function ProfilePage() {
       router.push("/auth/signin");
     }
 
-    if (session?.user) {
-      // user profile data
-      const fetchUserProfile = async () => {
-        try {
-          setIsLoading(true);
-          const response = await fetch("/api/user/profile");
-
-          if (response.ok) {
-            const userData = await response.json();
-
-            // auth type
-            setHasPasswordAuth(userData.authType?.hasPasswordAuth || false);
-
-            // OAuth providers
-            if (userData.authType?.oauthProviders) {
-              setOAuthProviders(userData.authType.oauthProviders);
-            }
-
-            setFormData({
-              name: userData.name || "",
-              email: userData.email || "",
-              jobTitle: userData.profile?.jobTitle || "",
-              department: userData.profile?.department || "",
-              skills: userData.profile?.skills || "",
-              bio: userData.profile?.bio || "",
-              dateJoined: new Date(userData.createdAt).toLocaleDateString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              ),
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-          toast.error("Failed to load profile data");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
+    if (session?.user && !profileDataLoaded) {
       fetchUserProfile();
     }
-  }, [status, router, session]);
+  }, [status, router, session, profileDataLoaded]);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -115,6 +77,48 @@ export default function ProfilePage() {
       setActiveTab(tab);
     }
   }, [searchParams]);
+
+  const fetchUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/user/profile");
+
+      if (response.ok) {
+        const userData = await response.json();
+
+        // auth type
+        setHasPasswordAuth(userData.authType?.hasPasswordAuth || false);
+
+        // OAuth providers
+        if (userData.authType?.oauthProviders) {
+          setOAuthProviders(userData.authType.oauthProviders);
+        }
+
+        setFormData({
+          name: userData.name || "",
+          email: userData.email || "",
+          jobTitle: userData.profile?.jobTitle || "",
+          department: userData.profile?.department || "",
+          skills: userData.profile?.skills || "",
+          bio: userData.profile?.bio || "",
+          dateJoined: userData.createdAt
+            ? new Date(userData.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "",
+        });
+
+        setProfileDataLoaded(true);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
