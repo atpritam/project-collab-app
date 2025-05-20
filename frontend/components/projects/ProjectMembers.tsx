@@ -258,6 +258,11 @@ export default function ProjectMembers({
                           (Creator)
                         </span>
                       )}
+                      {member.userId === session?.user?.id && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          (You)
+                        </span>
+                      )}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {member.user?.email}

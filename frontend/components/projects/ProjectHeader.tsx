@@ -584,19 +584,19 @@ export default function ProjectHeader({
               Delete Project
             </DialogTitle>
             <DialogDescription className="space-y-4">
-              <p>
+              <span>
                 This action <span className="font-bold">cannot be undone</span>.
                 This will permanently delete the project, all its tasks, files,
                 and remove all team members.
-              </p>
+              </span>
 
-              <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md text-amber-800 dark:text-amber-300 text-sm flex items-start">
+              <span className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md text-amber-800 dark:text-amber-300 text-sm flex items-start mt-2">
                 <AlertTriangle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
                 <span>
                   To confirm, please type{" "}
                   <span className="font-bold">{project.name}</span> below
                 </span>
-              </div>
+              </span>
 
               <Input
                 value={confirmText}
