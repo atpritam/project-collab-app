@@ -49,6 +49,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
   const loadingRef = useRef<boolean>(false);
   const selectedProjectRef = useRef<string | null>(null);
   const processedMessagesRef = useRef<Set<string>>(new Set());
+  const pendingOptimisticMessagesRef = useRef<Map<string, string>>(new Map());
 
   const fetchMessages = useCallback(
     async (showLoading = true, force = false) => {
@@ -81,9 +82,12 @@ const TeamChat: React.FC<TeamChatProps> = ({
         if (response.ok) {
           const data = await response.json();
           processedMessagesRef.current = new Set();
+          pendingOptimisticMessagesRef.current.clear();
+
           data.forEach((msg: TeamChatMessage) => {
             processedMessagesRef.current.add(msg.id);
           });
+
           setMessages(data);
         } else {
           console.error("Failed to fetch team messages");
@@ -114,6 +118,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
     if (selectedProject && selectedProject.id !== selectedProjectRef.current) {
       setMessages([]);
       processedMessagesRef.current = new Set();
+      pendingOptimisticMessagesRef.current.clear();
       fetchMessages(true, true);
       if (selectedProject.id) {
         joinTeamChat(selectedProject.id);
@@ -140,6 +145,19 @@ const TeamChat: React.FC<TeamChatProps> = ({
             console.log(`Skipping duplicate message: ${data.message.id}`);
             return prevMessages;
           }
+
+          const tempMessageContent = pendingOptimisticMessagesRef.current.get(
+            data.message.content
+          );
+          if (tempMessageContent && data.message.userId === currentUserId) {
+            pendingOptimisticMessagesRef.current.delete(data.message.content);
+            processedMessagesRef.current.add(data.message.id);
+
+            return prevMessages
+              .filter((msg) => msg.id !== tempMessageContent)
+              .concat(data.message);
+          }
+
           processedMessagesRef.current.add(data.message.id);
           return [...prevMessages, data.message];
         });
@@ -150,7 +168,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
     return () => {
       socket.off("new_team_message", handleNewTeamMessage);
     };
-  }, [socket, selectedProject, isConnected]);
+  }, [socket, selectedProject, isConnected, currentUserId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -178,6 +196,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
           },
         };
 
+        pendingOptimisticMessagesRef.current.set(content, tempId);
         processedMessagesRef.current.add(tempId);
 
         setMessages((prev) => [...prev, optimisticMessage]);
