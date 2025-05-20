@@ -4,16 +4,15 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; fileId: string } }
+  context: { params: { id: string; fileId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: projectId, fileId } = params;
+    const { id: projectId, fileId } = context.params;
 
     // Request to the backend service
     const response = await fetch(
