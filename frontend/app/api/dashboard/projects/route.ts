@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
     const searchParams = new URL(req.url).searchParams;
     const limit = searchParams.get("limit");
 
-    const backendUrl = process.env.BACKEND_URL || "http://backend-service:4000";
+    const backendUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
     const url = new URL(`${backendUrl}/api/dashboard/projects`);
 
     if (limit) {
