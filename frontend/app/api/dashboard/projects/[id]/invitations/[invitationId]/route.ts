@@ -6,7 +6,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string; invitationId: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 

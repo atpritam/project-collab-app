@@ -5,8 +5,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 // DELETE /api/tasks/files/[fileId] - Delete a task file
 export async function DELETE(
   request: NextRequest,
-  context: { params: { fileId: string } }
-) {
+  { params }: { params: Promise<{ fileId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,7 +14,8 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { fileId } = context.params;
+    const resolvedParams = await params;
+    const { fileId } = resolvedParams;
 
     // Request to the backend service
     const response = await fetch(

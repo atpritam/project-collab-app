@@ -5,8 +5,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 // DELETE /api/tasks/[taskId] - Delete a task
 export async function DELETE(
   request: NextRequest,
-  context: { params: { taskId: string } }
-) {
+  { params }: { params: Promise<{ taskId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,7 +14,8 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = context.params;
+    const resolvedParams = await params;
+    const { taskId } = resolvedParams;
     const userId = session.user.id;
 
     // Request to the backend service

@@ -6,7 +6,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ token: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     const params = await context.params;

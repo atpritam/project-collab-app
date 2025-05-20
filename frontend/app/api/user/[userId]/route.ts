@@ -4,8 +4,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+  context: { params: Promise<{ userId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -13,7 +13,8 @@ export async function GET(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId } = params;
+    const resolvedParams = await context.params;
+    const { userId } = resolvedParams;
 
     if (!userId) {
       return NextResponse.json(
