@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 // GET /api/invitations/token/[token] - Validate an invitation token
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ token: string }> }
 ) {
   try {

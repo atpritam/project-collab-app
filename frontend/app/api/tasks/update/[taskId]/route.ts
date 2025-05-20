@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 // PATCH /api/tasks/update/[taskId] - Update a task
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   context: { params: { taskId: string } }
 ) {
   try {

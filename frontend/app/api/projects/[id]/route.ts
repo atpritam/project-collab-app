@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -58,7 +58,7 @@ export async function GET(
 }
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -115,7 +115,7 @@ export async function PATCH(
 
 // Delete project
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {

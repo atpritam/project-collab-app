@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 // POST /api/tasks/complete/[taskId] - Add completion details to a task
 export async function POST(
-  request: Request,
+  request: NextRequest,
   context: { params: { taskId: string } }
 ) {
   try {
