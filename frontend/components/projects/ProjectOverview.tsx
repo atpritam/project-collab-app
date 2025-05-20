@@ -1,22 +1,48 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Clock, Users, CalendarDays } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Users,
+  CalendarDays,
+  AlertTriangle,
+} from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import ProjectMembers from "./ProjectMembers";
 
 interface ProjectOverviewProps {
   project: any;
   tasks: any[];
   isAdmin: boolean;
+  onProjectUpdated?: () => void;
 }
 
 export default function ProjectOverview({
   project,
   tasks,
   isAdmin,
+  onProjectUpdated,
 }: ProjectOverviewProps) {
+  const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [showStatusPrompt, setShowStatusPrompt] = useState(false);
+
   // task statistics
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === "DONE").length;
@@ -27,6 +53,20 @@ export default function ProjectOverview({
 
   const completionPercentage =
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  // Check if project is complete but status isn't set to COMPLETED
+  useEffect(() => {
+    if (
+      completionPercentage === 100 &&
+      totalTasks > 0 &&
+      project.status !== "COMPLETED" &&
+      isAdmin
+    ) {
+      setShowStatusPrompt(true);
+    } else {
+      setShowStatusPrompt(false);
+    }
+  }, [completionPercentage, totalTasks, project.status, isAdmin]);
 
   const getInitials = (name: string | null) => {
     if (!name) return "";
@@ -42,6 +82,43 @@ export default function ProjectOverview({
     return format(new Date(dateString), "MMMM d, yyyy");
   };
 
+  const handleMembersUpdated = () => {
+    if (onProjectUpdated) {
+      onProjectUpdated();
+    }
+  };
+
+  const handleMarkProjectCompleted = async () => {
+    if (!isAdmin) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "COMPLETED" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update project status");
+      }
+
+      toast.success("Project marked as completed!");
+
+      if (onProjectUpdated) {
+        onProjectUpdated();
+      }
+    } catch (error) {
+      console.error("Error updating project status:", error);
+      toast.error("Failed to update project status. Please try again.");
+    } finally {
+      setIsUpdatingStatus(false);
+      setIsCompletionDialogOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Project Progress */}
@@ -51,6 +128,37 @@ export default function ProjectOverview({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {showStatusPrompt && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4 flex items-start">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-3 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-amber-800 dark:text-amber-300 font-medium">
+                    All tasks are completed!
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    Would you like to mark this project as completed?
+                  </p>
+                  <div className="mt-2 flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="bg-white dark:bg-background cursor-pointer"
+                      onClick={() => setShowStatusPrompt(false)}
+                    >
+                      Dismiss
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                      onClick={() => setIsCompletionDialogOpen(true)}
+                    >
+                      Mark as Completed
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm font-medium">Overall Completion</span>
@@ -96,63 +204,15 @@ export default function ProjectOverview({
         </CardContent>
       </Card>
 
-      {/* Project Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Team Members */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              Team Members
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {project.members && project.members.length > 0 ? (
-              <div className="space-y-4">
-                {project.members.map((member: any) => (
-                  <div
-                    key={member.userId}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center">
-                      <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage
-                          src={member.user?.image || ""}
-                          alt={member.user?.name || ""}
-                          className="object-cover"
-                        />
-                        <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                          {getInitials(member.user?.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">
-                          {member.user?.name || "Unknown User"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {member.role === "ADMIN"
-                            ? "Admin"
-                            : member.role === "EDITOR"
-                            ? "Editor"
-                            : "Member"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-muted-foreground">
-                  No team members added yet
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="flex gap-4 flex-col md:flex-row">
+        <ProjectMembers
+          projectId={project.id}
+          project={project}
+          onMembersUpdated={handleMembersUpdated}
+        />
 
-        {/* Project Details Card */}
-        <Card>
+        {/* Project Details */}
+        <Card className="flex md:w-sm w-full">
           <CardHeader>
             <CardTitle className="flex items-center">
               <CalendarDays className="h-5 w-5 mr-2" />
@@ -196,6 +256,32 @@ export default function ProjectOverview({
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog
+        open={isCompletionDialogOpen}
+        onOpenChange={setIsCompletionDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark Project as Completed?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All tasks in this project are complete. Changing the project
+              status to "Completed" will notify all team members that the
+              project has been finalized.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkProjectCompleted}
+              className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+              disabled={isUpdatingStatus}
+            >
+              {isUpdatingStatus ? "Updating..." : "Mark as Completed"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

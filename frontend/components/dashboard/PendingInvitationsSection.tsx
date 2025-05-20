@@ -27,6 +27,7 @@ export default function PendingInvitationsSection({
 }: PendingInvitationsSectionProps) {
   const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [state, setState] = useState<string>("");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -52,6 +53,7 @@ export default function PendingInvitationsSection({
   };
 
   const handleAccept = async (invitationId: string) => {
+    setState("Accept");
     setProcessingId(invitationId);
     try {
       const response = await fetch(`/api/invitations/accept`, {
@@ -85,11 +87,13 @@ export default function PendingInvitationsSection({
       toast.error("An unexpected error occurred");
     } finally {
       setProcessingId(null);
+      setState("");
     }
   };
 
   const handleDecline = async (invitationId: string) => {
     setProcessingId(invitationId);
+    setState("Decline");
     try {
       const response = await fetch(`/api/invitations/decline`, {
         method: "POST",
@@ -114,6 +118,7 @@ export default function PendingInvitationsSection({
       toast.error("An unexpected error occurred");
     } finally {
       setProcessingId(null);
+      setState("");
     }
   };
 
@@ -199,7 +204,7 @@ export default function PendingInvitationsSection({
                     onClick={() => handleDecline(invitation.id)}
                     disabled={processingId === invitation.id}
                   >
-                    {processingId === invitation.id ? (
+                    {processingId === invitation.id && state === "Decline" ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
@@ -214,7 +219,7 @@ export default function PendingInvitationsSection({
                     onClick={() => handleAccept(invitation.id)}
                     disabled={processingId === invitation.id}
                   >
-                    {processingId === invitation.id ? (
+                    {processingId === invitation.id && state === "Accept" ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>

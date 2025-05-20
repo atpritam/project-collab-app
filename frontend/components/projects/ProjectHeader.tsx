@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Menu,
   Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -30,13 +31,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
@@ -66,8 +60,10 @@ export default function ProjectHeader({
   const [inviteError, setInviteError] = useState("");
   const [isInviting, setIsInviting] = useState(false);
   const [showRoleOptions, setShowRoleOptions] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showStatusOptions, setShowStatusOptions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
 
   const router = useRouter();
 
@@ -81,6 +77,8 @@ export default function ProjectHeader({
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("MEMBER");
+
+  const [status, setStatus] = useState(project.status || "IN_PROGRESS");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -137,10 +135,6 @@ export default function ProjectHeader({
     }
 
     try {
-      console.log(
-        `Sending invitation to: ${inviteEmail} with role: ${inviteRole}`
-      );
-
       const response = await fetch(`/api/projects/${project.id}/invite`, {
         method: "POST",
         headers: {
@@ -170,6 +164,41 @@ export default function ProjectHeader({
       setInviteError("An unexpected error occurred");
     } finally {
       setIsInviting(false);
+    }
+  };
+
+  const handleDeleteProject = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
+    if (confirmText !== project.name) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete project");
+      }
+
+      setDeleteDialogOpen(false);
+      setConfirmText("");
+      toast.success("Project deleted successfully");
+
+      setTimeout(() => {
+        router.push("/projects");
+      }, 500);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete project"
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -211,27 +240,19 @@ export default function ProjectHeader({
     }
   };
 
-  async function handleDeleteProject() {
-    try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete project");
-      }
-
-      toast.success("Project deleted successfully");
-      setIsEditDialogOpen(false);
-      router.push("/projects");
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      toast.error("Failed to delete project");
-    } finally {
-      setIsDeleting(false);
-      setConfirmDelete(false);
+  const getStatusDisplay = (status: string) => {
+    switch (status) {
+      case "IN_PROGRESS":
+        return "In Progress";
+      case "AT_RISK":
+        return "At Risk";
+      case "COMPLETED":
+        return "Completed";
+      default:
+        return "Select a status";
     }
-  }
+  };
+
   return (
     <div className="w-full px-2 sm:px-4">
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
@@ -340,6 +361,16 @@ export default function ProjectHeader({
                   <UserPlus className="h-4 w-4 mr-2" />
                   Invite Member
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => {
+                    setConfirmText("");
+                    setDeleteDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Project
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -367,15 +398,8 @@ export default function ProjectHeader({
         </div>
       )}
 
-      <Dialog
-        open={isEditDialogOpen}
-        onOpenChange={(open) => {
-          setIsEditDialogOpen(open);
-          if (!open) {
-            setConfirmDelete(false);
-          }
-        }}
-      >
+      {/* Edit Project Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg mx-auto">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
@@ -414,22 +438,74 @@ export default function ProjectHeader({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="status" className="text-sm font-medium">
-                  Status
-                </label>
-                <Select
-                  value={formData.status}
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                    <SelectItem value="AT_RISK">At Risk</SelectItem>
-                    <SelectItem value="COMPLETED">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="role">Status</Label>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowStatusOptions(!showStatusOptions)}
+                    className="w-full flex items-center justify-between px-3 py-2 border border-input rounded-md bg-background text-sm"
+                    id="role"
+                  >
+                    <span>{getStatusDisplay(status)}</span>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </button>
+
+                  {showStatusOptions && (
+                    <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-popover shadow-md">
+                      <div className="py-1">
+                        <button
+                          type="button"
+                          className="relative w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            setStatus("IN_PROGRESS");
+                            setShowStatusOptions(false);
+                            formData.status = "IN_PROGRESS";
+                          }}
+                        >
+                          <span className="mr-2 flex h-3.5 w-3.5 items-center justify-center">
+                            {status === "IN_PROGRESS" && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </span>
+                          In Progress
+                        </button>
+                        <button
+                          type="button"
+                          className="relative w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            setStatus("AT_RISK");
+                            setShowStatusOptions(false);
+                            formData.status = "AT_RISK";
+                          }}
+                        >
+                          <span className="mr-2 flex h-3.5 w-3.5 items-center justify-center">
+                            {status === "AT_RISK" && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </span>
+                          At Risk
+                        </button>
+                        <button
+                          type="button"
+                          className="relative w-full flex items-center px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            setStatus("COMPLETED");
+                            setShowStatusOptions(false);
+                            formData.status = "COMPLETED";
+                          }}
+                        >
+                          <span className="mr-2 flex h-3.5 w-3.5 items-center justify-center">
+                            {status === "COMPLETED" && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </span>
+                          Completed
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -450,34 +526,19 @@ export default function ProjectHeader({
             <div className="flex flex-col sm:flex-row w-full justify-between items-center gap-4">
               <Button
                 onClick={() => {
-                  if (confirmDelete) {
-                    setIsDeleting(true);
-                    handleDeleteProject();
-                  } else {
-                    setConfirmDelete(true);
-                  }
+                  setConfirmText("");
+                  setDeleteDialogOpen(true);
+                  setIsEditDialogOpen(false);
                 }}
                 className="w-full sm:w-auto dark:bg-red-600/70 dark:hover:bg-red-600/80 text-white bg-red-600 hover:bg-red-700 cursor-pointer"
               >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4" />
-                    {confirmDelete ? "Are you sure?" : "Delete Project"}
-                  </>
-                )}
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Project
               </Button>
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-2 w-full sm:w-auto justify-end">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setIsEditDialogOpen(false);
-                    setConfirmDelete(false);
-                  }}
+                  onClick={() => setIsEditDialogOpen(false)}
                   className="w-full sm:w-auto"
                 >
                   Cancel
@@ -489,12 +550,12 @@ export default function ProjectHeader({
                 >
                   {isUpdating ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Saving...
                     </>
                   ) : (
                     <>
-                      <CheckIcon className="h-4 w-4" />
+                      <CheckIcon className="h-4 w-4 mr-2" />
                       Save Changes
                     </>
                   )}
@@ -505,6 +566,86 @@ export default function ProjectHeader({
         </DialogContent>
       </Dialog>
 
+      {/* Delete Project Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          if (!isDeleting) {
+            setDeleteDialogOpen(open);
+            setIsEditDialogOpen(false);
+            if (!open) setConfirmText("");
+          }
+        }}
+      >
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-red-600">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              Delete Project
+            </DialogTitle>
+            <DialogDescription className="space-y-4">
+              <p>
+                This action <span className="font-bold">cannot be undone</span>.
+                This will permanently delete the project, all its tasks, files,
+                and remove all team members.
+              </p>
+
+              <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md text-amber-800 dark:text-amber-300 text-sm flex items-start">
+                <AlertTriangle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                <span>
+                  To confirm, please type{" "}
+                  <span className="font-bold">{project.name}</span> below
+                </span>
+              </div>
+
+              <Input
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder={`Type "${project.name}" to confirm`}
+                className={
+                  confirmText === project.name ? "border-green-500" : ""
+                }
+              />
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2 sm:space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setConfirmText("");
+              }}
+              disabled={isDeleting}
+              className="mt-3 sm:mt-0"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={(e) => handleDeleteProject(e)}
+              disabled={isDeleting || confirmText !== project.name}
+              className={`bg-red-600 hover:bg-red-700 text-white ${
+                confirmText !== project.name
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Dialog */}
       <Dialog
         open={isInviteDialogOpen}
         onOpenChange={(open) => {
@@ -622,12 +763,12 @@ export default function ProjectHeader({
                   the project
                 </p>
                 <p>
-                  <span className="font-medium">Editor:</span> Can edit tasks
-                  and project details
+                  <span className="font-medium">Editor:</span> Create and manage
+                  tasks
                 </p>
                 <p>
-                  <span className="font-medium">Member:</span> Can view and
-                  comment on tasks
+                  <span className="font-medium">Member:</span> View project and
+                  participate in tasks assigned to them.
                 </p>
               </div>
             </div>

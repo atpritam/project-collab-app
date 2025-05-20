@@ -307,15 +307,6 @@ export default function ProjectTasks({
 
     return (
       <div className="px-1 space-y-3">
-        {(isAdmin || isEditor) && (
-          <div className="flex justify-end">
-            <Button size="sm" onClick={handleTaskCreated}>
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Add Task
-            </Button>
-          </div>
-        )}
-
         <div className="flex justify-center items-center gap-1.5 mb-2">
           {columns.map((column, i) => (
             <div

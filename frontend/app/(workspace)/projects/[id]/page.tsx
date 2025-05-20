@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectOverview from "@/components/projects/ProjectOverview";
 import ProjectTasks from "@/components/projects/ProjectTasks";
@@ -14,7 +13,6 @@ import { toast } from "sonner";
 
 export default function ProjectDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
   const { data: session, status } = useSession();
 
@@ -72,10 +70,6 @@ export default function ProjectDetailPage() {
   };
 
   const fetchTasksData = async () => {
-    if (tasks.length > 0) {
-      return;
-    }
-
     setIsTasksLoading(true);
     try {
       const tasksRes = await fetch(`/api/tasks/project/${id}`);
@@ -163,6 +157,7 @@ export default function ProjectDetailPage() {
                 project={project}
                 tasks={tasks}
                 isAdmin={isAdmin}
+                onProjectUpdated={fetchProjectData}
               />
             </TabsContent>
 

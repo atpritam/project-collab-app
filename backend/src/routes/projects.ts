@@ -686,3 +686,237 @@ projectsRouter.delete(
     })();
   }
 );
+
+// PATCH /api/projects/:projectId/members/role - Update a member's role
+projectsRouter.patch(
+  "/:projectId/members/role",
+  function (req: Request, res: Response) {
+    const { projectId } = req.params;
+    const { role } = req.body;
+    const userId = (req.headers["x-user-id"] as string) || req.body.userId;
+    const memberId =
+      (req.headers["x-member-id"] as string) || req.body.memberId;
+
+    (async () => {
+      if (!projectId) {
+        return res.status(400).json({ message: "Project ID is required" });
+      }
+      if (!memberId) {
+        return res.status(400).json({ message: "Member ID is required" });
+      }
+
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      if (!role || !["ADMIN", "EDITOR", "MEMBER"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      try {
+        const project = await prisma.project.findUnique({
+          where: { id: projectId },
+          include: {
+            members: true,
+          },
+        });
+
+        if (!project) {
+          return res.status(404).json({ message: "Project not found" });
+        }
+
+        const memberToUpdate = await prisma.projectMember.findUnique({
+          where: { id: memberId },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+        if (!memberToUpdate) {
+          return res.status(404).json({ message: "Member not found" });
+        }
+
+        // Check if the member belongs to this project
+        if (memberToUpdate.projectId !== projectId) {
+          return res.status(400).json({
+            message: "Member does not belong to this project",
+          });
+        }
+
+        if (memberToUpdate.userId === userId) {
+          return res.status(403).json({
+            message: "You cannot change your own role",
+          });
+        }
+
+        // Current user's role
+        const isProjectCreator = project.creatorId === userId;
+        const currentUser = project.members.find(
+          (member: any) => member.userId === userId
+        );
+
+        // Only project creator (admin) can modify admin roles
+        // Other admins can only change roles of editors and members
+        if (memberToUpdate.role === "ADMIN" && !isProjectCreator) {
+          return res.status(403).json({
+            message: "Only the project creator can modify admin roles",
+          });
+        }
+
+        // Only admins can change roles
+        if (
+          !isProjectCreator &&
+          (!currentUser || currentUser.role !== "ADMIN")
+        ) {
+          return res.status(403).json({
+            message: "Only admins can change member roles",
+          });
+        }
+
+        // Check if this is the only admin
+        if (
+          memberToUpdate.role === "ADMIN" &&
+          role !== "ADMIN" &&
+          project.members.filter((m: any) => m.role === "ADMIN").length <= 1
+        ) {
+          return res.status(400).json({
+            message: "Cannot change role: project must have at least one admin",
+          });
+        }
+
+        // Update the member's role
+        const updatedMember = await prisma.projectMember.update({
+          where: { id: memberId },
+          data: { role },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        });
+
+        res.status(200).json({
+          message: "Member role updated successfully",
+          member: updatedMember,
+        });
+      } catch (error) {
+        console.error("Error updating member role:", error);
+        res.status(500).json({ message: "Failed to update member role" });
+      }
+    })();
+  }
+);
+
+// DELETE /api/projects/:projectId/members/remove - Remove a member from a project
+projectsRouter.delete(
+  "/:projectId/members/remove",
+  function (req: Request, res: Response) {
+    const { projectId } = req.params;
+    const userId = (req.headers["x-user-id"] as string) || req.body.userId;
+    const memberId =
+      (req.headers["x-member-id"] as string) || req.body.memberId;
+    (async () => {
+      if (!projectId) {
+        return res.status(400).json({ message: "Project ID is required" });
+      }
+      if (!memberId) {
+        return res.status(400).json({ message: "Member ID is required" });
+      }
+
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      try {
+        const project = await prisma.project.findUnique({
+          where: { id: projectId },
+          include: {
+            members: true,
+          },
+        });
+
+        if (!project) {
+          return res.status(404).json({ message: "Project not found" });
+        }
+
+        const memberToRemove = await prisma.projectMember.findUnique({
+          where: { id: memberId },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+        if (!memberToRemove) {
+          return res.status(404).json({ message: "Member not found" });
+        }
+
+        // Check if the member belongs to this project
+        if (memberToRemove.projectId !== projectId) {
+          return res.status(400).json({
+            message: "Member does not belong to this project",
+          });
+        }
+
+        // Check if the user is trying to remove themselves
+        if (memberToRemove.userId === userId) {
+          return res.status(403).json({
+            message: "You cannot remove yourself from the project",
+          });
+        }
+
+        // Current user's role
+        const isProjectCreator = project.creatorId === userId;
+        const currentUser = project.members.find(
+          (member: any) => member.userId === userId
+        );
+
+        // Only project creator (admin) can remove admins
+        // Other admins can only remove editors and members
+        if (memberToRemove.role === "ADMIN" && !isProjectCreator) {
+          return res.status(403).json({
+            message: "Only the project creator can remove admins",
+          });
+        }
+
+        // Only admins can remove members
+        if (
+          !isProjectCreator &&
+          (!currentUser || currentUser.role !== "ADMIN")
+        ) {
+          return res.status(403).json({
+            message: "Only admins can remove members",
+          });
+        }
+
+        // Delete the member
+        await prisma.projectMember.delete({
+          where: { id: memberId },
+        });
+
+        res.status(200).json({
+          message: "Member removed successfully",
+        });
+      } catch (error) {
+        console.error("Error removing project member:", error);
+        res.status(500).json({ message: "Failed to remove member" });
+      }
+    })();
+  }
+);
