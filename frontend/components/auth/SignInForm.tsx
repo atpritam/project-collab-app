@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import {
   Lock,
   ArrowLeft,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,19 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 
-export default function SignInForm() {
+function LoadingForm() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -336,5 +349,14 @@ export default function SignInForm() {
         </CardFooter>
       </Card>
     </motion.div>
+  );
+}
+
+// Suspense boundary
+export default function SignIn() {
+  return (
+    <Suspense fallback={<LoadingForm />}>
+      <SignInForm />
+    </Suspense>
   );
 }

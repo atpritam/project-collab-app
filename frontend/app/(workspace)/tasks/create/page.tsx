@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ interface Project {
   }[];
 }
 
-export default function TaskPage() {
+function TaskPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,5 +109,26 @@ export default function TaskPage() {
         onSuccess={handleTaskCreationSuccess}
       />
     </div>
+  );
+}
+
+function LoadingTaskCreate() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// Suspense boundary
+export default function TaskCreate() {
+  return (
+    <Suspense fallback={<LoadingTaskCreate />}>
+      <TaskPage />
+    </Suspense>
   );
 }

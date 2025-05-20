@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import {
   format,
@@ -20,7 +20,7 @@ import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function CalendarPage() {
+function CalendarPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
@@ -35,12 +35,10 @@ export default function CalendarPage() {
   const [calendarData, setCalendarData] = useState<any>(null);
   const [deadlinesData, setDeadlinesData] = useState<any[]>([]);
 
-  // Mark initial render complete after first render
   useEffect(() => {
     setIsInitialRender(false);
   }, []);
 
-  // Fetch calendar data when the selected date changes
   useEffect(() => {
     if (session?.user?.id) {
       fetchCalendarData();
@@ -253,5 +251,26 @@ export default function CalendarPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// Suspense boundary
+export default function CalendarPageSuspense() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CalendarPage />
+    </Suspense>
   );
 }
