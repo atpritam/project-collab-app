@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string; fileId: string } }
+  context: { params: { id: string; fileId: any } }
 ) {
   try {
     const session = await getServerSession(authOptions);
