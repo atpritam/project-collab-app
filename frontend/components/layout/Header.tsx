@@ -130,7 +130,7 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="flex items-center gap-1 text-foreground/70 hover:text-violet-900"
+                    className="flex items-center gap-1 text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                   >
                     Features
                     <ChevronDown className="h-4 w-4" />
@@ -170,7 +170,7 @@ export default function Header() {
 
               <Button
                 variant="ghost"
-                className="text-foreground/70 hover:text-violet-900"
+                className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 onClick={() => scrollToSection("pricing")}
               >
                 Pricing
@@ -178,7 +178,7 @@ export default function Header() {
 
               <Button
                 variant="ghost"
-                className="text-foreground/70 hover:text-violet-900"
+                className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 onClick={() => scrollToSection("testimonials")}
               >
                 Testimonials
@@ -186,7 +186,7 @@ export default function Header() {
 
               <Button
                 variant="ghost"
-                className="text-foreground/70 hover:text-violet-900"
+                className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 onClick={() => scrollToSection("cta")}
               >
                 FAQ
@@ -196,7 +196,7 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   asChild
-                  className="text-foreground/70 hover:text-violet-900"
+                  className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 >
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>

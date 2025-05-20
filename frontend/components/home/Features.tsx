@@ -98,12 +98,15 @@ const Features = React.forwardRef<HTMLDivElement, FeaturesProps>(
                 {features.map((feature, index) => (
                   <div
                     key={index}
-                    className="relative bg-card p-8 rounded-xl border border-border hover:shadow-lg transition-all hover:border-violet-200 dark:hover:border-violet-800 group"
+                    className="relative bg-card p-8 rounded-xl border border-border hover:shadow-lg transition-all hover:border-violet-200 dark:hover:border-violet-400 group cursor-pointer"
+                    onClick={() => {
+                      window.location.href = "/auth/signup";
+                    }}
                   >
-                    <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center mb-6 group-hover:bg-violet-700 dark:group-hover:bg-violet-700 transition-colors">
+                    <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center mb-6 group-hover:bg-violet-700 transition-colors">
                       {React.cloneElement(feature.icon, {
                         className:
-                          "h-6 w-6 text-violet-700 dark:text-violet-400 group-hover:text-white transition-colors",
+                          "h-6 w-6 text-violet-700 dark:text-violet-400 group-hover:text-white dark:group-hover:text-white transition-colors",
                       })}
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-3">
