@@ -5,7 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;

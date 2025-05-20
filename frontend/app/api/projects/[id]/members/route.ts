@@ -5,8 +5,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 // DELETE /api/projects/[id]/members - Remove a project member
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,7 +14,8 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const projectId = params.id;
+    const resolvedParams = await params;
+    const projectId = resolvedParams.id;
     const memberId = request.headers.get("x-member-id");
     const userId = session.user.id;
 
