@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -320,16 +320,60 @@ export default function WorkspaceSidebar() {
       </div>
 
       <div className="flex items-center">
-        <Avatar className="h-8 w-8 cursor-pointer">
-          <AvatarImage
-            src={userImage}
-            alt={userName}
-            className="object-cover"
-          />
-          <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-xs">
-            {getInitials(userName)}
-          </AvatarFallback>
-        </Avatar>
+        <div className="border-t border-border/40 p-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 p-2 w-full justify-start"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={userImage}
+                    alt={userName}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-xs">
+                    {getInitials(userName)}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer w-full">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/profile?tab=settings"
+                  className="cursor-pointer w-full"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="p-2">
+                <ThemeToggle />
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex w-full items-center text-red-600 focus:text-red-600 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );
