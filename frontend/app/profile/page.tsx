@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
@@ -20,7 +20,23 @@ import { AccountActions } from "@/components/profile/account-actions";
 import { useUserSettings } from "@/components/context/UserSettingsContext";
 import { checkPassword } from "@/lib/utils";
 
-export default function ProfilePage() {
+// Loading fallback component
+function LoadingProfile() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+// Content component
+function ProfileContent() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -302,5 +318,14 @@ export default function ProfilePage() {
 
       <Footer />
     </div>
+  );
+}
+
+// Suspense boundary
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<LoadingProfile />}>
+      <ProfileContent />
+    </Suspense>
   );
 }
