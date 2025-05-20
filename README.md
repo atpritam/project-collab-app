@@ -1,15 +1,15 @@
+# Nudge - Project Collaboration Platform
+
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?logo=socket.io&logoColor=white)
 ![SMTP](https://img.shields.io/badge/SMTP-FF6600?logo=minutemailer&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-
-# Nudge - Project Collaboration Platform
 
 [![Nudge Logo](Photos/Nudge.png)](https://project-collab-app.vercel.app/)
 
@@ -28,10 +28,10 @@ Nudge is a sophisticated project collaboration platform designed to streamline t
 - **Role-Based Access Control**: Three-tiered permission system (Admin, Editor, Member) for secure collaboration
 - **Task Management**: Create, assign, and track tasks with priority levels, due dates, and status tracking
 - **Real-time Communication**: Integrated real-time chat system for both direct messaging and team discussions
+- **Email Service**: Email system for account verification, password reset, project invitations, security notifications and much more
 - **File Management**: Upload, organize, and share files within projects and tasks
-- **Comprehensive Dashboard**: Visual overview of projects, tasks, and activities
+- **Comprehensive Dashboard**: Visual overview of projects, tasks, and recent activities
 - **Calendar & Deadlines**: Track important project milestones and deadlines
-- **Activity Feed**: Stay updated with recent project activities and changes
 - **Kanban Board View**: Drag-and-drop task management with visual workflow stages
 - **Responsive Design**: Fully mobile-responsive interface for collaboration on any device
 
@@ -46,7 +46,6 @@ For demo and testing purposes, any invitation sent to "pritam.amit26@gmail.com" 
 ### Frontend
 
 - **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
 - **UI**: TailwindCSS with customized UI components
 - **Authentication**: NextAuth.js with email/password and social authentication (Google, Github)
 - **Form Handling**: React Hook Form with Zod validation
@@ -55,12 +54,10 @@ For demo and testing purposes, any invitation sent to "pritam.amit26@gmail.com" 
 ### Backend
 
 - **Server**: Node.js with Express
-- **Language**: TypeScript
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: JWT with bcrypt password hashing
 - **Real-time Communication**: Socket.IO server
 - **Email Service**: Integrated with SendGrid/SMTP for notifications
-- **File Storage**: Secure file storage with UploadThing
 
 ### DevOps
 
