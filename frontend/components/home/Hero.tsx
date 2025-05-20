@@ -1,9 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Zap, Users, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { useSession, signOut } from "next-auth/react";
 import { Calendar } from "lucide-react";
 
 interface HeroProps {
@@ -12,6 +14,13 @@ interface HeroProps {
 
 const Hero = React.forwardRef<HTMLDivElement, HeroProps>(
   ({ heroInView = true }, ref) => {
+    const { data: session, status } = useSession();
+    const isAuthenticated = status === "authenticated";
+
+    const handleSignOut = () => {
+      signOut({ callbackUrl: "/" });
+    };
+
     return (
       <div
         className="bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20"
@@ -63,23 +72,47 @@ const Hero = React.forwardRef<HTMLDivElement, HeroProps>(
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-violet-700 hover:bg-violet-900 dark:bg-violet-600 dark:hover:bg-violet-700 text-white font-medium px-8 py-6 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                >
-                  <Link href="/auth/signup">
-                    Get Started <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="border-border text-foreground hover:bg-muted font-medium px-8 py-6 rounded-lg transition-all"
-                >
-                  <Link href="/auth/signin">Sign In</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-violet-700 hover:bg-violet-900 dark:bg-violet-600 dark:hover:bg-violet-700 text-white font-medium px-8 py-6 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    >
+                      <Link href="/dashboard">
+                        Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="border-border text-foreground hover:bg-muted font-medium px-8 py-6 rounded-lg transition-all"
+                      onClick={handleSignOut}
+                    >
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-violet-700 hover:bg-violet-900 dark:bg-violet-600 dark:hover:bg-violet-700 text-white font-medium px-8 py-6 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    >
+                      <Link href="/auth/signup">
+                        Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="border-border text-foreground hover:bg-muted font-medium px-8 py-6 rounded-lg transition-all"
+                    >
+                      <Link href="/auth/signin">Sign In</Link>
+                    </Button>
+                  </>
+                )}
               </motion.div>
               <motion.div
                 className="mt-8 flex items-center text-muted-foreground text-sm"
