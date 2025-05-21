@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, X, User, LogOut, ChevronDown, Zap } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  ChevronDown,
+  Zap,
+  Settings,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,14 +83,16 @@ export default function Header() {
     setMobileMenuOpen(false);
 
     if (!isHomePage) {
-      router.push(`/#${sectionId}`);
+      router.push(`/?section=${sectionId}`);
       return;
     }
 
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-    }
+    setTimeout(() => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 300);
   };
 
   // user data
@@ -92,11 +102,13 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-200 ${
+      className={`top-0 z-50 w-full transition-all duration-200 ${
         scrolled
-          ? "bg-background/95 backdrop-blur-md shadow-sm"
-          : "bg-background"
-      }`}
+          ? "sticky bg-background/95"
+          : mobileMenuOpen
+          ? "sticky bg-background/10"
+          : "absolute bg-background/10"
+      } backdrop-blur-md shadow-sm`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -104,7 +116,8 @@ export default function Header() {
             <Link href="/" className="flex items-center gap-2">
               <motion.div
                 className="h-10 w-10 rounded-full bg-violet-700 flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, rotate: 360 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <svg
@@ -121,6 +134,7 @@ export default function Header() {
                   />
                 </svg>
               </motion.div>
+
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-700 to-purple-600">
                 Nudge
               </span>
@@ -231,13 +245,30 @@ export default function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80">
                     <DropdownMenuLabel className="pb-2">
-                      <UserAuthStatus />
+                      <UserAuthStatus
+                        Authenticated={isAuthenticated}
+                        Name={userName}
+                        Email={userEmail}
+                        Image={userImage}
+                      />
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
+                      <Link
+                        href="/profile?tab=profile"
+                        className="cursor-pointer"
+                      >
                         <User className="h-4 w-4 mr-2" />
                         Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/profile?tab=settings"
+                        className="cursor-pointer"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -346,6 +377,9 @@ export default function Header() {
                 <UserAuthStatus
                   mobile={true}
                   onAction={() => setMobileMenuOpen(false)}
+                  Authenticated={isAuthenticated}
+                  Name={userName}
+                  Email={userEmail}
                 />
               ) : (
                 <div className="mt-3 space-y-1 px-2">

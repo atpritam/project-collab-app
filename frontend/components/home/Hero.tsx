@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Zap, Users, FileText } from "lucide-react";
@@ -16,17 +16,31 @@ const Hero = React.forwardRef<HTMLDivElement, HeroProps>(
   ({ heroInView = true }, ref) => {
     const { data: session, status } = useSession();
     const isAuthenticated = status === "authenticated";
+    const [scrolled, setScrolled] = useState(false);
 
     const handleSignOut = () => {
       signOut({ callbackUrl: "/" });
     };
+
+    useEffect(() => {
+      const handleScroll = () => {
+        setScrolled(window.scrollY > 10);
+      };
+
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     return (
       <div
         className="bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20"
         ref={ref}
       >
-        <div className="max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8">
+        <div
+          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${
+            scrolled ? "pt-10" : "pt-30"
+          } pb-10`}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
               className="text-left"

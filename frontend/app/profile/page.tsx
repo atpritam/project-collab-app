@@ -266,10 +266,10 @@ function ProfileContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen ">
       <Header />
 
-      <main className="flex-grow">
+      <main className="flex-grow py-10">
         <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
           <ProfileHeader isSaving={isSaving} onSave={handleSubmit} />
 
