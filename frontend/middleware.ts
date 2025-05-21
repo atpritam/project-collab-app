@@ -20,6 +20,7 @@ const publicPaths = [
   "/auth/signup",
   "/auth/forgot-password",
   "/auth/reset-password",
+  "/auth/verify-email",
 ];
 
 // Check if the path is protected (requires auth)

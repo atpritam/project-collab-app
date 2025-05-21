@@ -59,6 +59,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
 
 export default function WorkspaceSidebar() {
   const { data: session } = useSession();
@@ -387,9 +388,27 @@ export default function WorkspaceSidebar() {
         }`}
       >
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-violet-700 flex items-center justify-center group-data-[collapsible=icon]:mx-auto">
-            <Zap className="h-4 w-4 text-white" />
-          </div>
+          <motion.div
+            className="h-8 w-8 rounded-full bg-violet-700 flex items-center justify-center"
+            whileHover={{ scale: 1.05, rotate: 360 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg
+              className="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </motion.div>
+
           <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-700 to-purple-600 transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden">
             Nudge
           </span>

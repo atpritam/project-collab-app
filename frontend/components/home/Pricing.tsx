@@ -28,8 +28,9 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
         popular: false,
         cta: "Get Started",
         color:
-          "bg-card border-border hover:border-violet-200 dark:hover:border-violet-800/40",
+          "bg-card border-border hover:border-violet-200 dark:hover:border-violet-400",
         buttonVariant: "outline",
+        last: false,
       },
       {
         name: "Pro",
@@ -48,8 +49,9 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
         popular: true,
         cta: "Try Pro Free",
         color:
-          "bg-gradient-to-b from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-200 dark:border-violet-800/40",
+          "bg-gradient-to-b from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-200 dark:border-violet-400",
         buttonVariant: "default",
+        last: false,
       },
       {
         name: "Enterprise",
@@ -68,8 +70,9 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
         popular: false,
         cta: "Contact Sales",
         color:
-          "bg-card border-border hover:border-violet-200 dark:hover:border-violet-800/40",
+          "bg-card border-border hover:border-violet-200 dark:hover:border-violet-400",
         buttonVariant: "outline",
+        last: true,
       },
     ];
 
@@ -118,22 +121,26 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
             </motion.p>
           </motion.div>
 
-          <div className="mt-10 space-y-8 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
+          <motion.div
+            className="mt-10 space-y-8 lg:grid lg:grid-cols-3 lg:gap-0 lg:space-y-0 lg:-space-x-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={
+              pricingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
+            }
+            transition={{ duration: 0.5, delay: 0.34 }}
+          >
             {pricingPlans.map((plan, index) => (
-              <motion.div
+              <div
                 key={plan.name}
-                className={`relative rounded-2xl ${
+                className={`group relative rounded-2xl ${
                   plan.color
                 } p-8 shadow-sm transition-all duration-300 flex flex-col h-full border ${
                   plan.popular
                     ? "ring-2 ring-violet-500 dark:ring-violet-400"
                     : ""
-                }`}
-                initial={{ opacity: 0, y: 30 }}
-                animate={
-                  pricingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
                 }
-                transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                    ${plan.popular ? "z-10 bg-accent" : "z-0"}
+                    `}
               >
                 {plan.popular && (
                   <div className="absolute top-0 right-6 transform -translate-y-1/2">
@@ -142,12 +149,18 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
                     </div>
                   </div>
                 )}
-                <div>
+                <div className={`${plan.last ? "lg:pl-4" : "pl-0"}`}>
                   <h3 className="text-2xl font-bold text-foreground">
                     {plan.name}
                   </h3>
-                  <div className="mt-4 flex items-baseline text-foreground">
-                    <span className="text-4xl font-extrabold tracking-tight">
+                  <div
+                    className={`mt-4 flex items-baseline text-foreground ${
+                      plan.popular
+                        ? ""
+                        : "group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors duration-200"
+                    }`}
+                  >
+                    <span className="text-4xl font-extrabold tracking-tight ">
                       {plan.price}
                     </span>
                     <span className="ml-1 text-xl font-medium">/month</span>
@@ -157,7 +170,11 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
                   </p>
                 </div>
 
-                <div className="mt-8 space-y-4 grow">
+                <div
+                  className={`mt-8 space-y-4 grow ${
+                    plan.last ? "lg:pl-4" : "pl-0"
+                  }`}
+                >
                   {plan.features.map((feature, idx) => (
                     <div key={idx} className="flex items-start">
                       {feature.included ? (
@@ -178,7 +195,7 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
                   ))}
                 </div>
 
-                <div className="mt-8">
+                <div className={`mt-8 ${plan.last ? "lg:pl-4" : "pl-0"}`}>
                   <Button
                     asChild
                     variant={
@@ -200,9 +217,9 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
                     </Link>
                   </Button>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </div>
+          </motion.div>
 
           <motion.div
             className="mt-16 text-center"

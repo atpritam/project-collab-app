@@ -353,6 +353,15 @@ authRouter.post("/verify-email", function (req: Request, res: Response) {
 
   (async () => {
     try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      if (user.emailVerified) {
+        return res.status(400).json({ message: "Email already verified" });
+      }
       const foundToken = await prisma.verificationToken.findFirst({
         where: {
           code,
@@ -370,10 +379,6 @@ authRouter.post("/verify-email", function (req: Request, res: Response) {
           .status(400)
           .json({ message: "Verification code has expired" });
       }
-
-      const user = await prisma.user.findUnique({
-        where: { email },
-      });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });

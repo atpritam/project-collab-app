@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import WorkspaceSidebar from "@/components/workspace/WorkspaceSidebar";
 import { Loader2 } from "lucide-react";
 import { UnifiedBreadcrumb } from "@/components/workspace/UnifiedBreadcrumb";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function WorkspaceLayout({
   children,
@@ -19,6 +20,7 @@ export default function WorkspaceLayout({
   const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   // Redirect unauthenticated users to sign-in page
   useEffect(() => {
@@ -43,7 +45,8 @@ export default function WorkspaceLayout({
           <main
             className={`flex-1 overflow-auto ${
               pathname === "/messages" ? "overflow-hidden" : "overflow-auto"
-            } md:pt-0 pt-14`}
+            } md:pt-0 pt-14
+             ${isMobile ? "px-0" : "px-8 lg:px-12"}`}
           >
             <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
               <UnifiedBreadcrumb />

@@ -8,21 +8,29 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface UserAuthStatusProps {
   mobile?: boolean;
   onAction?: () => void; // Callback for when an action is taken (e.g., signout or link click)
+  Authenticated?: boolean;
+  Name?: string;
+  Email?: string;
+  Image?: string;
 }
 
 export default function UserAuthStatus({
   mobile = false,
   onAction,
+  Authenticated = false,
+  Name = "",
+  Email = "",
+  Image = "",
 }: UserAuthStatusProps) {
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isAuthenticated = status === "authenticated";
+  const isAuthenticated = Authenticated || status === "authenticated";
 
   // user profile data fetching
   useEffect(() => {
-    if (isAuthenticated && session?.user?.id) {
+    if (isAuthenticated && session?.user?.id && (!Name || !Email || !Image)) {
       const fetchUserProfile = async () => {
         setIsLoading(true);
         try {
@@ -52,9 +60,9 @@ export default function UserAuthStatus({
   };
 
   // User data
-  const userName = userData?.name || session?.user?.name || "";
-  const userEmail = userData?.email || session?.user?.email || "";
-  const userImage = userData?.image || session?.user?.image || "";
+  const userName = Name || userData?.name || session?.user?.name || "";
+  const userEmail = Email || userData?.email || session?.user?.email || "";
+  const userImage = Image || userData?.image || session?.user?.image || "";
 
   const handleSignOut = async () => {
     if (onAction) onAction();
@@ -83,7 +91,7 @@ export default function UserAuthStatus({
       <>
         <div className="flex items-center px-4">
           <div className="flex-shrink-0">
-            <Avatar className="h-10 w-10 border border-violet-100">
+            <Avatar className="h-10 w-10">
               <AvatarImage
                 src={userImage}
                 alt={userName}
@@ -109,7 +117,7 @@ export default function UserAuthStatus({
             className="block px-3 py-2 rounded-md text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900"
             onClick={handleLinkClick}
           >
-            Your Profile
+            Profile
           </Link>
           <button
             onClick={handleSignOut}
@@ -126,7 +134,7 @@ export default function UserAuthStatus({
   return (
     <div className="px-4 py-2">
       <div className="flex items-center space-x-3">
-        <Avatar className="h-10 w-10 border border-violet-100">
+        <Avatar className="h-10 w-10">
           <AvatarImage
             src={userImage}
             alt={userName}

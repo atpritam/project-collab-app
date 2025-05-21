@@ -41,6 +41,7 @@ function VerifyEmailForm() {
   const [email, setEmail] = useState("");
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [emailAlreadyVerified, setEmailAlreadyVerified] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,6 +82,10 @@ function VerifyEmailForm() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 400) {
+          setEmailAlreadyVerified(true);
+          return;
+        }
         throw new Error(data.message || "Email verification failed");
       }
 
@@ -240,6 +245,28 @@ function VerifyEmailForm() {
               <p className="text-muted-foreground mb-6">
                 Your email has been verified. You'll be redirected to the sign
                 in page shortly.
+              </p>
+              <Button
+                asChild
+                variant="default"
+                className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-700 dark:hover:bg-violet-800 text-white"
+              >
+                <Link href="/auth/signin">Go to Sign In</Link>
+              </Button>
+            </div>
+          ) : emailAlreadyVerified ? (
+            <div className="text-center py-6">
+              <div className="flex justify-center mb-4">
+                <div className="h-16 w-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <p className="font-medium text-lg mb-2 text-green-600 dark:text-green-400">
+                Email already verified
+              </p>
+              <p className="text-muted-foreground mb-4">
+                Your email address is already verified. You can now sign in to
+                your account.
               </p>
               <Button
                 asChild

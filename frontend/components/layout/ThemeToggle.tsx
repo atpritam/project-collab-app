@@ -27,11 +27,19 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleThemeChange("light")}>
+        <DropdownMenuItem
+          onClick={() => handleThemeChange("light")}
+          className="cursor-pointer"
+          disabled={theme === "light"}
+        >
           <Sun className="mr-2 h-4 w-4" />
           <span>Light</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
+        <DropdownMenuItem
+          onClick={() => handleThemeChange("dark")}
+          className="cursor-pointer"
+          disabled={theme === "dark"}
+        >
           <Moon className="mr-2 h-4 w-4" />
           <span>Dark</span>
         </DropdownMenuItem>
