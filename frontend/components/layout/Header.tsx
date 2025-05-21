@@ -380,6 +380,7 @@ export default function Header() {
                   Authenticated={isAuthenticated}
                   Name={userName}
                   Email={userEmail}
+                  Image={userImage}
                 />
               ) : (
                 <div className="mt-3 space-y-1 px-2">
