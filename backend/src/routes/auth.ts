@@ -104,8 +104,12 @@ authRouter.post("/login", function (req: Request, res: Response) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Check if email is verified
-      if (!user.emailVerified) {
+      // Check if email is verified - for email/password users
+      const hasOAuthAccount = await prisma.account.findFirst({
+        where: { userId: user.id },
+      });
+
+      if (!hasOAuthAccount && !user.emailVerified) {
         return res.status(403).json({
           message:
             "Email not verified. Please check your inbox for verification link.",
@@ -157,10 +161,20 @@ authRouter.post("/oauth", function (req: Request, res: Response) {
             email,
             name,
             image,
+            emailVerified: new Date(),
           },
         });
-      }
-      if (!isNewUser) {
+      } else {
+        const existingOAuthAccount = await prisma.account.findFirst({
+          where: { userId: user.id },
+        });
+
+        if (!existingOAuthAccount && !user.emailVerified) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerified: new Date() },
+          });
+        }
       }
 
       // account info Update
@@ -185,10 +199,16 @@ authRouter.post("/oauth", function (req: Request, res: Response) {
         },
         update: {
           userId: user.id,
+          access_token,
+          refresh_token,
+          expires_at,
+          token_type,
+          scope,
+          id_token,
         },
       });
 
-      if (email_verified !== undefined) {
+      if (email_verified !== undefined && !user.emailVerified) {
         await prisma.user.update({
           where: { id: user.id },
           data: {
@@ -197,7 +217,10 @@ authRouter.post("/oauth", function (req: Request, res: Response) {
         });
       }
 
-      const { password: _, ...userWithoutPassword } = user;
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      const { password: _, ...userWithoutPassword } = updatedUser!;
       res.status(200).json(userWithoutPassword);
     } catch (err) {
       console.error(err);
@@ -353,6 +376,15 @@ authRouter.post("/verify-email", function (req: Request, res: Response) {
 
   (async () => {
     try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      if (user.emailVerified) {
+        return res.status(400).json({ message: "Email already verified" });
+      }
       const foundToken = await prisma.verificationToken.findFirst({
         where: {
           code,
@@ -370,10 +402,6 @@ authRouter.post("/verify-email", function (req: Request, res: Response) {
           .status(400)
           .json({ message: "Verification code has expired" });
       }
-
-      const user = await prisma.user.findUnique({
-        where: { email },
-      });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
