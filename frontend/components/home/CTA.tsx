@@ -42,7 +42,7 @@ const CTA = React.forwardRef<HTMLDivElement, CTAProps>(
                   size="lg"
                   className="border-border text-foreground hover:bg-muted font-medium"
                 >
-                  <Link href="/demo" className="inline-flex items-center">
+                  <Link href="#" className="inline-flex items-center">
                     Schedule a Demo <Calendar className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>

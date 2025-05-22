@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import UserAuthStatus from "@/components/auth/UserAuthStatus";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -35,6 +36,7 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   const isAuthenticated = status === "authenticated";
   const isHomePage = pathname === "/";
@@ -87,12 +89,15 @@ export default function Header() {
       return;
     }
 
-    setTimeout(() => {
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 300);
+    setTimeout(
+      () => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      },
+      isMobile ? 300 : 0
+    );
   };
 
   // user data

@@ -228,3 +228,19 @@
     transform: translateY(0);
   }
 }
+
+@keyframes beamEffect {
+  0% {
+    opacity: 0;
+    transform-origin: bottom right;
+    transform: rotate(calc(var(--rotation) * 1deg)) scaleX(0);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform-origin: bottom right;
+    transform: rotate(calc(var(--rotation) * 1deg)) scaleX(1);
+  }
+}

@@ -17,11 +17,11 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
         description: "Perfect for individuals and small teams",
         features: [
           { included: true, text: "Up to 5 projects" },
-          { included: true, text: "Up to 3 team members" },
+          { included: true, text: "Up to 4 team members" },
           { included: true, text: "Basic task management" },
           { included: true, text: "File sharing (100MB storage)" },
           { included: true, text: "Team chat & messaging" },
-          { included: false, text: "Role-based permissions" },
+          { included: true, text: "Role-based permissions" },
           { included: false, text: "Advanced reporting" },
           { included: false, text: "Priority support" },
         ],
@@ -37,7 +37,7 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
         price: "$29",
         description: "For growing teams and advanced projects",
         features: [
-          { included: true, text: "Unlimited projects" },
+          { included: true, text: "Up to 100 projects" },
           { included: true, text: "Up to 15 team members" },
           { included: true, text: "Advanced task management" },
           { included: true, text: "File sharing (10GB storage)" },
@@ -77,7 +77,7 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
     ];
 
     return (
-      <div className="py-20 bg-background" ref={ref}>
+      <div className="py-10 bg-background" ref={ref}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
