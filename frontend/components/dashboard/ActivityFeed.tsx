@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  ActivityIcon,
   CheckCircle,
   Clock,
   FileText,
@@ -249,7 +250,12 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
-          <div className="text-center p-6">
+          <div className="text-center p-8">
+            <div className="flex justify-center mb-4">
+              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                <ActivityIcon className="h-6 w-6 text-muted-foreground" />
+              </div>
+            </div>
             <p className="text-muted-foreground">No recent activity</p>
           </div>
         ) : (

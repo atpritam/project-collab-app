@@ -632,7 +632,7 @@ export default function TaskDetailsPage() {
               <Button
                 variant="default"
                 size="sm"
-                className="flex items-center bg-violet-600 hover:bg-violet-700"
+                className="flex items-center bg-violet-600 hover:bg-violet-700 dark:bg-violet-800 dark:hover:bg-violet-900 text-white"
                 onClick={handleSaveChanges}
                 disabled={isSaving}
               >
@@ -713,19 +713,22 @@ export default function TaskDetailsPage() {
             </CardContent>
           </Card>
 
-          {task.status === "DONE" && (
-            <Card>
-              <CardContent>
-                <TaskCompletion
-                  taskId={taskId}
-                  isAssignee={isAssignee}
-                  existingNote={task.completionNote}
-                  onNoteUpdated={handleCompletionNoteUpdate}
-                  deliverables={taskDeliverables}
-                />
-              </CardContent>
-            </Card>
-          )}
+          {task.status === "DONE" &&
+            (task.completionNote ||
+              taskDeliverables.length > 0 ||
+              isAssignee) && (
+              <Card>
+                <CardContent>
+                  <TaskCompletion
+                    taskId={taskId}
+                    isAssignee={isAssignee}
+                    existingNote={task.completionNote}
+                    onNoteUpdated={handleCompletionNoteUpdate}
+                    deliverables={taskDeliverables}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
           {(permissionLevel === "admin" || permissionLevel === "edit") && (
             <Card>

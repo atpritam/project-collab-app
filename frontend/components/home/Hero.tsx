@@ -60,22 +60,54 @@ const Hero = React.forwardRef<HTMLDivElement, HeroProps>(
     }, []);
 
     useEffect(() => {
+      const isChromeLike = !navigator.userAgent.includes("Firefox");
+
+      const taskCheckboxY = isChromeLike ? 315 : 355;
+      const taskCheckboxX = isChromeLike ? 20 : 25;
+      const taskCardX = isChromeLike ? 430 : 460;
+      const calendarCardX = isChromeLike ? 110 : 120;
+      const calendarCardY = isChromeLike ? 120 : 130;
+
       const animationSequence = [
-        { step: 0, x: 120, y: 130, duration: 1000, target: "calendar" },
+        {
+          step: 0,
+          x: calendarCardX,
+          y: calendarCardY,
+          duration: 1000,
+          target: "calendar",
+        },
         // Step 1: Click Calendar card
-        { step: 1, x: 120, y: 130, duration: 500, target: "calendar" },
+        {
+          step: 1,
+          x: calendarCardX,
+          y: calendarCardY,
+          duration: 500,
+          target: "calendar",
+        },
         // Step 2: Move to Team card
         { step: 2, x: 210, y: 130, duration: 1200, target: "team" },
         // Step 3: Click Team card
         { step: 3, x: 210, y: 130, duration: 500, target: "team" },
         // Step 4: Move to Tasks card
-        { step: 4, x: 480, y: 130, duration: 1200, target: "tasks" },
+        { step: 4, x: taskCardX, y: 130, duration: 1200, target: "tasks" },
         // Step 5: Click Tasks card
-        { step: 5, x: 480, y: 130, duration: 500, target: "tasks" },
-        // Step 6: Move to third task checkbox
-        { step: 6, x: 25, y: 355, duration: 1000, target: "task" },
-        // Step 7: Complete third task (click checkbox)
-        { step: 7, x: 25, y: 355, duration: 500, target: "task" },
+        { step: 5, x: taskCardX, y: 130, duration: 500, target: "tasks" },
+        // Step 6: Move to third task checkbox (browser-adaptive Y coordinate)
+        {
+          step: 6,
+          x: taskCheckboxX,
+          y: taskCheckboxY,
+          duration: 1000,
+          target: "task",
+        },
+        // Step 7: Complete third task (click checkbox) (browser-adaptive Y coordinate)
+        {
+          step: 7,
+          x: taskCheckboxX,
+          y: taskCheckboxY,
+          duration: 500,
+          target: "task",
+        },
         // Step 8: Hide cursor and reset
         { step: 8, x: 40, y: 305, duration: 1500, target: null },
       ];
@@ -86,7 +118,6 @@ const Hero = React.forwardRef<HTMLDivElement, HeroProps>(
       const runAnimation = () => {
         if (currentIndex < animationSequence.length) {
           const current = animationSequence[currentIndex];
-
           setShowCursor(currentIndex < animationSequence.length - 1);
           setCursorPosition({ x: current.x, y: current.y });
           setCurrentStep(current.step);

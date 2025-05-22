@@ -298,7 +298,7 @@ export default function Header() {
                 <Button
                   asChild
                   variant="ghost"
-                  className="text-foreground/70 hover:text-violet-900"
+                  className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 >
                   <Link href="/auth/signin">Sign In</Link>
                 </Button>

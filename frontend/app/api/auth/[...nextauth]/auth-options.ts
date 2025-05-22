@@ -135,7 +135,9 @@ export const authOptions: NextAuthOptions = {
                 token_type: account.token_type,
                 scope: account.scope,
                 id_token: account.id_token,
-                email_verified: token.email_verified ?? null,
+                email_verified: existingUserData
+                  ? undefined
+                  : token.email_verified ?? null,
               }),
             }
           );

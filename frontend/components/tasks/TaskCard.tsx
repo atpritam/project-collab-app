@@ -152,7 +152,7 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
 
   return (
     <Card
-      className="hover:shadow-md transition-all cursor-pointer h-full flex flex-col"
+      className="transition-all cursor-pointer h-full flex flex-col dark:hover:bg-muted/20 hover:shadow-md hover:bg-muted/30"
       onClick={handleTaskClick}
     >
       <CardContent className="p-4 pt-0 flex-grow">
@@ -196,30 +196,41 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
       <CardFooter>
         <div className="flex items-center justify-between w-full border-t pt-4 mt-auto">
           {task.assignee ? (
-            <div className="flex items-center">
-              <span className="text-xs text-muted-foreground mr-2">
-                Assigned to:
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-2">
+                Assignee
               </span>
-              <Avatar className="h-6 w-6 mr-1">
-                <AvatarImage
-                  src={task.assignee.image || ""}
-                  alt={task.assignee.name || ""}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                  {getInitials(task.assignee.name)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{task.assignee.name}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Avatar className="h-6 w-6 mr-1">
+                      <AvatarImage
+                        src={task.assignee.image || ""}
+                        alt={task.assignee.name || ""}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
+                        {getInitials(task.assignee.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {task.assignee.name}
+                      {task.assignee.id === currentUserId && " (You)"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           ) : (
             <div className="text-xs text-muted-foreground">Unassigned</div>
           )}
 
           {task.creator && (
-            <div className="flex items-center">
-              <span className="text-xs text-muted-foreground mr-2">
-                Created by:
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-2">
+                Creator
               </span>
               <TooltipProvider>
                 <Tooltip>

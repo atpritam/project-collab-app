@@ -12,6 +12,7 @@ interface UserAuthStatusProps {
   Name?: string;
   Email?: string;
   Image?: string;
+  avatarOnly?: boolean;
 }
 
 export default function UserAuthStatus({
@@ -21,6 +22,7 @@ export default function UserAuthStatus({
   Name = "",
   Email = "",
   Image = "",
+  avatarOnly = false,
 }: UserAuthStatusProps) {
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<any>(null);
@@ -102,30 +104,30 @@ export default function UserAuthStatus({
               </AvatarFallback>
             </Avatar>
           </div>
-          <div className="ml-3">
-            <div className="text-base font-medium text-foreground">
-              {userName}
+          {!avatarOnly && (
+            <div className="flex flex-col">
+              <p className="text-sm font-medium">{userName}</p>
+              <p className="text-xs text-muted-foreground">{userEmail}</p>
             </div>
-            <div className="text-sm font-medium text-muted-foreground">
-              {userEmail}
-            </div>
+          )}
+        </div>
+        {!avatarOnly && (
+          <div className="mt-3 space-y-1 px-2">
+            <Link
+              href="/profile"
+              className="block px-3 py-2 rounded-md text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900"
+              onClick={handleLinkClick}
+            >
+              Profile
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+            >
+              Sign out
+            </button>
           </div>
-        </div>
-        <div className="mt-3 space-y-1 px-2">
-          <Link
-            href="/profile"
-            className="block px-3 py-2 rounded-md text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900"
-            onClick={handleLinkClick}
-          >
-            Profile
-          </Link>
-          <button
-            onClick={handleSignOut}
-            className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
-          >
-            Sign out
-          </button>
-        </div>
+        )}
       </>
     );
   }
@@ -144,10 +146,12 @@ export default function UserAuthStatus({
             {getInitials(userName)}
           </AvatarFallback>
         </Avatar>
-        <div className="flex flex-col">
-          <p className="text-sm font-medium">{userName}</p>
-          <p className="text-xs text-muted-foreground">{userEmail}</p>
-        </div>
+        {!avatarOnly && (
+          <div className="flex flex-col">
+            <p className="text-sm font-medium">{userName}</p>
+            <p className="text-xs text-muted-foreground">{userEmail}</p>
+          </div>
+        )}
       </div>
     </div>
   );

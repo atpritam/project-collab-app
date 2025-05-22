@@ -89,7 +89,7 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
         <Button
           asChild
           variant="ghost"
-          className="text-sm text-muted-foreground hover:text-violet-700"
+          className="text-sm text-muted-foreground hover:text-violet-700 dark:hover:text-violet-400"
           size="sm"
         >
           <Link href="/projects" className="flex items-center">

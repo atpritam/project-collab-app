@@ -223,9 +223,14 @@ export default function ProjectMembers({
   return (
     <Card className="w-full flex flex-1">
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <UserCog className="h-5 w-5 mr-2" />
-          Team Members
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex">
+            <UserCog className="h-5 w-5 mr-2" />
+            Team Members
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {members.length}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
