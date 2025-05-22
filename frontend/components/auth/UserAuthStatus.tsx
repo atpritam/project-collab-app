@@ -93,7 +93,7 @@ export default function UserAuthStatus({
       <>
         <div className="flex items-center px-4">
           <div className="flex-shrink-0">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-10 w-10 mr-2">
               <AvatarImage
                 src={userImage}
                 alt={userName}
