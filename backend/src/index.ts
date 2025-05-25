@@ -24,7 +24,9 @@ const prisma = new PrismaClient();
 
 app.use(
   cors({
-    origin: true,
+    origin: [
+      "https://project-collab-app.vercel.app",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,7 +38,9 @@ app.use(express.json());
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: [
+      "https://project-collab-app.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
