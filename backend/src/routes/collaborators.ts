@@ -1,5 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const collaboratorsRouter: Router = express.Router();
@@ -88,7 +89,7 @@ collaboratorsRouter.get("/team", function (req: Request, res: Response) {
 
       res.status(200).json({ collaborators });
     } catch (error) {
-      console.error("Error fetching collaborators:", error);
+      debugError("Error fetching collaborators:", error);
       res.status(500).json({ message: "Failed to fetch collaborators" });
     }
   })();
@@ -241,7 +242,7 @@ collaboratorsRouter.get("/", function (req: Request, res: Response) {
         return res.status(200).json({ collaborators: users });
       }
     } catch (error) {
-      console.error("Error searching collaborators:", error);
+      debugError("Error searching collaborators:", error);
       res.status(500).json({ message: "Failed to search collaborators" });
     }
   })();

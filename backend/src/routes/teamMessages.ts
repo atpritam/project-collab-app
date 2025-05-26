@@ -1,5 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const teamMessagesRouter: Router = express.Router();
@@ -84,7 +85,7 @@ teamMessagesRouter.get(
 
       res.status(200).json(teamConversations);
     } catch (error) {
-      console.error("Error fetching team conversations:", error);
+      debugError("Error fetching team conversations:", error);
       res.status(500).json({ message: "Failed to fetch team conversations" });
     }
   }
@@ -126,7 +127,7 @@ teamMessagesRouter.get(
 
         res.status(200).json(messages);
       } catch (error) {
-        console.error("Error fetching project messages:", error);
+        debugError("Error fetching project messages:", error);
         res.status(500).json({ message: "Failed to fetch project messages" });
       }
     })();
@@ -212,7 +213,7 @@ teamMessagesRouter.post("/send", function (req: Request, res: Response) {
 
       res.status(201).json(message);
     } catch (error) {
-      console.error("Error sending team message:", error);
+      debugError("Error sending team message:", error);
       res.status(500).json({ message: "Failed to send message" });
     }
   })();
