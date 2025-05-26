@@ -15,6 +15,16 @@ import calendarRouter from "./routes/calendar";
 import collaboratorsRouter from "./routes/collaborators";
 import messagesRouter from "./routes/messages";
 import teamMessagesRouter from "./routes/teamMessages";
+import {
+  globalRateLimit,
+  authRateLimit,
+  securityHeaders,
+  messageRateLimit,
+} from "./middleware/security";
+
+import { sanitizeHtml } from "./middleware/validation";
+
+import { debugLog, debugError } from "./utils/debug";
 
 dotenv.config();
 
@@ -22,25 +32,33 @@ const app = express();
 const server = http.createServer(app);
 const prisma = new PrismaClient();
 
+app.use(securityHeaders);
+app.use(globalRateLimit);
+
 app.use(
   cors({
-    origin: [
-      "https://project-collab-app.vercel.app",
-    ],
+    origin:
+      process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// Body parsing with limits
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Input sanitization
+app.use(sanitizeHtml);
+
 app.use(express.json());
 
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://project-collab-app.vercel.app",
-    ],
+    origin:
+      process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -58,7 +76,7 @@ app.get("/", (_, res) => {
   res.send("API is running");
 });
 
-app.use("/api/auth", authRouter);
+app.use("/api/auth", authRateLimit, authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/dashboard", dashboardRouter);
@@ -67,24 +85,24 @@ app.use("/api/tasks", tasksRouter);
 app.use("/api/invitations", invitationsRouter);
 app.use("/api/calendar", calendarRouter);
 app.use("/api/collaborators", collaboratorsRouter);
-app.use("/api/messages", messagesRouter);
-app.use("/api/team-messages", teamMessagesRouter);
+app.use("/api/messages", messageRateLimit, messagesRouter);
+app.use("/api/team-messages", messageRateLimit, teamMessagesRouter);
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  debugLog(`User connected: ${socket.id}`);
 
-  console.log(`Transport: ${socket.conn.transport.name}`);
+  debugLog(`Transport: ${socket.conn.transport.name}`);
 
   socket.conn.on("upgrade", (transport) => {
-    console.log(`Transport upgraded to: ${transport.name}`);
+    debugLog(`Transport upgraded to: ${transport.name}`);
   });
 
   // authentication
   socket.on("authenticate", (userId) => {
     if (userId) {
       socket.join(`user:${userId}`);
-      console.log(`User ${userId} authenticated and joined their room`);
+      debugLog(`User ${userId} authenticated and joined their room`);
     }
   });
 
@@ -94,11 +112,11 @@ io.on("connection", (socket) => {
       const { senderId, receiverId, content } = data;
 
       if (!senderId || !receiverId || !content) {
-        console.error("Missing data in send_message event", data);
+        debugError("Missing data in send_message event", data);
         return;
       }
 
-      console.log(
+      debugLog(
         `Message from ${senderId} to ${receiverId}: ${content.substring(
           0,
           20
@@ -142,7 +160,7 @@ io.on("connection", (socket) => {
         isUnread: false,
       });
 
-      console.log("Message successfully processed and emitted");
+      debugLog("Message successfully processed and emitted");
     } catch (error) {
       console.error("Error handling message via socket:", error);
     }
@@ -151,11 +169,11 @@ io.on("connection", (socket) => {
   // typing status
   socket.on("typing", ({ senderId, receiverId, isTyping }) => {
     if (!senderId || !receiverId) {
-      console.error("Missing data in typing event");
+      debugError("Missing data in typing event");
       return;
     }
 
-    console.log(
+    debugLog(
       `Typing event: ${senderId} is ${
         isTyping ? "typing" : "not typing"
       } to ${receiverId}`
@@ -169,11 +187,11 @@ io.on("connection", (socket) => {
 
   socket.on("mark_read", async ({ userId, otherUserId }) => {
     if (!userId || !otherUserId) {
-      console.error("Missing data in mark_read event");
+      debugError("Missing data in mark_read event");
       return;
     }
 
-    console.log(`Marking messages from ${otherUserId} to ${userId} as read`);
+    debugLog(`Marking messages from ${otherUserId} to ${userId} as read`);
 
     try {
       await prisma.directMessage.updateMany({
@@ -191,14 +209,14 @@ io.on("connection", (socket) => {
         userId: userId,
       });
 
-      console.log("Messages marked as read");
+      debugLog("Messages marked as read");
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
+    debugLog(`User disconnected: ${socket.id}`);
   });
 
   // team messages
@@ -207,11 +225,11 @@ io.on("connection", (socket) => {
       const { projectId, userId, content } = data;
 
       if (!projectId || !userId || !content) {
-        console.error("Missing data in send_team_message event", data);
+        debugError("Missing data in send_team_message event", data);
         return;
       }
 
-      console.log(
+      debugLog(
         `Team message from ${userId} to project ${projectId}: ${content.substring(
           0,
           20
@@ -226,7 +244,7 @@ io.on("connection", (socket) => {
       });
 
       if (!project) {
-        console.error("Project not found", projectId);
+        debugError("Project not found", projectId);
         return;
       }
 
@@ -236,11 +254,7 @@ io.on("connection", (socket) => {
       );
 
       if (!isCreator && !isMember) {
-        console.error(
-          "User is not a member of this project",
-          userId,
-          projectId
-        );
+        debugError("User is not a member of this project", userId, projectId);
         return;
       }
 
@@ -283,7 +297,7 @@ io.on("connection", (socket) => {
         });
       });
 
-      console.log("Team message successfully processed and emitted");
+      debugLog("Team message successfully processed and emitted");
     } catch (error) {
       console.error("Error handling team message via socket:", error);
     }
@@ -293,24 +307,24 @@ io.on("connection", (socket) => {
     const { userId, projectId } = data;
 
     if (!userId || !projectId) {
-      console.error("Missing data in join_team_chat event", data);
+      debugError("Missing data in join_team_chat event", data);
       return;
     }
 
     socket.join(`project:${projectId}`);
-    console.log(`User ${userId} joined project chat ${projectId}`);
+    debugLog(`User ${userId} joined project chat ${projectId}`);
   });
 
   socket.on("leave_team_chat", async (data) => {
     const { userId, projectId } = data;
 
     if (!userId || !projectId) {
-      console.error("Missing data in leave_team_chat event", data);
+      debugError("Missing data in leave_team_chat event", data);
       return;
     }
 
     socket.leave(`project:${projectId}`);
-    console.log(`User ${userId} left project chat ${projectId}`);
+    debugLog(`User ${userId} left project chat ${projectId}`);
   });
 
   socket.emit("welcome", { message: "Connected to Socket.io server" });
@@ -321,5 +335,5 @@ const PORT = parseInt(process.env.PORT || "4000", 10);
 
 // we use server.listen instead of app.listen for using Socket.io
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+  debugLog(`Server running on port ${PORT}`);
 });

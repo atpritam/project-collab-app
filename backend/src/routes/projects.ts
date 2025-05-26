@@ -9,6 +9,7 @@ import {
   canViewProjectFiles,
   isProjectMember,
 } from "../utils/permissions";
+import { debugError, debugLog } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const projectsRouter: Router = express.Router();
@@ -96,7 +97,7 @@ projectsRouter.post("/new", function (req: Request, res: Response) {
 
       res.status(201).json(result.newProject);
     } catch (error) {
-      console.error("Error creating project:", error);
+      debugError("Error creating project:", error);
       res.status(500).json({ message: "Failed to create project" });
     }
   })();
@@ -165,7 +166,7 @@ projectsRouter.get("/:id", function (req: Request, res: Response) {
 
       res.status(200).json(project);
     } catch (error) {
-      console.error("Error fetching project:", error);
+      debugError("Error fetching project:", error);
       res.status(500).json({ message: "Failed to fetch project" });
     }
   })();
@@ -230,7 +231,7 @@ projectsRouter.patch("/:id", function (req: Request, res: Response) {
 
       res.status(200).json(updatedProject);
     } catch (error) {
-      console.error("Error updating project:", error);
+      debugError("Error updating project:", error);
       res.status(500).json({ message: "Failed to update project" });
     }
   })();
@@ -283,7 +284,7 @@ projectsRouter.delete("/:id", function (req: Request, res: Response) {
       });
       res.status(200).json(deletedProject);
     } catch (error) {
-      console.error("Error deleting project:", error);
+      debugError("Error deleting project:", error);
       res.status(500).json({ message: "Failed to delete project" });
     }
   })();
@@ -296,7 +297,7 @@ projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
 
   (async () => {
     try {
-      console.log(
+      debugLog(
         `Processing invite request for project ${id}, email: ${email}, role: ${role}`
       );
 
@@ -430,7 +431,7 @@ projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
         },
       });
     } catch (error) {
-      console.error("Error sending project invitation:", error);
+      debugError("Error sending project invitation:", error);
       res.status(500).json({ message: "Failed to send invitation" });
     }
   })();
@@ -474,7 +475,7 @@ projectsRouter.get("/:id/invitations", function (req: Request, res: Response) {
 
       res.status(200).json(invitations);
     } catch (error) {
-      console.error("Error fetching project invitations:", error);
+      debugError("Error fetching project invitations:", error);
       res.status(500).json({ message: "Failed to fetch invitations" });
     }
   })();
@@ -527,7 +528,7 @@ projectsRouter.delete(
 
         res.status(200).json({ message: "Invitation cancelled successfully" });
       } catch (error) {
-        console.error("Error cancelling invitation:", error);
+        debugError("Error cancelling invitation:", error);
         res.status(500).json({ message: "Failed to cancel invitation" });
       }
     })();
@@ -573,7 +574,7 @@ projectsRouter.get("/:id/files", function (req: Request, res: Response) {
 
       res.status(200).json({ projectFiles });
     } catch (error) {
-      console.error("Error fetching project files:", error);
+      debugError("Error fetching project files:", error);
       res.status(500).json({ message: "Failed to fetch project files" });
     }
   })();
@@ -634,7 +635,7 @@ projectsRouter.post("/:id/files/add", function (req: Request, res: Response) {
 
       return res.status(400).json({ message: "No files provided" });
     } catch (error) {
-      console.error("Error adding files to project:", error);
+      debugError("Error adding files to project:", error);
       res.status(500).json({ message: "Failed to add files to project" });
     }
   })();
@@ -680,7 +681,7 @@ projectsRouter.delete(
 
         res.status(200).json({ message: "File deleted successfully" });
       } catch (error) {
-        console.error("Error deleting project file:", error);
+        debugError("Error deleting project file:", error);
         res.status(500).json({ message: "Failed to delete file" });
       }
     })();
@@ -811,7 +812,7 @@ projectsRouter.patch(
           member: updatedMember,
         });
       } catch (error) {
-        console.error("Error updating member role:", error);
+        debugError("Error updating member role:", error);
         res.status(500).json({ message: "Failed to update member role" });
       }
     })();
@@ -914,7 +915,7 @@ projectsRouter.delete(
           message: "Member removed successfully",
         });
       } catch (error) {
-        console.error("Error removing project member:", error);
+        debugError("Error removing project member:", error);
         res.status(500).json({ message: "Failed to remove member" });
       }
     })();

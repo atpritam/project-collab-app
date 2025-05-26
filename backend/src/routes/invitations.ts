@@ -1,6 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { isTokenExpired } from "../utils/token";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const invitationsRouter: Router = express.Router();
@@ -57,7 +58,7 @@ invitationsRouter.get("/pending", function (req: Request, res: Response) {
 
       res.status(200).json(formattedInvitations);
     } catch (error) {
-      console.error("Error fetching pending invitations:", error);
+      debugError("Error fetching pending invitations:", error);
       res.status(500).json({ message: "Failed to fetch pending invitations" });
     }
   })();
@@ -149,7 +150,7 @@ invitationsRouter.post("/accept", function (req: Request, res: Response) {
         role: invitation.role,
       });
     } catch (error) {
-      console.error("Error accepting invitation:", error);
+      debugError("Error accepting invitation:", error);
       res.status(500).json({ message: "Failed to accept invitation" });
     }
   })();
@@ -198,7 +199,7 @@ invitationsRouter.post("/decline", function (req: Request, res: Response) {
 
       res.status(200).json({ message: "Invitation declined successfully" });
     } catch (error) {
-      console.error("Error declining invitation:", error);
+      debugError("Error declining invitation:", error);
       res.status(500).json({ message: "Failed to decline invitation" });
     }
   })();
@@ -250,7 +251,7 @@ invitationsRouter.get("/token/:token", function (req: Request, res: Response) {
         expiresAt: invitation.expiresAt,
       });
     } catch (error) {
-      console.error("Error validating invitation token:", error);
+      debugError("Error validating invitation token:", error);
       res.status(500).json({ message: "Failed to validate invitation token" });
     }
   })();
