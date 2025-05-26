@@ -51,10 +51,10 @@ export default function WorkspaceLayout({
             <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
               <UnifiedBreadcrumb />
 
-              <div className="pt-2">{children}</div>
+              <div className="pt-4">{children}</div>
               {pathname !== "/messages" && (
                 <footer>
-                  <div className="mt-12 pt-6">
+                  <div className="py-4">
                     <p className="text-center text-sm text-muted-foreground">
                       © {new Date().getFullYear()} Nudge. All rights reserved.
                     </p>

@@ -1,16 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  CheckCircle2,
-  Clock,
-  Users,
-  CalendarDays,
-  AlertTriangle,
-} from "lucide-react";
+import { CheckCircle2, Clock, CalendarDays, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +20,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import ProjectMembers from "./ProjectMembers";
+import { getProfileUrl } from "@/lib/profileUtils";
+import Link from "next/link";
 
 interface ProjectOverviewProps {
   project: any;
@@ -39,6 +36,7 @@ export default function ProjectOverview({
   isAdmin,
   onProjectUpdated,
 }: ProjectOverviewProps) {
+  const { data: session } = useSession();
   const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [showStatusPrompt, setShowStatusPrompt] = useState(false);
@@ -224,17 +222,26 @@ export default function ProjectOverview({
               <div>
                 <p className="text-sm text-muted-foreground">Created By</p>
                 <div className="flex items-center mt-1">
-                  <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage
-                      src={project.creator?.image || ""}
-                      alt={project.creator?.name || ""}
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                      {getInitials(project.creator?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span>{project.creator?.name || "Unknown"}</span>
+                  <Link
+                    href={getProfileUrl(
+                      project.creator?.email,
+                      session?.user?.email
+                    )}
+                  >
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage
+                        src={project.creator?.image || ""}
+                        alt={project.creator?.name || ""}
+                        className="object-cover cursor-pointer"
+                      />
+                      <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
+                        {getInitials(project.creator?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <span className="cursor-pointer">
+                    {project.creator?.name || "Unknown"}
+                  </span>
                 </div>
               </div>
 

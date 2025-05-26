@@ -247,3 +247,82 @@ collaboratorsRouter.get("/", function (req: Request, res: Response) {
     }
   })();
 });
+
+// GET /api/collaborators/shared-projects - Get projects shared between two users
+collaboratorsRouter.get(
+  "/shared-projects",
+  function (req: Request, res: Response) {
+    const userId =
+      (req.headers["x-user-id"] as string) || (req.query.userId as string);
+    const { targetUserId } = req.query;
+
+    (async () => {
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      if (!targetUserId) {
+        return res.status(400).json({ message: "Target User ID is required" });
+      }
+
+      try {
+        // projects where the current user is a member
+        const currentUserProjects = await prisma.projectMember.findMany({
+          where: { userId },
+          select: { projectId: true },
+        });
+
+        const currentUserProjectIds = currentUserProjects.map(
+          (p) => p.projectId
+        );
+
+        if (currentUserProjectIds.length === 0) {
+          return res.status(200).json({
+            projects: [],
+            count: 0,
+          });
+        }
+
+        // projects where the target user is a member AND the current user is also a member
+        const sharedProjectMembers = await prisma.projectMember.findMany({
+          where: {
+            userId: targetUserId as string,
+            projectId: { in: currentUserProjectIds },
+          },
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true,
+                _count: {
+                  select: {
+                    members: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        const sharedProjects = sharedProjectMembers.map((member) => ({
+          id: member.project.id,
+          name: member.project.name,
+          description: member.project.description,
+          status: member.project.status,
+          memberCount: member.project._count.members,
+          userRole: member.role,
+        }));
+
+        res.status(200).json({
+          projects: sharedProjects,
+          count: sharedProjects.length,
+        });
+      } catch (error) {
+        debugError("Error fetching shared projects:", error);
+        res.status(500).json({ message: "Failed to fetch shared projects" });
+      }
+    })();
+  }
+);

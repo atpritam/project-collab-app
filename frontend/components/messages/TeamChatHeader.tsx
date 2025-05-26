@@ -44,14 +44,30 @@ const TeamChatHeader: React.FC<TeamChatHeaderProps> = ({
           <ArrowLeft className="h-5 w-5" />
         </Button>
       )}
-      <Avatar className="h-10 w-10 bg-violet-100 dark:bg-violet-900/30">
+      <Avatar
+        className="h-10 w-10 bg-violet-100 dark:bg-violet-900/30 cursor-pointer"
+        onClick={() => {
+          if (project.id) {
+            window.location.href = `/projects/${project.id}`;
+          }
+        }}
+      >
         <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white">
           {getProjectInitials(project.name)}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center">
-          <h3 className="font-medium truncate">{project.name}</h3>
+          <h3
+            className="font-medium truncate cursor-pointer"
+            onClick={() => {
+              if (project.id) {
+                window.location.href = `/projects/${project.id}`;
+              }
+            }}
+          >
+            {project.name}
+          </h3>
           <div className="flex items-center ml-2 text-xs text-muted-foreground">
             <Users className="h-3 w-3 mr-1" />
             {project.memberCount}

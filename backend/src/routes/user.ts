@@ -2,6 +2,7 @@ import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { hashPassword, verifyPassword } from "../utils/hash";
 import { sendDeleteVerificationEmail } from "../utils/email";
+import { debugError, debugLog } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const userRouter: Router = express.Router();
@@ -11,6 +12,7 @@ export default userRouter;
 // GET /api/user/profile
 userRouter.get("/profile", function (req: Request, res: Response) {
   const userId = req.headers["x-user-id"] as string;
+
   (async () => {
     try {
       // user info
@@ -40,6 +42,16 @@ userRouter.get("/profile", function (req: Request, res: Response) {
         where: { userId },
       });
 
+      // Count projects user is part of (both created and member of)
+      const [createdProjectsCount, memberProjectsCount] = await Promise.all([
+        prisma.project.count({
+          where: { creatorId: userId },
+        }),
+        prisma.projectMember.count({
+          where: { userId },
+        }),
+      ]);
+
       // authentication
       const hasPasswordAuth = user.password !== null;
       const oauthProviders =
@@ -51,13 +63,15 @@ userRouter.get("/profile", function (req: Request, res: Response) {
       res.status(200).json({
         ...safeUser,
         profile: userInfo || {},
+        createdProjectsCount: createdProjectsCount,
+        memberProjectsCount: memberProjectsCount,
         authType: {
           hasPasswordAuth,
           oauthProviders,
         },
       });
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      debugError("Error fetching user profile:", error);
       res.status(500).json({ message: "Failed to fetch user profile" });
     }
   })();
@@ -104,7 +118,7 @@ userRouter.put("/profile/:userId", async (req: Request, res: Response) => {
       profile: updatedUserInfo,
     });
   } catch (error) {
-    console.error("Error updating user profile:", error);
+    debugError("Error updating user profile:", error);
     res.status(500).json({ message: "Failed to update user profile" });
   }
 });
@@ -152,7 +166,7 @@ userRouter.post("/update-password", function (req: Request, res: Response) {
 
       res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
-      console.error("Password update error:", error);
+      debugError("Password update error:", error);
       res.status(500).json({ message: "Failed to update password" });
     }
   })();
@@ -179,7 +193,7 @@ userRouter.patch("/profile-image", function (req: Request, res: Response) {
 
       res.status(200).json(updatedUser);
     } catch (error) {
-      console.error("Error updating profile image:", error);
+      debugError("Error updating profile image:", error);
       res.status(500).json({ message: "Failed to update profile image" });
     }
   })();
@@ -205,7 +219,7 @@ userRouter.get("/byEmail", function (req: Request, res: Response) {
       const { password: _, ...userWithoutPassword } = user;
       res.status(200).json(userWithoutPassword);
     } catch (err) {
-      console.error("Error fetching user:", err);
+      debugError("Error fetching user:", err);
       res.status(500).json({ message: "Failed to fetch user data" });
     }
   })();
@@ -252,7 +266,7 @@ userRouter.post(
           expiresAt,
         });
       } catch (error) {
-        console.error("Error sending verification code:", error);
+        debugError("Error sending verification code:", error);
         res.status(500).json({ message: "Failed to send verification code" });
       }
     })();
@@ -296,7 +310,7 @@ userRouter.post("/verify-delete-code", function (req: Request, res: Response) {
         verified: true,
       });
     } catch (error) {
-      console.error("Error verifying code:", error);
+      debugError("Error verifying code:", error);
       res.status(500).json({ message: "Failed to verify code" });
     }
   })();
@@ -328,7 +342,7 @@ userRouter.delete("/delete", function (req: Request, res: Response) {
         const isValidPassword = await verifyPassword(password, user.password);
         if (isValidPassword) {
           isAuthorized = true;
-          console.log("User authorized via password");
+          debugLog("User authorized via password");
         }
       }
 
@@ -343,17 +357,17 @@ userRouter.delete("/delete", function (req: Request, res: Response) {
 
         if (verificationToken && verificationToken.expiresAt > new Date()) {
           isAuthorized = true;
-          console.log("User authorized via verification code");
+          debugLog("User authorized via verification code");
 
           // verification code cleanup
           await prisma.deleteAccountToken.delete({
             where: { id: verificationToken.id },
           });
         } else {
-          console.log("Invalid or expired verification code");
+          debugLog("Invalid or expired verification code");
           if (verificationToken) {
-            console.log("Code expired at:", verificationToken.expiresAt);
-            console.log("Current time:", new Date());
+            debugLog("Code expired at:", verificationToken.expiresAt);
+            debugLog("Current time:", new Date());
           }
         }
       }
@@ -389,7 +403,7 @@ userRouter.delete("/delete", function (req: Request, res: Response) {
               where: { id: project.id },
               data: { creatorId: otherAdmins[0].userId },
             });
-            console.log(
+            debugLog(
               `Project ${project.id} transferred to ${otherAdmins[0].userId}`
             );
           }
@@ -532,7 +546,7 @@ userRouter.delete("/delete", function (req: Request, res: Response) {
 
       res.status(200).json({ message: "Account deleted successfully" });
     } catch (error) {
-      console.error("Account deletion error:", error);
+      debugError("Account deletion error:", error);
       res.status(500).json({ message: "Failed to delete account" });
     }
   })();

@@ -76,6 +76,36 @@ The application uses a RESTful API for most operations, with Socket.io for real-
 
 ![Nudge Logo](Photos/File-System.png)
 
+## 🔒 Security Features
+
+### Authentication & Authorization
+
+- **Email Verification**: Required account activation for email/password registrations
+- **Password Security**: Enforced strong password requirements with bcrypt hashing
+
+### Data Protection
+
+- **Input Validation**: Comprehensive request validation using Joi schemas
+- **HTML Sanitization**: Protection against XSS attacks through input sanitization
+- **SQL Injection Prevention**: Prisma ORM provides built-in protection against SQL injection
+- **CORS Configuration**: Properly configured cross-origin resource sharing
+
+### Rate Limiting & DDoS Protection
+
+- **Global Rate Limiting**: 1000 requests per 15 minutes per IP
+- **Authentication Rate Limiting**: 10 login attempts per 15 minutes per IP
+- **Message Rate Limiting**: 300 messages per minute per IP
+- **Targeted Protection**: Specific limits for sensitive endpoints
+
+### Security Headers
+
+- **Helmet.js Integration**: Comprehensive security headers including:
+  - Content Security Policy (CSP)
+  - X-Frame-Options (Clickjacking protection)
+  - X-Content-Type-Options (MIME sniffing protection)
+  - Referrer Policy controls
+  - Permissions Policy restrictions
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -148,16 +178,6 @@ For local development without Docker:
    ```
 
 ![Nudge Logo](Photos/Dashboard.png)
-
-## 📚 Learning Resources
-
-This project demonstrates several advanced concepts:
-
-- **Next.js App Router**: Modern routing and server components
-- **Prisma ORM**: Type-safe database access and migrations
-- **Socket.IO**: Real-time bidirectional communication
-- **Docker Containerization**: Application isolation and deployment
-- **TailwindCSS Components**: Reusable UI components with utility classes
 
 ## 🤝 Contribution
 

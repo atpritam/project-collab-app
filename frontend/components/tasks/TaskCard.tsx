@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { Calendar, FolderKanban } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getProfileUrl } from "@/lib/profileUtils";
 
 interface TaskCardProps {
   task: {
@@ -30,17 +32,20 @@ interface TaskCardProps {
       id: string;
       name: string | null;
       image: string | null;
+      email?: string;
     } | null;
     creator: {
       id: string;
       name: string | null;
       image: string | null;
+      email?: string;
     };
   };
   currentUserId?: string;
 }
 
 export default function TaskCard({ task, currentUserId }: TaskCardProps) {
+  const { data: session } = useSession();
   const router = useRouter();
 
   const handleTaskClick = () => {
@@ -203,11 +208,17 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <Avatar className="h-6 w-6 mr-1">
+                    <Avatar className="h-6 w-6">
                       <AvatarImage
                         src={task.assignee.image || ""}
                         alt={task.assignee.name || ""}
-                        className="object-cover"
+                        className="object-cover cursor-pointer"
+                        onClick={() => {
+                          window.location.href = getProfileUrl(
+                            task?.assignee?.email!,
+                            session?.user?.email
+                          );
+                        }}
                       />
                       <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
                         {getInitials(task.assignee.name)}
@@ -239,7 +250,13 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
                       <AvatarImage
                         src={task.creator.image || ""}
                         alt={task.creator.name || ""}
-                        className="object-cover"
+                        className="object-cover cursor-pointer"
+                        onClick={() => {
+                          window.location.href = getProfileUrl(
+                            task?.creator?.email!,
+                            session?.user?.email
+                          );
+                        }}
                       />
                       <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
                         {getInitials(task.creator.name)}

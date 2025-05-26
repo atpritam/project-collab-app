@@ -58,6 +58,7 @@ function ProfileContent() {
     skills: "",
     bio: "",
     dateJoined: "",
+    projectsCount: 0,
   });
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -124,6 +125,7 @@ function ProfileContent() {
                 day: "numeric",
               })
             : "",
+          projectsCount: userData.memberProjectsCount || 0,
         });
 
         setProfileDataLoaded(true);
@@ -285,7 +287,10 @@ function ProfileContent() {
 
             <TabsContent value="profile">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <ProfileSidebar dateJoined={formData.dateJoined} />
+                <ProfileSidebar
+                  dateJoined={formData.dateJoined}
+                  projectsCount={formData.projectsCount}
+                />
                 <PersonalInfoForm
                   formData={formData}
                   handleInputChange={handleInputChange}

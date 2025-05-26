@@ -7,11 +7,11 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    const userId = session?.user?.id;
+
+    if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
-    const userId = session.user.id;
 
     // get limit from query
     const { searchParams } = new URL(request.url);
@@ -19,11 +19,12 @@ export async function GET(request: NextRequest) {
 
     // Request to the backend service
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/tasks/assigned/${userId}?limit=${limit}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/tasks/assigned?limit=${limit}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
       }
     );

@@ -10,6 +10,8 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { getProfileUrl } from "@/lib/profileUtils";
+import { useSession } from "next-auth/react";
 
 interface Activity {
   id: string;
@@ -25,6 +27,7 @@ interface Activity {
   userId: string;
   userName: string | null;
   userImage: string | null;
+  userEmail: string;
   createdAt: string;
   entityId?: string | null;
   entityTitle?: string | null;
@@ -46,28 +49,29 @@ interface ActivityFeedProps {
 }
 
 export default function ActivityFeed({ activities }: ActivityFeedProps) {
+  const { data: session } = useSession();
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return `${diffInSeconds} seconds ago`;
+      return `${diffInSeconds} seconds`;
     }
 
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
+      return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""}`;
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""}`;
     }
 
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+      return `${diffInDays} day${diffInDays > 1 ? "s" : ""}`;
     }
 
     return date.toLocaleDateString("en-US", {
@@ -262,20 +266,31 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
           <div className="space-y-6">
             {activities.map((activity) => (
               <div key={activity.id} className="flex">
-                <Avatar className="h-8 w-8 mr-3">
-                  <AvatarImage
-                    src={activity.userImage || ""}
-                    alt={activity.userName || ""}
-                  />
-                  <AvatarFallback className="bg-violet-100 text-violet-700 text-xs dark:text-violet-400">
-                    {getInitials(activity.userName)}
-                  </AvatarFallback>
-                </Avatar>
+                <Link
+                  href={getProfileUrl(activity.userEmail, session?.user?.email)}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <Avatar className="h-8 w-8 mr-2">
+                    <AvatarImage
+                      src={activity.userImage || ""}
+                      alt={activity.userName || "Unknown user"}
+                    />
+                    <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
+                      {getInitials(activity.userName)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <span className="font-medium text-sm">
+                    <Link
+                      href={getProfileUrl(
+                        activity.userEmail,
+                        session?.user?.email
+                      )}
+                      className="text-sm font-medium hover:underline"
+                    >
                       {activity.userName}
-                    </span>
+                    </Link>
                     <span className="text-xs text-muted-foreground ml-2">
                       {formatTime(activity.createdAt)}
                     </span>

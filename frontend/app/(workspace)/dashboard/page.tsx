@@ -27,6 +27,7 @@ interface Activity {
   userId: string;
   userName: string | null;
   userImage: string | null;
+  userEmail: string;
   createdAt: string;
   entityId?: string | null;
   entityTitle?: string | null;

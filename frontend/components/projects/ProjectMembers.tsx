@@ -32,6 +32,8 @@ import {
   UserCog,
   UserMinus,
 } from "lucide-react";
+import Link from "next/link";
+import { getProfileUrl } from "@/lib/profileUtils";
 
 interface ProjectMembersProps {
   projectId: string;
@@ -246,15 +248,23 @@ export default function ProjectMembers({
                 className="flex md:items-center md:justify-between border-b border-border/40 last:border-0 pb-3 last:pb-0 flex-col md:flex-row"
               >
                 <div className="flex items-center">
-                  <Avatar className="h-9 w-9 mr-3">
-                    <AvatarImage
-                      src={member.user?.image || ""}
-                      alt={member.user?.name || "Unknown user"}
-                    />
-                    <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                      {getInitials(member.user?.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <Link
+                    href={getProfileUrl(
+                      member.user?.email,
+                      session?.user?.email
+                    )}
+                    className="cursor-pointer hover:opacity-80 transition-opacity mr-3"
+                  >
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage
+                        src={member.user?.image || ""}
+                        alt={member.user?.name || "Unknown user"}
+                      />
+                      <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
+                        {getInitials(member.user?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div>
                     <p className="font-medium">
                       {member.user?.name || "Unknown user"}

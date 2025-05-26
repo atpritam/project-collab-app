@@ -13,9 +13,13 @@ import ProfileImageUpload from "@/components/profile/ProfileImageUpload";
 
 interface ProfileSidebarProps {
   dateJoined: string;
+  projectsCount: number;
 }
 
-export function ProfileSidebar({ dateJoined }: ProfileSidebarProps) {
+export function ProfileSidebar({
+  dateJoined,
+  projectsCount,
+}: ProfileSidebarProps) {
   return (
     <Card className="col-span-1 md:row-span-2 h-fit">
       <CardHeader>
@@ -48,12 +52,7 @@ export function ProfileSidebar({ dateJoined }: ProfileSidebarProps) {
           <Separator className="my-2" />
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Projects</span>
-            <span className="text-foreground">3</span>
-          </div>
-          <Separator className="my-2" />
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Tasks Assigned</span>
-            <span className="text-foreground">10</span>
+            <span className="text-foreground">{projectsCount}</span>
           </div>
         </div>
       </CardFooter>

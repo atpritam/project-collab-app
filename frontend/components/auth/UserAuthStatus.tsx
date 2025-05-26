@@ -13,6 +13,7 @@ interface UserAuthStatusProps {
   Email?: string;
   Image?: string;
   avatarOnly?: boolean;
+  clickable?: boolean;
 }
 
 export default function UserAuthStatus({
@@ -23,6 +24,7 @@ export default function UserAuthStatus({
   Email = "",
   Image = "",
   avatarOnly = false,
+  clickable = false,
 }: UserAuthStatusProps) {
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<any>(null);
@@ -87,26 +89,46 @@ export default function UserAuthStatus({
     return null;
   }
 
+  const AvatarComponent = () => (
+    <Avatar className="h-10 w-10">
+      <AvatarImage src={userImage} alt={userName} className="object-cover" />
+      <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-sm">
+        {getInitials(userName)}
+      </AvatarFallback>
+    </Avatar>
+  );
+
+  const ClickableAvatar = clickable ? (
+    <Link
+      href="/profile"
+      onClick={handleLinkClick}
+      className="cursor-pointer hover:opacity-80 transition-opacity"
+    >
+      <AvatarComponent />
+    </Link>
+  ) : (
+    <AvatarComponent />
+  );
+
   if (mobile) {
     // Mobile version
     return (
       <>
         <div className="flex items-center px-4">
-          <div className="flex-shrink-0">
-            <Avatar className="h-10 w-10 mr-2">
-              <AvatarImage
-                src={userImage}
-                alt={userName}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-sm">
-                {getInitials(userName)}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <div className="flex-shrink-0 mr-2">{ClickableAvatar}</div>
           {!avatarOnly && (
             <div className="flex flex-col">
-              <p className="text-sm font-medium">{userName}</p>
+              {clickable ? (
+                <Link
+                  href="/profile"
+                  onClick={handleLinkClick}
+                  className="text-sm font-medium hover:text-violet-700 transition-colors"
+                >
+                  {userName}
+                </Link>
+              ) : (
+                <p className="text-sm font-medium">{userName}</p>
+              )}
               <p className="text-xs text-muted-foreground">{userEmail}</p>
             </div>
           )}
@@ -136,19 +158,20 @@ export default function UserAuthStatus({
   return (
     <div className="px-4 py-2">
       <div className="flex items-center space-x-3">
-        <Avatar className="h-10 w-10">
-          <AvatarImage
-            src={userImage}
-            alt={userName}
-            className="object-cover"
-          />
-          <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-sm">
-            {getInitials(userName)}
-          </AvatarFallback>
-        </Avatar>
+        {ClickableAvatar}
         {!avatarOnly && (
           <div className="flex flex-col">
-            <p className="text-sm font-medium">{userName}</p>
+            {clickable ? (
+              <Link
+                href="/profile"
+                onClick={handleLinkClick}
+                className="text-sm font-medium hover:text-violet-700 transition-colors"
+              >
+                {userName}
+              </Link>
+            ) : (
+              <p className="text-sm font-medium">{userName}</p>
+            )}
             <p className="text-xs text-muted-foreground">{userEmail}</p>
           </div>
         )}
