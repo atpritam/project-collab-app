@@ -34,7 +34,6 @@ interface InvitationData {
   expiresAt: string;
 }
 
-// Create a separate component for the invitation content
 function InvitationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
