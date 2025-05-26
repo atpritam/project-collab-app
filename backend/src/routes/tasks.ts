@@ -9,15 +9,17 @@ import {
   canViewTask,
   isProjectMember,
 } from "../utils/permissions";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const tasksRouter: Router = express.Router();
 
 export default tasksRouter;
 
-// GET /api/tasks/all/:userId - Get all tasks for a user
-tasksRouter.get("/all/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params;
+// GET /api/tasks/all - Get all tasks for a user
+tasksRouter.get("/all", async (req: Request, res: Response) => {
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
   const { limit } = req.query;
 
   try {
@@ -27,8 +29,10 @@ tasksRouter.get("/all/:userId", async (req: Request, res: Response) => {
       },
       include: {
         project: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, image: true } },
-        assignee: { select: { id: true, name: true, image: true } },
+        creator: { select: { id: true, name: true, image: true, email: true } },
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
       },
       orderBy: [{ dueDate: "asc" }, { updatedAt: "desc" }],
       take:
@@ -39,14 +43,15 @@ tasksRouter.get("/all/:userId", async (req: Request, res: Response) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
+    debugError("Error fetching tasks:", error);
     res.status(500).json({ message: "Failed to fetch tasks" });
   }
 });
 
-// GET /api/tasks/assigned/:userId - Get all tasks assigned to a user
-tasksRouter.get("/assigned/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params;
+// GET /api/tasks/assigned - Get all tasks assigned to a user
+tasksRouter.get("/assigned", async (req: Request, res: Response) => {
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
   const { limit } = req.query;
 
   try {
@@ -54,8 +59,10 @@ tasksRouter.get("/assigned/:userId", async (req: Request, res: Response) => {
       where: { assigneeId: userId },
       include: {
         project: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, image: true } },
-        assignee: { select: { id: true, name: true, image: true } },
+        creator: { select: { id: true, name: true, image: true, email: true } },
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
       },
       orderBy: [{ dueDate: "asc" }, { updatedAt: "desc" }],
       take:
@@ -66,14 +73,15 @@ tasksRouter.get("/assigned/:userId", async (req: Request, res: Response) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
+    debugError("Error fetching tasks:", error);
     res.status(500).json({ message: "Failed to fetch tasks" });
   }
 });
 
-// GET /api/tasks/created/:userId - Get all tasks created by a user
-tasksRouter.get("/created/:userId", async (req: Request, res: Response) => {
-  const { userId } = req.params;
+// GET /api/tasks/created - Get all tasks created by a user
+tasksRouter.get("/created", async (req: Request, res: Response) => {
+  const userId =
+    (req.headers["x-user-id"] as string) || (req.query.userId as string);
   const { limit } = req.query;
 
   try {
@@ -81,8 +89,10 @@ tasksRouter.get("/created/:userId", async (req: Request, res: Response) => {
       where: { creatorId: userId },
       include: {
         project: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, image: true } },
-        assignee: { select: { id: true, name: true, image: true } },
+        creator: { select: { id: true, name: true, image: true, email: true } },
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
       },
       orderBy: [{ dueDate: "asc" }, { updatedAt: "desc" }],
       take:
@@ -93,7 +103,7 @@ tasksRouter.get("/created/:userId", async (req: Request, res: Response) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
+    debugError("Error fetching tasks:", error);
     res.status(500).json({ message: "Failed to fetch tasks" });
   }
 });
@@ -119,15 +129,19 @@ tasksRouter.get("/project/:projectId", function (req: Request, res: Response) {
       const tasks = await prisma.task.findMany({
         where: { projectId },
         include: {
-          creator: { select: { id: true, name: true, image: true } },
-          assignee: { select: { id: true, name: true, image: true } },
+          creator: {
+            select: { id: true, name: true, image: true, email: true },
+          },
+          assignee: {
+            select: { id: true, name: true, image: true, email: true },
+          },
         },
         orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }],
       });
 
       res.status(200).json(tasks);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      debugError("Error fetching tasks:", error);
       res.status(500).json({ message: "Failed to fetch tasks" });
     }
   })();
@@ -235,7 +249,7 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
 
       res.status(201).json(result.newTask);
     } catch (error) {
-      console.error("Error creating task:", error);
+      debugError("Error creating task:", error);
       res.status(500).json({ message: "Failed to create task" });
     }
   })();
@@ -342,7 +356,7 @@ tasksRouter.patch("/update/:taskId", function (req: Request, res: Response) {
 
       res.status(200).json(updatedTask);
     } catch (error) {
-      console.error("Error updating task:", error);
+      debugError("Error updating task:", error);
       res.status(500).json({ message: "Failed to update task" });
     }
   })();
@@ -369,7 +383,7 @@ tasksRouter.delete("/delete/:taskId", function (req: Request, res: Response) {
       await prisma.task.delete({ where: { id: taskId } });
       res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
-      console.error("Error deleting task:", error);
+      debugError("Error deleting task:", error);
       res.status(500).json({ message: "Failed to delete task" });
     }
   })();
@@ -412,7 +426,7 @@ tasksRouter.get("/:taskId", function (req: Request, res: Response) {
 
       res.status(200).json(task);
     } catch (error) {
-      console.error("Error retrieving task:", error);
+      debugError("Error retrieving task:", error);
       res.status(500).json({ message: "Failed to retrieve task" });
     }
   })();
@@ -500,7 +514,7 @@ tasksRouter.post("/complete/:taskId", function (req: Request, res: Response) {
 
       res.status(200).json(result.updatedTask);
     } catch (error) {
-      console.error("Error updating task completion details:", error);
+      debugError("Error updating task completion details:", error);
       res.status(500).json({ message: "Failed to update completion details" });
     }
   })();
@@ -530,7 +544,7 @@ tasksRouter.delete("/files/:fileId", function (req: Request, res: Response) {
 
       res.status(200).json({ message: "File deleted successfully" });
     } catch (error) {
-      console.error("Error deleting file:", error);
+      debugError("Error deleting file:", error);
       res.status(500).json({ message: "Failed to delete file" });
     }
   })();
@@ -566,7 +580,7 @@ tasksRouter.get("/:taskId/files", function (req: Request, res: Response) {
 
       res.status(200).json({ files });
     } catch (error) {
-      console.error("Error fetching task files:", error);
+      debugError("Error fetching task files:", error);
       res.status(500).json({ message: "Failed to fetch task files" });
     }
   })();

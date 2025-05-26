@@ -1,5 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const calendarRouter: Router = express.Router();
@@ -177,7 +178,7 @@ calendarRouter.get("/events/all", async (req: Request, res: Response) => {
       calendar: calendarEvents,
     });
   } catch (error) {
-    console.error("Error fetching calendar data:", error);
+    debugError("Error fetching calendar data:", error);
     res.status(500).json({ message: "Failed to fetch calendar data" });
   }
 });
@@ -288,7 +289,7 @@ calendarRouter.get("/deadlines", async (req: Request, res: Response) => {
 
     res.status(200).json(deadlines);
   } catch (error) {
-    console.error("Error fetching deadlines:", error);
+    debugError("Error fetching deadlines:", error);
     res.status(500).json({ message: "Failed to fetch deadline data" });
   }
 });

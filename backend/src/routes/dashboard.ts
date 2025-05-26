@@ -1,5 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const dashboardRouter: Router = express.Router();
@@ -29,7 +30,9 @@ dashboardRouter.get("/projects", async (req: Request, res: Response) => {
         members: {
           select: {
             userId: true,
-            user: { select: { id: true, name: true, image: true } },
+            user: {
+              select: { id: true, name: true, image: true, email: true },
+            },
           },
         },
         _count: { select: { tasks: true } },
@@ -71,7 +74,7 @@ dashboardRouter.get("/projects", async (req: Request, res: Response) => {
       projects: projectsWithStats,
     });
   } catch (error) {
-    console.error("Error fetching projects:", error);
+    debugError("Error fetching projects:", error);
     res.status(500).json({ message: "Failed to fetch projects" });
   }
 });
@@ -119,6 +122,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
               id: true,
               name: true,
               image: true,
+              email: true,
             },
           },
           createdAt: true,
@@ -143,6 +147,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
               id: true,
               name: true,
               image: true,
+              email: true,
             },
           },
           project: {
@@ -155,6 +160,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
                   id: true,
                   name: true,
                   image: true,
+                  email: true,
                 },
               },
             },
@@ -181,6 +187,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
               id: true,
               name: true,
               image: true,
+              email: true,
             },
           },
           project: {
@@ -212,6 +219,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
               id: true,
               name: true,
               image: true,
+              email: true,
             },
           },
           project: {
@@ -244,6 +252,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
               id: true,
               name: true,
               image: true,
+              email: true,
             },
           },
           project: {
@@ -269,6 +278,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
             userId: project.creatorId,
             userName: project.creator.name,
             userImage: project.creator.image,
+            userEmail: project.creator.email,
             createdAt: project.createdAt,
           })),
 
@@ -285,6 +295,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
             userId: member.project.creatorId,
             userName: member.project.creator.name,
             userImage: member.project.creator.image,
+            userEmail: member.project.creator.email,
             createdAt: member.joinedAt,
             targetUser: member.user,
             details: {
@@ -303,6 +314,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
             userId: task.creatorId,
             userName: task.creator.name,
             userImage: task.creator.image,
+            userEmail: task.creator.email,
             createdAt: task.createdAt,
             entityId: task.id,
             entityTitle: task.title,
@@ -319,6 +331,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
             userId: task.assigneeId || "",
             userName: task.assignee?.name || "Unknown",
             userImage: task.assignee?.image || null,
+            userEmail: task.assignee?.email || "",
             createdAt: task.updatedAt,
             entityId: task.id,
             entityTitle: task.title,
@@ -335,6 +348,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
             userId: task.assigneeId || "",
             userName: task.assignee?.name || "Unknown",
             userImage: task.assignee?.image || null,
+            userEmail: task.assignee?.email || "",
             createdAt: task.updatedAt,
             entityId: task.id,
             entityTitle: task.title,
@@ -351,7 +365,7 @@ dashboardRouter.get("/activity", function (req: Request, res: Response) {
 
       res.status(200).json(activities);
     } catch (error) {
-      console.error("Error fetching activity feed:", error);
+      debugError("Error fetching activity feed:", error);
       res.status(500).json({ message: "Failed to fetch activity feed" });
     }
   })();

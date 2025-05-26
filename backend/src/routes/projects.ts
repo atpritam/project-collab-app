@@ -106,7 +106,7 @@ projectsRouter.post("/new", function (req: Request, res: Response) {
 // GET /api/projects/test
 projectsRouter.get("/test", (req: Request, res: Response) => {
   const userId = req.query.userId as string;
-  console.log(`Backend: Test endpoint hit with userId: ${userId}`);
+  debugLog(`Backend: Test endpoint hit with userId: ${userId}`);
 
   res.status(200).json({
     message: "Projects API is working",
