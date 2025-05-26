@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
+import { debugError, debugLog } from "@/lib/utils";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -47,34 +48,34 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       socketInstance.on("connect", () => {
-        console.log("Socket connected with ID:", socketInstance.id);
+        debugLog("Socket connected with ID:", socketInstance.id);
         setIsConnected(true);
 
         socketInstance.emit("authenticate", session.user.id);
       });
 
       socketInstance.on("disconnect", (reason) => {
-        console.log("Socket disconnected, reason:", reason);
+        debugLog("Socket disconnected, reason:", reason);
         setIsConnected(false);
       });
 
       socketInstance.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
+        debugError("Socket connection error:", error);
         setIsConnected(false);
       });
 
       socketInstance.on("error", (error) => {
-        console.error("Socket error:", error);
+        debugError("Socket error:", error);
       });
 
       socketInstance.on("welcome", (data) => {
-        console.log("Received welcome from server:", data);
+        debugLog("Received welcome from server:", data);
       });
 
       setSocket(socketInstance);
 
       return () => {
-        console.log("Disconnecting socket");
+        debugLog("Disconnecting socket");
         socketInstance.disconnect();
       };
     }
@@ -83,7 +84,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   // team chat room
   const joinTeamChat = (projectId: string) => {
     if (socket && isConnected && session?.user?.id) {
-      console.log(`Joining team chat for project: ${projectId}`);
+      debugLog(`Joining team chat for project: ${projectId}`);
       socket.emit("join_team_chat", {
         userId: session.user.id,
         projectId,
@@ -93,7 +94,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const leaveTeamChat = (projectId: string) => {
     if (socket && isConnected && session?.user?.id) {
-      console.log(`Leaving team chat for project: ${projectId}`);
+      debugLog(`Leaving team chat for project: ${projectId}`);
       socket.emit("leave_team_chat", {
         userId: session.user.id,
         projectId,
@@ -103,7 +104,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const sendTeamMessage = (projectId: string, content: string) => {
     if (socket && isConnected && session?.user?.id) {
-      console.log(`Sending team message to project: ${projectId}`);
+      debugLog(`Sending team message to project: ${projectId}`);
       socket.emit("send_team_message", {
         userId: session.user.id,
         projectId,

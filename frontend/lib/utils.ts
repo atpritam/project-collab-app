@@ -16,3 +16,15 @@ export const checkPassword = (password: string) => {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
   return regex.test(password);
 };
+
+export const debugLog = (...args: any[]): void => {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(...args);
+  }
+};
+
+export const debugError = (...args: any[]): void => {
+  if (process.env.NODE_ENV !== "production") {
+    console.error(...args);
+  }
+};

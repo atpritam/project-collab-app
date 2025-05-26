@@ -162,7 +162,7 @@ io.on("connection", (socket) => {
 
       debugLog("Message successfully processed and emitted");
     } catch (error) {
-      console.error("Error handling message via socket:", error);
+      debugError("Error handling message via socket:", error);
     }
   });
 
@@ -211,7 +211,7 @@ io.on("connection", (socket) => {
 
       debugLog("Messages marked as read");
     } catch (error) {
-      console.error("Error marking messages as read:", error);
+      debugError("Error marking messages as read:", error);
     }
   });
 
@@ -299,7 +299,7 @@ io.on("connection", (socket) => {
 
       debugLog("Team message successfully processed and emitted");
     } catch (error) {
-      console.error("Error handling team message via socket:", error);
+      debugError("Error handling team message via socket:", error);
     }
   });
 
