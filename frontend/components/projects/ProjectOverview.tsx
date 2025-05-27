@@ -22,6 +22,7 @@ import {
 import ProjectMembers from "./ProjectMembers";
 import { getProfileUrl } from "@/lib/profileUtils";
 import Link from "next/link";
+import { getInitials } from "@/lib/utils";
 
 interface ProjectOverviewProps {
   project: any;
@@ -65,15 +66,6 @@ export default function ProjectOverview({
       setShowStatusPrompt(false);
     }
   }, [completionPercentage, totalTasks, project.status, isAdmin]);
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Not set";

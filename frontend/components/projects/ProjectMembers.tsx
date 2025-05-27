@@ -21,19 +21,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Loader2,
-  MoreVertical,
-  ShieldAlert,
-  ShieldCheck,
-  User,
-  UserCog,
-  UserMinus,
-} from "lucide-react";
+import { Loader2, MoreVertical, UserCog, UserMinus } from "lucide-react";
 import Link from "next/link";
 import { getProfileUrl } from "@/lib/profileUtils";
+import { getInitials } from "@/lib/utils";
+import { getRoleBadge } from "@/lib/badge-utils";
 
 interface ProjectMembersProps {
   projectId: string;
@@ -81,42 +74,6 @@ export default function ProjectMembers({
       setMembers(project.members);
     }
   }, [project, session?.user?.id]);
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return (
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1.5">
-            <ShieldAlert className="h-3 w-3" />
-            Admin
-          </Badge>
-        );
-      case "EDITOR":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1.5">
-            <ShieldCheck className="h-3 w-3" />
-            Editor
-          </Badge>
-        );
-      case "MEMBER":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            Member
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
 
   const canChangeRole = (memberRole: string) => {
     // Creator (Admin) can change role for everybody

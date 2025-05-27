@@ -49,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/utils";
 
 interface FileItem {
   id: string;
@@ -131,14 +132,6 @@ export default function FileExplorer({
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + " MB";
     else return (bytes / 1073741824).toFixed(1) + " GB";
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const getTotalFileCount = (pathType: string) => {

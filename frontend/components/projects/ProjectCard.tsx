@@ -10,9 +10,11 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getProfileUrl } from "@/lib/profileUtils";
+import { getInitials } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { getStatusBadge } from "@/lib/badge-utils";
 
 interface ProjectMember {
   user: {
@@ -51,45 +53,6 @@ export default function ProjectCard({
     return desc.length > maxLength
       ? `${desc.substring(0, maxLength)}...`
       : desc;
-  };
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "No due date";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "IN_PROGRESS":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            In Progress
-          </Badge>
-        );
-      case "AT_RISK":
-        return <Badge variant={"destructive"}>At Risk</Badge>;
-      case "COMPLETED":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Completed
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   return (

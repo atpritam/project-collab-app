@@ -18,6 +18,9 @@ import { Separator } from "@/components/ui/separator";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
+import { getInitials } from "@/lib/utils";
+import { getStatusBadge, getRoleBadge } from "@/lib/badge-utils";
+import { formatDate } from "@/lib/utils";
 
 interface UserProfile {
   id: string;
@@ -84,69 +87,6 @@ function UserProfileContent() {
       setError("Failed to load user profile");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "IN_PROGRESS":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            In Progress
-          </Badge>
-        );
-      case "AT_RISK":
-        return <Badge variant="destructive">At Risk</Badge>;
-      case "COMPLETED":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Completed
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return (
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-            Admin
-          </Badge>
-        );
-      case "EDITOR":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            Editor
-          </Badge>
-        );
-      case "MEMBER":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            Member
-          </Badge>
-        );
-      default:
-        return null;
     }
   };
 

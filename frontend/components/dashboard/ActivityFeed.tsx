@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { getProfileUrl } from "@/lib/profileUtils";
 import { useSession } from "next-auth/react";
+import { getInitials } from "@/lib/utils";
 
 interface Activity {
   id: string;
@@ -78,15 +79,6 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
       month: "short",
       day: "numeric",
     });
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   const renderActivityIcon = (type: string) => {

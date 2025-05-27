@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getInitials } from "@/lib/utils";
 
 // Interface for collaborator data
 interface Collaborator {
@@ -137,15 +138,6 @@ export default function TeamPage() {
     }
 
     setFilteredCollaborators(filtered);
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   if (status === "loading") {

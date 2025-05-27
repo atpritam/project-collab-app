@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -67,15 +68,6 @@ const NewMessageButton: React.FC<NewMessageButtonProps> = ({
     setOpen(false);
     setSearchQuery("");
     setSearchResults([]);
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   return (

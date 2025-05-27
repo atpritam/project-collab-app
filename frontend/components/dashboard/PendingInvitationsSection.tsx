@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { getRoleBadge } from "@/lib/badge-utils";
 
 interface PendingInvitation {
   id: string;
@@ -119,31 +120,6 @@ export default function PendingInvitationsSection({
     } finally {
       setProcessingId(null);
       setState("");
-    }
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return (
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-            Admin
-          </Badge>
-        );
-      case "EDITOR":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            Editor
-          </Badge>
-        );
-      case "MEMBER":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            Member
-          </Badge>
-        );
-      default:
-        return null;
     }
   };
 

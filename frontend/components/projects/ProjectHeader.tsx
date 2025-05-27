@@ -31,8 +31,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { getStatusBadge } from "@/lib/badge-utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -205,27 +205,6 @@ export default function ProjectHeader({
   const formattedDueDate = project.dueDate
     ? format(new Date(project.dueDate), "MMM d, yyyy")
     : "No due date";
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "IN_PROGRESS":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            In Progress
-          </Badge>
-        );
-      case "AT_RISK":
-        return <Badge variant={"destructive"}>At Risk</Badge>;
-      case "COMPLETED":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Completed
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
 
   const getRoleDisplay = (role: string) => {
     switch (role) {

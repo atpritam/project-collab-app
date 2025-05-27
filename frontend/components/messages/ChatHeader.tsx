@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getProfileUrl } from "@/lib/profileUtils";
+import { getInitials } from "@/lib/utils";
 
 interface ChatHeaderProps {
   user: {
@@ -21,15 +22,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ user, onBackClick }) => {
   const { data: session } = useSession();
 
   if (!user) return null;
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
 
   return (
     <div className="flex items-center gap-3 p-3 border-b">

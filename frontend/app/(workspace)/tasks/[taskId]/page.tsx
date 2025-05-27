@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { getStatusBadge, getPriorityBadge } from "@/lib/badge-utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -54,6 +54,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import TaskAttachments from "@/components/tasks/TaskAttachments";
 import TaskCompletion from "@/components/tasks/TaskCompletion";
+import { getInitials } from "@/lib/utils";
 
 export default function TaskDetailsPage() {
   const router = useRouter();
@@ -390,15 +391,6 @@ export default function TaskDetailsPage() {
     fetchProjectAndTaskDetails();
   };
 
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
   const formatDueDate = (dateString: string | null) => {
     if (!dateString) return "No due date";
 
@@ -413,56 +405,6 @@ export default function TaskDetailsPage() {
         return <Clock className="h-5 w-5 text-blue-500" />;
       case "TODO":
         return <Circle className="h-5 w-5 text-gray-400" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "DONE":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Done
-          </Badge>
-        );
-      case "IN_PROGRESS":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            In Progress
-          </Badge>
-        );
-      case "TODO":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            To Do
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "HIGH":
-        return (
-          <Badge variant="destructive" className="text-xs">
-            High Priority
-          </Badge>
-        );
-      case "MEDIUM":
-        return (
-          <Badge className="text-xs bg-yellow-500 hover:bg-yellow-600">
-            Medium Priority
-          </Badge>
-        );
-      case "LOW":
-        return (
-          <Badge className="text-xs bg-blue-500 hover:bg-blue-600">
-            Low Priority
-          </Badge>
-        );
       default:
         return null;
     }

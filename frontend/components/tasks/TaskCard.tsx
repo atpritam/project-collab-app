@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { Calendar, FolderKanban } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { getStatusBadge, getPriorityBadge } from "@/lib/badge-utils";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getProfileUrl } from "@/lib/profileUtils";
+import { getInitials } from "@/lib/utils";
 
 interface TaskCardProps {
   task: {
@@ -57,15 +58,6 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
     router.push(`/projects/${task.projectId}`);
   };
 
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
   const formatDueDate = (dateString: string | null) => {
     if (!dateString) return "No due date";
 
@@ -94,65 +86,6 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
     const dueDate = new Date(dateString);
     dueDate.setHours(0, 0, 0, 0);
     return dueDate < today;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "HIGH":
-        return (
-          <Badge
-            variant="outline"
-            className="text-xs border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
-          >
-            High
-          </Badge>
-        );
-      case "MEDIUM":
-        return (
-          <Badge
-            variant="outline"
-            className="text-xs border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-          >
-            Medium
-          </Badge>
-        );
-      case "LOW":
-        return (
-          <Badge
-            variant="outline"
-            className="text-xs border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-          >
-            Low
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "DONE":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Done
-          </Badge>
-        );
-      case "IN_PROGRESS":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            In Progress
-          </Badge>
-        );
-      case "TODO":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            To Do
-          </Badge>
-        );
-      default:
-        return null;
-    }
   };
 
   return (

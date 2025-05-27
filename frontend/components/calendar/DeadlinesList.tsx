@@ -31,6 +31,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { getPriorityBadge } from "@/lib/badge-utils";
 
 interface DeadlinesListProps {
   deadlines: any[];
@@ -84,31 +85,6 @@ export default function DeadlinesList({
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(dateString);
     return dueDate < today;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    if (!priority) return null;
-
-    switch (priority.toUpperCase()) {
-      case "HIGH":
-        return (
-          <Badge variant="destructive" className="text-xs">
-            High
-          </Badge>
-        );
-      case "MEDIUM":
-        return (
-          <Badge className="text-xs bg-yellow-500 hover:bg-yellow-600">
-            Medium
-          </Badge>
-        );
-      case "LOW":
-        return (
-          <Badge className="text-xs bg-blue-500 hover:bg-blue-600">Low</Badge>
-        );
-      default:
-        return null;
-    }
   };
 
   const getInitials = (name: string) => {
@@ -290,9 +266,7 @@ export default function DeadlinesList({
                                     href={
                                       deadline.type === "project"
                                         ? `/projects/${deadline.project.id}`
-                                        : `/projects/${
-                                            deadline.project.id
-                                          }/tasks/${deadline.id.replace(
+                                        : `/tasks/${deadline.id.replace(
                                             "task-",
                                             ""
                                           )}`
@@ -385,9 +359,7 @@ export default function DeadlinesList({
                                 href={
                                   deadline.type === "project"
                                     ? `/projects/${deadline.project.id}`
-                                    : `/projects/${
-                                        deadline.project.id
-                                      }/tasks/${deadline.id.replace(
+                                    : `/tasks/${deadline.id.replace(
                                         "task-",
                                         ""
                                       )}`

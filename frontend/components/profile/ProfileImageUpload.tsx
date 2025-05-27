@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { getInitials } from "@/lib/utils";
 
 interface ProfileImageUploadProps {
   onImageUpdated?: () => void;
@@ -47,16 +48,6 @@ export default function ProfileImageUpload({
 
   const isAuthenticated = status === "authenticated";
   const hasExistingImage = !!userData?.image;
-
-  // Helper function to get user initials for avatar fallback
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
 
   // user profile data when authenticated
   useEffect(() => {
