@@ -35,9 +35,15 @@ interface Task {
 
 interface ProjectFilesProps {
   projectId: string;
+  isAdmin: boolean;
+  isEditor: boolean;
 }
 
-export default function ProjectFiles({ projectId }: ProjectFilesProps) {
+export default function ProjectFiles({
+  projectId,
+  isAdmin,
+  isEditor,
+}: ProjectFilesProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [projectFiles, setProjectFiles] = useState<FileItem[]>([]);
@@ -140,6 +146,7 @@ export default function ProjectFiles({ projectId }: ProjectFilesProps) {
       projectId={projectId}
       projectFiles={projectFiles}
       tasks={tasks}
+      hasPermissions={isAdmin || isEditor}
     />
   );
 }
