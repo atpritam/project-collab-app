@@ -8,6 +8,8 @@ import {
   canViewTaskFiles,
   canViewTask,
   isProjectMember,
+  canCompleteTask,
+  validateTaskAssignee,
 } from "../utils/permissions";
 import { debugError } from "../utils/debug";
 
@@ -194,19 +196,18 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
       }
 
       if (assigneeId) {
-        const assigneeMember = project.members.some(
-          (m: any) => m.userId === assigneeId
+        const assigneeValidation = await validateTaskAssignee(
+          projectId,
+          assigneeId
         );
-        if (!assigneeMember) {
-          return res
-            .status(400)
-            .json({ message: "Assignee must be a project member" });
+        if (!assigneeValidation.valid) {
+          return res.status(400).json({
+            message: assigneeValidation.reason,
+          });
         }
       }
 
-      // Create the task with the files in a transaction
       const result = await prisma.$transaction(async (tx) => {
-        // Create the task
         const newTask = await tx.task.create({
           data: {
             title,
@@ -224,7 +225,6 @@ tasksRouter.post("/create/:projectId", function (req: Request, res: Response) {
           },
         });
 
-        // If files are provided, create file records
         if (files && Array.isArray(files) && files.length > 0) {
           const filePromises = files.map((file) =>
             tx.file.create({
@@ -323,13 +323,14 @@ tasksRouter.patch("/update/:taskId", function (req: Request, res: Response) {
       }
 
       if (assigneeId !== undefined && assigneeId !== null) {
-        const ok = task.project.members.some(
-          (m: any) => m.userId === assigneeId
+        const assigneeValidation = await validateTaskAssignee(
+          task.projectId,
+          assigneeId
         );
-        if (!ok) {
-          return res
-            .status(400)
-            .json({ message: "Assignee must be a project member" });
+        if (!assigneeValidation.valid) {
+          return res.status(400).json({
+            message: assigneeValidation.reason,
+          });
         }
       }
 
@@ -397,7 +398,6 @@ tasksRouter.get("/:taskId", function (req: Request, res: Response) {
 
   (async () => {
     try {
-      // Ensure userId is provided
       if (!userId) {
         return res.status(400).json({ message: "User ID is required" });
       }
@@ -440,7 +440,13 @@ tasksRouter.post("/complete/:taskId", function (req: Request, res: Response) {
 
   (async () => {
     try {
-      // Fetch the task to check permissions
+      const completionCheck = await canCompleteTask(taskId, userId);
+      if (!completionCheck.allowed) {
+        return res.status(403).json({
+          message: completionCheck.reason,
+        });
+      }
+
       const task = await prisma.task.findUnique({
         where: { id: taskId },
         include: { project: true },
@@ -448,17 +454,6 @@ tasksRouter.post("/complete/:taskId", function (req: Request, res: Response) {
 
       if (!task) {
         return res.status(404).json({ message: "Task not found" });
-      }
-      if (task.assigneeId !== userId) {
-        return res.status(403).json({
-          message: "Only the assigned user can add completion details",
-        });
-      }
-      if (task.status !== "DONE") {
-        return res.status(400).json({
-          message:
-            "Task must be marked as done before adding completion details",
-        });
       }
 
       const result = await prisma.$transaction(async (tx) => {
@@ -568,7 +563,6 @@ tasksRouter.get("/:taskId/files", function (req: Request, res: Response) {
         });
       }
 
-      // Get all files for this task
       const files = await prisma.file.findMany({
         where: {
           taskId,

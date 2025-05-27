@@ -1,7 +1,8 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { hashPassword, verifyPassword } from "../utils/hash";
+import { hashPassword } from "../utils/hash";
 import { sendDeleteVerificationEmail } from "../utils/email";
+import { canDeleteAccount, canUpdatePassword } from "../utils/permissions";
 import { debugError, debugLog } from "../utils/debug";
 
 const prisma = new PrismaClient();
@@ -128,33 +129,9 @@ userRouter.post("/update-password", function (req: Request, res: Response) {
   const { userId, currentPassword, newPassword } = req.body;
   (async () => {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          password: true,
-        },
-      });
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      if (!user.password) {
-        return res.status(400).json({
-          message: "Cannot update password for accounts that use social login",
-        });
-      }
-
-      // verification
-      const isValidPassword = await verifyPassword(
-        currentPassword,
-        user.password
-      );
-      if (!isValidPassword) {
-        return res
-          .status(400)
-          .json({ message: "Current password is incorrect" });
+      const passwordCheck = await canUpdatePassword(userId, currentPassword);
+      if (!passwordCheck.allowed) {
+        return res.status(400).json({ message: passwordCheck.reason });
       }
 
       // hash new password
@@ -242,7 +219,7 @@ userRouter.post(
 
         // 6-digit verification code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         // existing verification code cleanup
         await prisma.deleteAccountToken.deleteMany({
@@ -322,62 +299,13 @@ userRouter.delete("/delete", function (req: Request, res: Response) {
   const { password, verificationCode } = req.body;
   (async () => {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          password: true,
-          email: true,
-        },
-      });
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      let isAuthorized = false;
-
-      // If password is provided
-      if (password && user.password) {
-        const isValidPassword = await verifyPassword(password, user.password);
-        if (isValidPassword) {
-          isAuthorized = true;
-          debugLog("User authorized via password");
-        }
-      }
-
-      // If verification code is provided
-      if (verificationCode && !isAuthorized) {
-        const verificationToken = await prisma.deleteAccountToken.findFirst({
-          where: {
-            email: user.email,
-            code: verificationCode,
-          },
-        });
-
-        if (verificationToken && verificationToken.expiresAt > new Date()) {
-          isAuthorized = true;
-          debugLog("User authorized via verification code");
-
-          // verification code cleanup
-          await prisma.deleteAccountToken.delete({
-            where: { id: verificationToken.id },
-          });
-        } else {
-          debugLog("Invalid or expired verification code");
-          if (verificationToken) {
-            debugLog("Code expired at:", verificationToken.expiresAt);
-            debugLog("Current time:", new Date());
-          }
-        }
-      }
-
-      // If neither valid password nor verification code worked
-      if (!isAuthorized) {
-        return res.status(401).json({
-          message:
-            "Verification failed. Please provide a valid password or verification code.",
-        });
+      const authCheck = await canDeleteAccount(
+        userId,
+        password,
+        verificationCode
+      );
+      if (!authCheck.authorized) {
+        return res.status(401).json({ message: authCheck.reason });
       }
 
       await prisma.$transaction(async (tx) => {
@@ -538,7 +466,19 @@ userRouter.delete("/delete", function (req: Request, res: Response) {
           where: { userId: userId },
         });
 
-        // STEP 9: Delete the user
+        // Clean up verification codes
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { email: true },
+        });
+
+        if (user) {
+          await tx.deleteAccountToken.deleteMany({
+            where: { email: user.email },
+          });
+        }
+
+        // Delete the user
         await tx.user.delete({
           where: { id: userId },
         });
