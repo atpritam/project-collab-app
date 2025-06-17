@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resendAPIKey = process.env.RESEND_API_KEY;
 if (!resendAPIKey) {
-  throw new Error("RESEND_API_KEY environment variable is not set");
+  throw new Error("RESEND_API_KEY environment variable missing!");
 }
 
 const resend = new Resend(resendAPIKey);
