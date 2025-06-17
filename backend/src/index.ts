@@ -1,6 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import http from "http";
 import { PrismaClient } from "@prisma/client";
 
@@ -32,8 +33,6 @@ import { setupSocketHandlers } from "./socket/socketHandler";
 
 // debug utilities
 import { debugLog } from "./utils/debug";
-
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
