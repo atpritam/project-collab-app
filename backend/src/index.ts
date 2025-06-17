@@ -86,7 +86,6 @@ app.use("/api/team-messages", messageRateLimit, teamMessagesRouter);
 
 // Start server
 const PORT = parseInt(process.env.PORT || "4000", 10);
-
 server.listen(PORT, "0.0.0.0", () => {
   debugLog(`Server running on port ${PORT}`);
   debugLog(`Socket.io server configured and ready`);
