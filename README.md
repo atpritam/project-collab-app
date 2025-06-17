@@ -17,7 +17,8 @@
 
 Nudge is a sophisticated project collaboration platform designed to streamline team workflows and enhance productivity through intuitive project management tools. This full-stack application provides teams with a centralized workspace to create, track, and complete projects with ease.
 
-🔗 **Live Demo**: [project-collab-app.vercel.app](https://project-collab-app.vercel.app/)
+🔗 **Live Demo**: [project-collab-app.vercel.app](https://project-collab-app.vercel.app/)  
+🚀 **Backend**: Express.js API with PostgreSQL database deployed on Railway
 
 **Accounts created with email/password require activation before login. You can sign up with Google or GitHub for instant verification.**
 
@@ -57,7 +58,7 @@ For demo and testing purposes, any invitation sent to "pritam.amit26@gmail.com" 
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: JWT with bcrypt password hashing
 - **Real-time Communication**: Socket.IO server
-- **Email Service**: Integrated with SendGrid/SMTP for notifications
+- **Email Service**: Integrated with Resend/SMTP for notifications
 
 ### DevOps
 
