@@ -18,7 +18,7 @@ export async function sendPasswordResetEmail(
   const resetUrl = `${BASE_URL}/auth/reset-password?token=${resetToken}`;
   const subject = "Password Reset Request";
 
-  await resend.emails.send({
+  const {data, error} = await resend.emails.send({
     from: FROM_EMAIL,
     to: [email],
     subject,
@@ -33,6 +33,11 @@ export async function sendPasswordResetEmail(
       </div>
     `,
   });
+
+  if (error) {
+  console.error("Error sending password reset email: ", error);
+  throw new Error("Failed to send email");
+  }
 }
 
 export async function sendDeleteVerificationEmail(
@@ -41,7 +46,7 @@ export async function sendDeleteVerificationEmail(
 ): Promise<void> {
   const subject = "Account Deletion Verification";
 
-  await resend.emails.send({
+  const {data, error} = await resend.emails.send({
     from: FROM_EMAIL,
     to: [email],
     subject,
@@ -55,8 +60,13 @@ export async function sendDeleteVerificationEmail(
       </div>
     `,
   });
-}
 
+  if (error) {
+  console.error("Error sending delete verification: ", error);
+  throw new Error("Failed to send email");
+  }
+
+}
 export async function sendEmailVerificationEmail(
   email: string,
   verificationCode: string
@@ -64,7 +74,7 @@ export async function sendEmailVerificationEmail(
   const verificationUrl = `${BASE_URL}/auth/verify-email?code=${verificationCode}&email=${encodeURIComponent(email)}`;
   const subject = "Email Verification";
 
-  await resend.emails.send({
+  const {data, error} = await resend.emails.send({
     from: FROM_EMAIL,
     to: [email],
     subject,
@@ -79,6 +89,11 @@ export async function sendEmailVerificationEmail(
       </div>
     `,
   });
+
+  if (error) {
+  console.error("Error sending email verification: ", error);
+  throw new Error("Failed to send email");
+  }
 }
 
 export async function sendProjectInvitationEmail(
@@ -90,7 +105,7 @@ export async function sendProjectInvitationEmail(
   const invitationUrl = `${BASE_URL}/invitations/accept?token=${token}`;
   const subject = `Invitation to join the "${projectName}" project`;
 
-  await resend.emails.send({
+  const {data, error} = await resend.emails.send({
     from: FROM_EMAIL,
     to: [email],
     subject,
@@ -105,4 +120,9 @@ export async function sendProjectInvitationEmail(
       </div>
     `,
   });
+
+  if (error) {
+  console.error("Error sending project invitation email: ", error);
+  throw new Error("Failed to send email");
+  }
 }
