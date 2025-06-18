@@ -236,7 +236,19 @@ userRouter.post(
         });
 
         // verification email
-        await sendDeleteVerificationEmail(user.email, code);
+        try {
+          await sendDeleteVerificationEmail(user.email, code);
+        } catch (error) {
+          console.error("Error sending verification email:", error);
+          return res
+            .status(500)
+            .json({
+              message:
+                error instanceof Error
+                  ? error.message
+                  : error || "Failed to send verification email",
+            });
+        }
 
         res.status(200).json({
           message: "Verification code sent to your email",
