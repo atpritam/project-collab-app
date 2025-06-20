@@ -1,7 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../utils/hash";
-import { sendDeleteVerificationEmail } from "../utils/email";
+import { sendDeleteVerificationEmail, sendSubsEmail } from "../utils/email";
 import { canDeleteAccount, canUpdatePassword } from "../utils/permissions";
 import { debugError, debugLog } from "../utils/debug";
 
