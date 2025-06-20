@@ -124,6 +124,26 @@ userRouter.put("/profile/:userId", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/user/subscribe
+userRouter.post("/subscribe", function (req: Request, res: Response) {
+  const email = req.body.email;
+
+  (async () => {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    try {
+      sendSubsEmail(email);
+      res.status(200).json({ message: "Subscription successful" });
+    } catch (error) {
+      debugError("Error subscribing user:", error);
+      res.status(500).json({
+        message: "Failed to subscribe user",
+      });
+    }
+  })();
+});
+
 // POST /api/user/update-password
 userRouter.post("/update-password", function (req: Request, res: Response) {
   const { userId, currentPassword, newPassword } = req.body;

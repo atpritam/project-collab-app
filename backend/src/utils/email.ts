@@ -162,3 +162,38 @@ export async function sendProjectInvitationEmail(
     );
   }
 }
+
+export async function sendSubsEmail(email: string): Promise<void> {
+  const nudgeUrl = `${BASE_URL}`;
+  const subject = `Subscription to Nudge`;
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [email],
+      subject,
+      text: `Thank you for subscribing to Nudge! You can start using it here: ${nudgeUrl}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Subscription Confirmation</h2>
+          <p>Thank you for subscribing to Nudge! We're excited to have you on board.</p>
+          <p>You can start using Nudge by clicking the button below:</p>
+          <a href="${nudgeUrl}" style="display:inline-block;padding:10px 20px;background:#4f46e5;color:white;text-decoration:none;border-radius:5px;">Nudge Home</a>
+          <p>If the button doesn't work, copy and paste this link: ${nudgeUrl}</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend API error (project invitation):", error);
+      throw new Error(
+        `Email sending failed: ${error.message || JSON.stringify(error)}`
+      );
+    }
+  } catch (error) {
+    console.error("Error sending project invitation email:", error);
+    throw new Error(
+      `Failed to send invitation email: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
