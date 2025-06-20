@@ -1,7 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../utils/hash";
-import { sendDeleteVerificationEmail } from "../utils/email";
+import { sendDeleteVerificationEmail, sendSubsEmail } from "../utils/email";
 import { canDeleteAccount, canUpdatePassword } from "../utils/permissions";
 import { debugError, debugLog } from "../utils/debug";
 
@@ -124,6 +124,26 @@ userRouter.put("/profile/:userId", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/user/subscribe
+userRouter.post("/subscribe", function (req: Request, res: Response) {
+  const email = req.body.email;
+
+  (async () => {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    try {
+      sendSubsEmail(email);
+      res.status(200).json({ message: "Subscription successful" });
+    } catch (error) {
+      debugError("Error subscribing user:", error);
+      res.status(500).json({
+        message: "Failed to subscribe user",
+      });
+    }
+  })();
+});
+
 // POST /api/user/update-password
 userRouter.post("/update-password", function (req: Request, res: Response) {
   const { userId, currentPassword, newPassword } = req.body;
@@ -236,7 +256,17 @@ userRouter.post(
         });
 
         // verification email
-        await sendDeleteVerificationEmail(user.email, code);
+        try {
+          await sendDeleteVerificationEmail(user.email, code);
+        } catch (error) {
+          console.error("Error sending verification email:", error);
+          return res.status(500).json({
+            message:
+              error instanceof Error
+                ? error.message
+                : error || "Failed to send verification email",
+          });
+        }
 
         res.status(200).json({
           message: "Verification code sent to your email",
