@@ -11,7 +11,7 @@
 ![SMTP](https://img.shields.io/badge/SMTP-FF6600?logo=minutemailer&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
-[![Nudge Logo](Photos/Nudge.png)](https://project-collab-app.vercel.app/)
+[![Nudge Logo](Photos/Nudge.gif)](https://project-collab-app.vercel.app/)
 
 ## 📋 Overview
 
