@@ -186,7 +186,7 @@ export default function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Link
-                  href={`${srv ? "mailto:pritam@student.agh.edu.pl" : "mailto:nudge@pritam.studio"}`}
+                  href={`${(srv) ? "mailto:nudge@pritam.studio" : "mailto:pritam@student.agh.edu.pl"}`}
                   className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
                 >
                   <Mail className="h-5 w-5" />
