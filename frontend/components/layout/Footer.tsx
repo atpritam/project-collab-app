@@ -4,7 +4,7 @@ import type React from "react";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Github, Twitter, Linkedin, Mail, ArrowRight } from "lucide-react";
+import { Github, Twitter, Linkedin, Mail, ArrowRight, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -186,13 +186,27 @@ export default function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Link
-                  href="mailto:pritam@student.agh.edu.pl"
+                  href={`${srv ? "mailto:pritam@student.agh.edu.pl" : "mailto:nudge@pritam.studio"}`}
                   className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
                 >
                   <Mail className="h-5 w-5" />
                   <span className="sr-only">Email</span>
                 </Link>
               </motion.div>
+              {srv && (
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <Link
+                    href="https://www.instagram.com/itssodope_/"
+                    className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
+                  >
+                    <Instagram className="h-5 w-5" />
+                    <span className="sr-only">Instagram</span>
+                  </Link>
+                </motion.div>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-4">
