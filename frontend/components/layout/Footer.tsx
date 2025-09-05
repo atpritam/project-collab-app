@@ -7,12 +7,15 @@ import { motion } from "framer-motion";
 import { Github, Twitter, Linkedin, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+  const [srv, setSrv] = useState(false);
+  const [locationLoaded, setLocationLoaded] = useState(false);
+
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +44,51 @@ export default function Footer() {
       setIsSubscribing(false);
     }
   };
+
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data.country_code === 'IN') {
+          setSrv(true);
+        }
+      } catch (error) {
+        console.log('IP geolocation failed, trying browser geolocation');
+        
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              try {
+                const response = await fetch(
+                  `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`
+                );
+                const data = await response.json();
+                
+                if (data.countryCode === 'IN') {
+                  setSrv(true);
+                }
+              } catch (error) {
+                console.log('Reverse geocoding failed');
+              } finally {
+                setLocationLoaded(true);
+              }
+            },
+            () => {
+              setLocationLoaded(true);
+            }
+          );
+        } else {
+          setLocationLoaded(true);
+        }
+      } finally {
+        setLocationLoaded(true);
+      }
+    };
+
+    detectLocation();
+  }, []);
 
   return (
     <footer className="border-t border-border bg-background">
@@ -105,30 +153,34 @@ export default function Footer() {
               </form>
             </div>
             <div className="flex gap-4">
-              <motion.div
-                whileHover={{ y: -1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <Link
-                  href="https://github.com/atpritam"
-                  className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
+              {!srv && locationLoaded && (
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <Github className="h-5 w-5" />
-                  <span className="sr-only">GitHub</span>
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ y: -1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <Link
-                  href="https://www.linkedin.com/in/atpritam/"
-                  className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
+                  <Link
+                    href="https://github.com/atpritam"
+                    className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
+                  >
+                    <Github className="h-5 w-5" />
+                    <span className="sr-only">GitHub</span>
+                  </Link>
+                </motion.div>
+              )}
+              {!srv && locationLoaded && (
+                <motion.div
+                  whileHover={{ y: -1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <Linkedin className="h-5 w-5" />
-                  <span className="sr-only">LinkedIn</span>
-                </Link>
-              </motion.div>
+                  <Link
+                    href="https://www.linkedin.com/in/atpritam/"
+                    className="text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-2 rounded-full"
+                  >
+                    <Linkedin className="h-5 w-5" />
+                    <span className="sr-only">LinkedIn</span>
+                  </Link>
+                </motion.div>
+              )}
               <motion.div
                 whileHover={{ y: -1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
