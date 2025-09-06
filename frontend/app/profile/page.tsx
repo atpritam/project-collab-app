@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
@@ -20,7 +20,23 @@ import { AccountActions } from "@/components/profile/account-actions";
 import { useUserSettings } from "@/components/context/UserSettingsContext";
 import { checkPassword } from "@/lib/utils";
 
-export default function ProfilePage() {
+// Loading fallback component
+function LoadingProfile() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+// Content component
+function ProfileContent() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,6 +58,7 @@ export default function ProfilePage() {
     skills: "",
     bio: "",
     dateJoined: "",
+    projectsCount: 0,
   });
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -108,6 +125,7 @@ export default function ProfilePage() {
                 day: "numeric",
               })
             : "",
+          projectsCount: userData.memberProjectsCount || 0,
         });
 
         setProfileDataLoaded(true);
@@ -250,10 +268,10 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen ">
       <Header />
 
-      <main className="flex-grow">
+      <main className="flex-grow py-10">
         <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
           <ProfileHeader isSaving={isSaving} onSave={handleSubmit} />
 
@@ -269,7 +287,10 @@ export default function ProfilePage() {
 
             <TabsContent value="profile">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <ProfileSidebar dateJoined={formData.dateJoined} />
+                <ProfileSidebar
+                  dateJoined={formData.dateJoined}
+                  projectsCount={formData.projectsCount}
+                />
                 <PersonalInfoForm
                   formData={formData}
                   handleInputChange={handleInputChange}
@@ -302,5 +323,14 @@ export default function ProfilePage() {
 
       <Footer />
     </div>
+  );
+}
+
+// Suspense boundary
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<LoadingProfile />}>
+      <ProfileContent />
+    </Suspense>
   );
 }

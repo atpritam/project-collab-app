@@ -8,10 +8,18 @@
 ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?logo=socket.io&logoColor=white)
+<<<<<<< HEAD
 ![SMTP](https://img.shields.io/badge/SMTP-FF6600?logo=minutemailer&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 [![Nudge Logo](Photos/Nudge.png)](https://project-collab-app.vercel.app/)
+=======
+![Stripe](https://img.shields.io/badge/Stripe-635BFF?logo=stripe&logoColor=white)
+![SMTP](https://img.shields.io/badge/SMTP-FF6600?logo=minutemailer&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+
+[![Nudge Logo](Photos/Nudge.gif)](https://project-collab-app.vercel.app/)
+>>>>>>> main
 
 ## 📋 Overview
 
@@ -36,6 +44,22 @@ Nudge is a sophisticated project collaboration platform designed to streamline t
 - **Kanban Board View**: Drag-and-drop task management with visual workflow stages
 - **Responsive Design**: Fully mobile-responsive interface for collaboration on any device
 
+## 💳 Subscription & Payment System
+
+- **Flexible Subscription Plans**: Three-tiered pricing (Starter, Pro, Enterprise) with different limits and features
+- **Stripe Integration**: Secure payment processing with Stripe Checkout and Billing Portal
+- **Usage-Based Limits**: Project and team member limits based on subscription tier
+- **Real-time Billing**: Automatic subscription management with webhook integration
+
+### Subscription Tiers
+
+| Plan | Projects | Team Members | Storage | Price |
+|------|----------|--------------|---------|-------|
+| **Starter** | 5 | 4 | 100MB | Free |
+| **Pro** | 100 | 15 | 10GB | $29/month |
+| **Enterprise** | Unlimited | Unlimited | 100GB | $79/month |
+
+
 ![Nudge Logo](Photos/Messages.png)
 
 ### Auto-Accept Team Invitation
@@ -59,6 +83,10 @@ For demo and testing purposes, any invitation sent to "pritam.amit26@gmail.com" 
 - **Authentication**: JWT with bcrypt password hashing
 - **Real-time Communication**: Socket.IO server
 - **Email Service**: Integrated with Resend/SMTP for notifications
+<<<<<<< HEAD
+=======
+- **Payment Processing**: Stripe integration with webhooks for subscription management
+>>>>>>> main
 
 ### DevOps
 
@@ -74,6 +102,15 @@ Nudge is built on a modern, microservices-oriented architecture:
 - **Database Container**: PostgreSQL instance for persistent storage
 
 The application uses a RESTful API for most operations, with Socket.io for real-time features like messaging and status updates.
+
+## 💰 Subscription System Architecture
+
+### Payment Flow
+1. **Plan Selection**: Users choose from Starter, Pro, or Enterprise plans
+2. **Stripe Checkout**: Secure payment processing through Stripe Checkout
+3. **Webhook Processing**: Real-time subscription updates via Stripe webhooks
+4. **Database Sync**: Automatic subscription status and limits updates
+5. **Billing Portal**: Self-service billing management for customers
 
 ![Nudge Logo](Photos/File-System.png)
 
@@ -131,13 +168,74 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
+**Required Environment Variables:**
+
+**Backend (.env):**
+```bash
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/nudge_db"
+
+# JWT
+JWT_SECRET="your-jwt-secret"
+
+# Email (Resend/SMTP)
+EMAIL_FROM="noreply@yourdomain.com"
+RESEND_API_KEY="your-resend-api-key"
+
+# Stripe
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+FRONTEND_URL="http://localhost:3000"
+
+# Server
+PORT=4000
+```
+
+**Frontend (.env.local):**
+```bash
+# API
+NEXT_PUBLIC_API_URL="http://localhost:4000"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret"
+
+# OAuth Providers
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+# UploadThing
+UPLOADTHING_SECRET="your-uploadthing-secret"
+UPLOADTHING_APP_ID="your-uploadthing-app-id"
+```
+
 3. Start the application with Docker:
 
 ```bash
 docker-compose up
 ```
 
-4. Access the application:
+4. Set up Stripe (for subscription features):
+
+```bash
+# Install Stripe CLI
+# macOS
+brew install stripe/stripe-cli/stripe
+
+# Linux/Windows - Download from https://stripe.com/docs/stripe-cli
+
+# Login to Stripe
+stripe login
+
+# Forward webhooks to local development
+stripe listen --forward-to localhost:4000/api/subscriptions/webhook
+
+# Copy the webhook secret to your backend .env file
+```
+
+5. Access the application:
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000
@@ -182,7 +280,14 @@ For local development without Docker:
 
 ## 🤝 Contribution
 
-This project demonstrates my skills in full-stack development, architecture design, and creating intuitive user experiences. As a portfolio piece, it showcases my ability to build complex systems with modern web technologies.
+This project demonstrates my skills in full-stack development, architecture design, payment system integration, and creating intuitive user experiences. As a portfolio piece, it showcases my ability to build complex systems with modern web technologies including:
+
+- **Full-Stack Development**: Next.js, Express.js, PostgreSQL, TypeScript
+- **Payment Integration**: Stripe subscription management with webhooks
+- **Real-time Features**: Socket.IO for messaging and live updates
+- **Authentication & Security**: JWT, OAuth, rate limiting, input validation
+- **Database Design**: PostgreSQL with complex relationships and queries
+- **DevOps**: Docker containerization and deployment strategies
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 

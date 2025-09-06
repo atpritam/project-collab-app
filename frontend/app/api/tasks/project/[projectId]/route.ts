@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 // GET /api/tasks/project/[projectId] - Get tasks for a specific project
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ projectId: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;

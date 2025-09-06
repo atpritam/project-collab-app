@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { UTApi } from "uploadthing/server";
 
 const utapi = new UTApi();
 
 // This route handler deletes a file from UploadThing
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { fileKey } = await request.json();
 

@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 // PATCH /api/tasks/update/[taskId] - Update a task
 export async function PATCH(
-  request: Request,
-  context: { params: { taskId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ taskId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,7 +14,8 @@ export async function PATCH(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = context.params;
+    const resolvedParams = await params;
+    const { taskId } = resolvedParams;
     const userId = session.user.id;
     const body = await request.json();
 

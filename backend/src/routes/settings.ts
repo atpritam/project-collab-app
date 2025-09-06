@@ -1,5 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { debugError } from "../utils/debug";
 
 const prisma = new PrismaClient();
 const settingsRouter: Router = express.Router();
@@ -48,7 +49,7 @@ settingsRouter.get("/:userId", function (req: Request, res: Response) {
 
       res.status(200).json(settings);
     } catch (error) {
-      console.error("Error fetching user settings:", error);
+      debugError("Error fetching user settings:", error);
       res.status(500).json({ message: "Failed to fetch user settings" });
     }
   })();
@@ -162,7 +163,7 @@ settingsRouter.put("/:userId", function (req: Request, res: Response) {
 
       res.status(200).json(settings);
     } catch (error) {
-      console.error("Error updating user settings:", error);
+      debugError("Error updating user settings:", error);
       res.status(500).json({ message: "Failed to update user settings" });
     }
   })();

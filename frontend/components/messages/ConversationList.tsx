@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSocket } from "../context/SocketContext";
+import { getInitials } from "@/lib/utils";
 
 interface Conversation {
   // Common fields
@@ -168,16 +169,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
     onConversationsUpdate,
     onTeamConversationsUpdate,
   ]);
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
-  };
 
   const formatLastActive = (date: string) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true });

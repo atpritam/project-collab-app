@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function GET(
-  request: Request,
-  context: { params: { taskId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ taskId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -14,7 +14,8 @@ export async function GET(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = context.params;
+    const resolvedParams = await params;
+    const { taskId } = resolvedParams;
 
     // Request to the backend service
     const response = await fetch(

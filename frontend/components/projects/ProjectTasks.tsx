@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Circle,
   Clock,
-  AlertTriangle,
   Sparkles,
   ChevronLeft,
   ChevronRight,
@@ -23,6 +22,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getPriorityBadge } from "@/lib/badge-utils";
 
 interface ProjectTasksProps {
   id: string;
@@ -192,35 +192,6 @@ export default function ProjectTasks({
     if (dueDate.getTime() === today.getTime()) return "Today";
     if (dueDate.getTime() === tomorrow.getTime()) return "Tomorrow";
     return format(dueDate, "MMM d, yyyy");
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "HIGH":
-        return (
-          <Badge
-            variant="destructive"
-            className="text-xs font-medium flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm"
-          >
-            <AlertTriangle className="h-3 w-3" />
-            High
-          </Badge>
-        );
-      case "MEDIUM":
-        return (
-          <Badge className="text-xs font-medium bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 shadow-sm px-2 py-1">
-            Medium
-          </Badge>
-        );
-      case "LOW":
-        return (
-          <Badge className="text-xs font-medium bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-sm px-2 py-1">
-            Low
-          </Badge>
-        );
-      default:
-        return null;
-    }
   };
 
   const getStatusIcon = (status: string) => {

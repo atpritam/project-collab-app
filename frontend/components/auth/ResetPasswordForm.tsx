@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   KeyRound,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,19 @@ import {
 import { motion } from "framer-motion";
 import { checkPassword } from "@/lib/utils";
 
-export default function ResetPasswordForm() {
+function LoadingForm() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -359,5 +372,14 @@ export default function ResetPasswordForm() {
         </CardFooter>
       </Card>
     </motion.div>
+  );
+}
+
+// Suspense boundary
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<LoadingForm />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

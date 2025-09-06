@@ -32,8 +32,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogClose,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -51,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/utils";
 
 interface FileItem {
   id: string;
@@ -73,12 +72,14 @@ interface FileExplorerProps {
   projectId: string;
   projectFiles: FileItem[];
   tasks: TaskItem[];
+  hasPermissions: boolean;
 }
 
 export default function FileExplorer({
   projectId,
   projectFiles: initialProjectFiles,
   tasks: initialTasks,
+  hasPermissions,
 }: FileExplorerProps) {
   const [currentPath, setCurrentPath] = useState<string[]>(["root"]);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
@@ -131,14 +132,6 @@ export default function FileExplorer({
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + " MB";
     else return (bytes / 1073741824).toFixed(1) + " GB";
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const getTotalFileCount = (pathType: string) => {
@@ -526,31 +519,33 @@ export default function FileExplorer({
         </div>
 
         {/* Upload Button */}
-        <div>
-          {(getCurrentLocation() === "root" ||
-            getCurrentLocation() === "Project Files") && (
-            <Button
-              variant="outline"
-              className="ml-auto cursor-pointer hidden sm:flex"
-              onClick={handleFileUpload}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload File
-            </Button>
-          )}
+        {hasPermissions && (
+          <div>
+            {(getCurrentLocation() === "root" ||
+              getCurrentLocation() === "Project Files") && (
+              <Button
+                variant="outline"
+                className="ml-auto cursor-pointer hidden sm:flex"
+                onClick={handleFileUpload}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload File
+              </Button>
+            )}
 
-          {(getCurrentLocation() === "root" ||
-            getCurrentLocation() === "Project Files") && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="ml-auto cursor-pointer sm:hidden"
-              onClick={handleFileUpload}
-            >
-              <Upload className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+            {(getCurrentLocation() === "root" ||
+              getCurrentLocation() === "Project Files") && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="ml-auto cursor-pointer sm:hidden"
+                onClick={handleFileUpload}
+              >
+                <Upload className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 gap-4 overflow-hidden">
@@ -831,6 +826,7 @@ export default function FileExplorer({
           <DialogHeader>
             <DialogTitle>Upload Project Files</DialogTitle>
             <DialogDescription>
+              {}
               Add files to your project. Files uploaded here will be available
               to all project members.
             </DialogDescription>

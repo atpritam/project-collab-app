@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { getRoleBadge } from "@/lib/badge-utils";
 
 interface PendingInvitation {
   id: string;
@@ -122,31 +123,6 @@ export default function PendingInvitationsSection({
     }
   };
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return (
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-            Admin
-          </Badge>
-        );
-      case "EDITOR":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            Editor
-          </Badge>
-        );
-      case "MEMBER":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            Member
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
   if (isLoading) {
     return (
       <Card>
@@ -165,75 +141,71 @@ export default function PendingInvitationsSection({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          Pending Invitations
-          <Badge className="ml-2 bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300">
-            {invitations.length}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {invitations.map((invitation) => (
-            <div
-              key={invitation.id}
-              className="border rounded-lg p-4 bg-muted/30"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-medium">{invitation.projectName}</h3>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    <span className="mr-2">
-                      Invited by {invitation.inviterName}
-                    </span>
-                    {getRoleBadge(invitation.role)}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-2 flex items-center">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Expires:{" "}
-                    {format(new Date(invitation.expiresAt), "MMM d, yyyy")}
-                  </div>
+    <>
+      <span className="flex items-center p-0 m-0 mb-4">
+        Pending Invitations
+        <Badge className="ml-2 bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300">
+          {invitations.length}
+        </Badge>
+      </span>
+      <div className="space-y-4">
+        {invitations.map((invitation) => (
+          <div
+            key={invitation.id}
+            className="border rounded-lg p-4 bg-muted/30"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-medium">{invitation.projectName}</h3>
+                <div className="text-sm text-muted-foreground mt-1">
+                  <span className="mr-2">
+                    Invited by {invitation.inviterName} to join as
+                  </span>
+                  {getRoleBadge(invitation.role)}
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => handleDecline(invitation.id)}
-                    disabled={processingId === invitation.id}
-                  >
-                    {processingId === invitation.id && state === "Decline" ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <X className="h-4 w-4 mr-1" />
-                        Decline
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-violet-700 hover:bg-violet-800 text-white"
-                    onClick={() => handleAccept(invitation.id)}
-                    disabled={processingId === invitation.id}
-                  >
-                    {processingId === invitation.id && state === "Accept" ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Accept
-                      </>
-                    )}
-                  </Button>
+                <div className="text-xs text-muted-foreground mt-2 flex items-center">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  Expires:{" "}
+                  {format(new Date(invitation.expiresAt), "MMM d, yyyy")}
                 </div>
               </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  onClick={() => handleDecline(invitation.id)}
+                  disabled={processingId === invitation.id}
+                >
+                  {processingId === invitation.id && state === "Decline" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <X className="h-4 w-4 mr-1" />
+                      Decline
+                    </>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-violet-700 hover:bg-violet-800 text-white"
+                  onClick={() => handleAccept(invitation.id)}
+                  disabled={processingId === invitation.id}
+                >
+                  {processingId === invitation.id && state === "Accept" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Accept
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

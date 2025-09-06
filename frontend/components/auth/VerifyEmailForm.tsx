@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -22,13 +22,26 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
-export default function VerifyEmailForm() {
+function LoadingForm() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-violet-700" />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function VerifyEmailForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [email, setEmail] = useState("");
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [emailAlreadyVerified, setEmailAlreadyVerified] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,6 +82,10 @@ export default function VerifyEmailForm() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 400) {
+          setEmailAlreadyVerified(true);
+          return;
+        }
         throw new Error(data.message || "Email verification failed");
       }
 
@@ -237,6 +254,28 @@ export default function VerifyEmailForm() {
                 <Link href="/auth/signin">Go to Sign In</Link>
               </Button>
             </div>
+          ) : emailAlreadyVerified ? (
+            <div className="text-center py-6">
+              <div className="flex justify-center mb-4">
+                <div className="h-16 w-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <p className="font-medium text-lg mb-2 text-green-600 dark:text-green-400">
+                Email already verified
+              </p>
+              <p className="text-muted-foreground mb-4">
+                Your email address is already verified. You can now sign in to
+                your account.
+              </p>
+              <Button
+                asChild
+                variant="default"
+                className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-700 dark:hover:bg-violet-800 text-white"
+              >
+                <Link href="/auth/signin">Go to Sign In</Link>
+              </Button>
+            </div>
           ) : (
             <div className="text-center py-6">
               <div className="bg-violet-50 dark:bg-violet-900/20 p-6 rounded-lg">
@@ -308,5 +347,14 @@ export default function VerifyEmailForm() {
         </CardFooter>
       </Card>
     </motion.div>
+  );
+}
+
+// Suspense boundary
+export default function VerifyEmail() {
+  return (
+    <Suspense fallback={<LoadingForm />}>
+      <VerifyEmailForm />
+    </Suspense>
   );
 }

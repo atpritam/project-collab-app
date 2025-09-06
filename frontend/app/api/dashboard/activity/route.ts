@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
 
     const userId = session.user.id;
 
-    const uri = process.env.BACKEND_URL || "http://backend-service:4000";
+    const uri =
+      process.env.NEXT_PUBLIC_API_URL || "http://backend-service:4000";
     const response = await fetch(`${uri}/api/dashboard/activity`, {
       method: "GET",
       headers: {

@@ -1,3 +1,4 @@
+import { debugLog } from "@/lib/utils";
 import { NextRequest } from "next/server";
 
 /**
@@ -45,9 +46,7 @@ export async function POST(request: NextRequest) {
         jsonBody.name === "join_team_chat" ||
         jsonBody.name === "leave_team_chat"
       ) {
-        console.log(
-          `Socket proxy forwarding team chat event: ${jsonBody.name}`
-        );
+        debugLog(`Socket proxy forwarding team chat event: ${jsonBody.name}`);
       }
     } catch (e) {}
 

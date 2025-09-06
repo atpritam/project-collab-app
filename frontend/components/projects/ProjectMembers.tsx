@@ -21,17 +21,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Loader2,
-  MoreVertical,
-  ShieldAlert,
-  ShieldCheck,
-  User,
-  UserCog,
-  UserMinus,
-} from "lucide-react";
+import { Loader2, MoreVertical, UserCog, UserMinus } from "lucide-react";
+import Link from "next/link";
+import { getProfileUrl } from "@/lib/profileUtils";
+import { getInitials } from "@/lib/utils";
+import { getRoleBadge } from "@/lib/badge-utils";
 
 interface ProjectMembersProps {
   projectId: string;
@@ -79,42 +74,6 @@ export default function ProjectMembers({
       setMembers(project.members);
     }
   }, [project, session?.user?.id]);
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return (
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1.5">
-            <ShieldAlert className="h-3 w-3" />
-            Admin
-          </Badge>
-        );
-      case "EDITOR":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1.5">
-            <ShieldCheck className="h-3 w-3" />
-            Editor
-          </Badge>
-        );
-      case "MEMBER":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            Member
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
 
   const canChangeRole = (memberRole: string) => {
     // Creator (Admin) can change role for everybody
@@ -223,9 +182,14 @@ export default function ProjectMembers({
   return (
     <Card className="w-full flex flex-1">
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <UserCog className="h-5 w-5 mr-2" />
-          Team Members
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex">
+            <UserCog className="h-5 w-5 mr-2" />
+            Team Members
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {members.length}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -241,15 +205,23 @@ export default function ProjectMembers({
                 className="flex md:items-center md:justify-between border-b border-border/40 last:border-0 pb-3 last:pb-0 flex-col md:flex-row"
               >
                 <div className="flex items-center">
-                  <Avatar className="h-9 w-9 mr-3">
-                    <AvatarImage
-                      src={member.user?.image || ""}
-                      alt={member.user?.name || "Unknown user"}
-                    />
-                    <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                      {getInitials(member.user?.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <Link
+                    href={getProfileUrl(
+                      member.user?.email,
+                      session?.user?.email
+                    )}
+                    className="cursor-pointer hover:opacity-80 transition-opacity mr-3"
+                  >
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage
+                        src={member.user?.image || ""}
+                        alt={member.user?.name || "Unknown user"}
+                      />
+                      <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
+                        {getInitials(member.user?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div>
                     <p className="font-medium">
                       {member.user?.name || "Unknown user"}

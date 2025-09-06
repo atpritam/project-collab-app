@@ -54,6 +54,7 @@ const Chat: React.FC<ChatProps> = ({
   const loadingRef = useRef<boolean>(false);
   const selectedUserRef = useRef<string | null>(null);
   const processedMessagesRef = useRef<Set<string>>(new Set());
+  const pendingOptimisticMessagesRef = useRef<Map<string, string>>(new Map());
 
   // if socket io is not connected we use fallback polling
   useEffect(() => {
@@ -134,6 +135,7 @@ const Chat: React.FC<ChatProps> = ({
     if (selectedUser && selectedUser.id !== selectedUserRef.current) {
       setMessages([]);
       processedMessagesRef.current = new Set();
+      pendingOptimisticMessagesRef.current.clear();
       fetchMessages(true, true);
       markMessagesAsRead();
     }
@@ -185,8 +187,20 @@ const Chat: React.FC<ChatProps> = ({
             console.log(`Skipping duplicate message: ${message.id}`);
             return prevMessages;
           }
-          processedMessagesRef.current.add(message.id);
 
+          const tempMessageContent = pendingOptimisticMessagesRef.current.get(
+            message.content
+          );
+          if (tempMessageContent && message.senderId === currentUserId) {
+            pendingOptimisticMessagesRef.current.delete(message.content);
+            processedMessagesRef.current.add(message.id);
+
+            return prevMessages
+              .filter((msg) => msg.id !== tempMessageContent)
+              .concat(message);
+          }
+
+          processedMessagesRef.current.add(message.id);
           return [...prevMessages, message];
         });
 
@@ -266,6 +280,7 @@ const Chat: React.FC<ChatProps> = ({
           },
         };
 
+        pendingOptimisticMessagesRef.current.set(content, tempId);
         processedMessagesRef.current.add(tempId);
 
         setMessages((prev) => [...prev, optimisticMessage]);

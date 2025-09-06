@@ -2,8 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, X, User, LogOut, ChevronDown, Zap } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  ChevronDown,
+  Zap,
+  Settings,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import UserAuthStatus from "@/components/auth/UserAuthStatus";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -24,8 +34,12 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   const isAuthenticated = status === "authenticated";
+  const isHomePage = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,6 +81,25 @@ export default function Header() {
       .toUpperCase();
   };
 
+  const scrollToSection = (sectionId: string) => {
+    setMobileMenuOpen(false);
+
+    if (!isHomePage) {
+      router.push(`/?section=${sectionId}`);
+      return;
+    }
+
+    setTimeout(
+      () => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      },
+      isMobile ? 300 : 0
+    );
+  };
+
   // user data
   const userName = userData?.name || "";
   const userEmail = userData?.email || "";
@@ -74,11 +107,13 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-200 ${
+      className={`top-0 z-50 w-full transition-all duration-200 ${
         scrolled
-          ? "bg-background/95 backdrop-blur-md shadow-sm"
-          : "bg-background"
-      }`}
+          ? "sticky bg-background/95"
+          : mobileMenuOpen
+          ? "sticky bg-background/10"
+          : "absolute bg-background/10"
+      } backdrop-blur-md shadow-sm`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -86,7 +121,8 @@ export default function Header() {
             <Link href="/" className="flex items-center gap-2">
               <motion.div
                 className="h-10 w-10 rounded-full bg-violet-700 flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, rotate: 360 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <svg
@@ -103,6 +139,7 @@ export default function Header() {
                   />
                 </svg>
               </motion.div>
+
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-700 to-purple-600">
                 Nudge
               </span>
@@ -112,74 +149,73 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="flex items-center gap-1 text-foreground/70 hover:text-violet-900"
+                    className="flex items-center gap-1 text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                   >
                     Features
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/" className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-md bg-violet-100 flex items-center justify-center">
-                        <Zap className="h-4 w-4 text-violet-700" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Project Management</p>
-                        <p className="text-xs text-muted-foreground">
-                          Organize your work
-                        </p>
-                      </div>
-                    </Link>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => scrollToSection("features")}
+                  >
+                    <div className="h-8 w-8 rounded-md bg-violet-100 flex items-center justify-center">
+                      <Zap className="h-4 w-4 text-violet-700" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Project Management</p>
+                      <p className="text-xs text-muted-foreground">
+                        Organize your work
+                      </p>
+                    </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/features/collaboration"
-                      className="flex items-center gap-2"
-                    >
-                      <div className="h-8 w-8 rounded-md bg-violet-100 flex items-center justify-center">
-                        <User className="h-4 w-4 text-violet-700" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Team Collaboration</p>
-                        <p className="text-xs text-muted-foreground">
-                          Work together seamlessly
-                        </p>
-                      </div>
-                    </Link>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => scrollToSection("features")}
+                  >
+                    <div className="h-8 w-8 rounded-md bg-violet-100 flex items-center justify-center">
+                      <User className="h-4 w-4 text-violet-700" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Team Collaboration</p>
+                      <p className="text-xs text-muted-foreground">
+                        Work together seamlessly
+                      </p>
+                    </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               <Button
                 variant="ghost"
-                asChild
-                className="text-foreground/70 hover:text-violet-900"
+                className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
+                onClick={() => scrollToSection("pricing")}
               >
-                <Link href="/">Pricing</Link>
+                Pricing
               </Button>
 
               <Button
                 variant="ghost"
-                asChild
-                className="text-foreground/70 hover:text-violet-900"
+                className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
+                onClick={() => scrollToSection("testimonials")}
               >
-                <Link href="/">Testimonials</Link>
+                Testimonials
               </Button>
 
               <Button
                 variant="ghost"
-                asChild
-                className="text-foreground/70 hover:text-violet-900"
+                className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
+                onClick={() => scrollToSection("cta")}
               >
-                <Link href="/">FAQ</Link>
+                FAQ
               </Button>
 
               {isAuthenticated && (
                 <Button
                   variant="ghost"
                   asChild
-                  className="text-foreground/70 hover:text-violet-900"
+                  className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 >
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
@@ -214,13 +250,30 @@ export default function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80">
                     <DropdownMenuLabel className="pb-2">
-                      <UserAuthStatus />
+                      <UserAuthStatus
+                        Authenticated={isAuthenticated}
+                        Name={userName}
+                        Email={userEmail}
+                        Image={userImage}
+                      />
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
+                      <Link
+                        href="/profile?tab=profile"
+                        className="cursor-pointer"
+                      >
                         <User className="h-4 w-4 mr-2" />
                         Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/profile?tab=settings"
+                        className="cursor-pointer"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -245,7 +298,7 @@ export default function Header() {
                 <Button
                   asChild
                   variant="ghost"
-                  className="text-foreground/70 hover:text-violet-900"
+                  className="text-foreground/70 hover:text-violet-900 dark:hover:text-violet-400"
                 >
                   <Link href="/auth/signin">Sign In</Link>
                 </Button>
@@ -286,34 +339,30 @@ export default function Header() {
             transition={{ duration: 0.2 }}
           >
             <div className="pt-2 pb-3 space-y-1 px-4">
-              <Link
-                href="/"
-                className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                className="block w-full text-left py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
+                onClick={() => scrollToSection("features")}
               >
                 Features
-              </Link>
-              <Link
-                href="/"
-                className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
-                onClick={() => setMobileMenuOpen(false)}
+              </button>
+              <button
+                className="block w-full text-left py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
+                onClick={() => scrollToSection("pricing")}
               >
                 Pricing
-              </Link>
-              <Link
-                href="/"
-                className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
-                onClick={() => setMobileMenuOpen(false)}
+              </button>
+              <button
+                className="block w-full text-left py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
+                onClick={() => scrollToSection("testimonials")}
               >
                 Testimonials
-              </Link>
-              <Link
-                href="/"
-                className="block py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
-                onClick={() => setMobileMenuOpen(false)}
+              </button>
+              <button
+                className="block w-full text-left py-2 px-3 text-base font-medium text-foreground/70 hover:bg-violet-50 hover:text-violet-900 rounded-md"
+                onClick={() => scrollToSection("cta")}
               >
                 FAQ
-              </Link>
+              </button>
               {isAuthenticated && (
                 <Link
                   href="/dashboard"
@@ -333,6 +382,10 @@ export default function Header() {
                 <UserAuthStatus
                   mobile={true}
                   onAction={() => setMobileMenuOpen(false)}
+                  Authenticated={isAuthenticated}
+                  Name={userName}
+                  Email={userEmail}
+                  Image={userImage}
                 />
               ) : (
                 <div className="mt-3 space-y-1 px-2">

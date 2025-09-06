@@ -1,7 +1,8 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { getInitials } from "@/lib/utils";
+import { formatTime } from "@/lib/utils";
 
 interface ChatMessageProps {
   message: {
@@ -23,19 +24,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   currentUserId,
 }) => {
   const isCurrentUser = message.sender.id === currentUserId;
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const formatTime = (dateString: string) => {
-    return format(new Date(dateString), "h:mm a");
-  };
 
   return (
     <div

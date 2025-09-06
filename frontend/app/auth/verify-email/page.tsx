@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import VerifyEmailForm from "@/components/auth/VerifyEmailForm";
+import VerifyEmail from "@/components/auth/VerifyEmailForm";
 
 export const metadata: Metadata = {
   title: "Verify Email | Nudge",
@@ -10,7 +10,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-        <VerifyEmailForm />
+        <VerifyEmail />
       </div>
     </div>
   );

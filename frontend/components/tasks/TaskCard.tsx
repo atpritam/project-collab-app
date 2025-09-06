@@ -1,17 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { Calendar, FolderKanban } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { getStatusBadge, getPriorityBadge } from "@/lib/badge-utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getProfileUrl } from "@/lib/profileUtils";
+import { getInitials } from "@/lib/utils";
 
 interface TaskCardProps {
   task: {
@@ -30,17 +33,20 @@ interface TaskCardProps {
       id: string;
       name: string | null;
       image: string | null;
+      email?: string;
     } | null;
     creator: {
       id: string;
       name: string | null;
       image: string | null;
+      email?: string;
     };
   };
   currentUserId?: string;
 }
 
 export default function TaskCard({ task, currentUserId }: TaskCardProps) {
+  const { data: session } = useSession();
   const router = useRouter();
 
   const handleTaskClick = () => {
@@ -50,15 +56,6 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
   const handleProjectClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     router.push(`/projects/${task.projectId}`);
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   const formatDueDate = (dateString: string | null) => {
@@ -91,68 +88,9 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
     return dueDate < today;
   };
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "HIGH":
-        return (
-          <Badge
-            variant="outline"
-            className="text-xs border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400"
-          >
-            High
-          </Badge>
-        );
-      case "MEDIUM":
-        return (
-          <Badge
-            variant="outline"
-            className="text-xs border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-          >
-            Medium
-          </Badge>
-        );
-      case "LOW":
-        return (
-          <Badge
-            variant="outline"
-            className="text-xs border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-          >
-            Low
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "DONE":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-            Done
-          </Badge>
-        );
-      case "IN_PROGRESS":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            In Progress
-          </Badge>
-        );
-      case "TODO":
-        return (
-          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            To Do
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <Card
-      className="hover:shadow-md transition-all cursor-pointer h-full flex flex-col"
+      className="transition-all cursor-pointer h-full flex flex-col dark:hover:bg-muted/20 hover:shadow-md hover:bg-muted/30"
       onClick={handleTaskClick}
     >
       <CardContent className="p-4 pt-0 flex-grow">
@@ -196,30 +134,47 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
       <CardFooter>
         <div className="flex items-center justify-between w-full border-t pt-4 mt-auto">
           {task.assignee ? (
-            <div className="flex items-center">
-              <span className="text-xs text-muted-foreground mr-2">
-                Assigned to:
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-2">
+                Assignee
               </span>
-              <Avatar className="h-6 w-6 mr-1">
-                <AvatarImage
-                  src={task.assignee.image || ""}
-                  alt={task.assignee.name || ""}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                  {getInitials(task.assignee.name)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{task.assignee.name}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={task.assignee.image || ""}
+                        alt={task.assignee.name || ""}
+                        className="object-cover cursor-pointer"
+                        onClick={() => {
+                          window.location.href = getProfileUrl(
+                            task?.assignee?.email!,
+                            session?.user?.email
+                          );
+                        }}
+                      />
+                      <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
+                        {getInitials(task.assignee.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {task.assignee.name}
+                      {task.assignee.id === currentUserId && " (You)"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           ) : (
             <div className="text-xs text-muted-foreground">Unassigned</div>
           )}
 
           {task.creator && (
-            <div className="flex items-center">
-              <span className="text-xs text-muted-foreground mr-2">
-                Created by:
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground mb-2">
+                Creator
               </span>
               <TooltipProvider>
                 <Tooltip>
@@ -228,7 +183,13 @@ export default function TaskCard({ task, currentUserId }: TaskCardProps) {
                       <AvatarImage
                         src={task.creator.image || ""}
                         alt={task.creator.name || ""}
-                        className="object-cover"
+                        className="object-cover cursor-pointer"
+                        onClick={() => {
+                          window.location.href = getProfileUrl(
+                            task?.creator?.email!,
+                            session?.user?.email
+                          );
+                        }}
                       />
                       <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
                         {getInitials(task.creator.name)}

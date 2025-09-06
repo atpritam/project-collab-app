@@ -2,17 +2,22 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, Clock, PlusCircle } from "lucide-react";
+import { ArrowRight, Calendar, Clock, PlusCircle, Crown, Zap } from "lucide-react";
 import Link from "next/link";
 
 export function WelcomeBanner({
   userName,
   tasksDue,
   projectsDue,
+  subscription,
 }: {
   userName: string;
   tasksDue: number;
   projectsDue: number;
+  subscription?: {
+    plan: 'STARTER' | 'PRO' | 'ENTERPRISE';
+    status: 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'UNPAID';
+  } | null;
 }) {
   const hours = new Date().getHours();
   let greeting = "Good morning";
@@ -65,10 +70,29 @@ export function WelcomeBanner({
         <div className="space-y-2">
           <motion.div
             variants={itemVariants}
-            className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur-sm"
+            className="flex items-center gap-3 flex-wrap"
           >
-            <Clock className="mr-2 h-3 w-3" />
-            <span>{dateString}</span>
+            <div className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur-sm">
+              <Clock className="mr-2 h-3 w-3" />
+              <span>{dateString}</span>
+            </div>
+            {subscription && (
+              <Link href="/subscription">
+                <div className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur-sm hover:bg-white/30 transition-colors cursor-pointer">
+                  {subscription.plan === 'PRO' ? (
+                    <Crown className="mr-2 h-3 w-3" />
+                  ) : subscription.plan === 'ENTERPRISE' ? (
+                    <Crown className="mr-2 h-3 w-3" />
+                  ) : (
+                    <Zap className="mr-2 h-3 w-3" />
+                  )}
+                  <span className="font-medium">
+                    {subscription.plan} Plan
+                    {subscription.status === 'TRIAL' && ' (Trial)'}
+                  </span>
+                </div>
+              </Link>
+            )}
           </motion.div>
           <motion.h1 variants={itemVariants} className="text-3xl font-bold">
             {greeting}, {userName}!

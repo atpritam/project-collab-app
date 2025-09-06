@@ -10,8 +10,10 @@ import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
 import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
+import { UpgradePrompt } from "@/components/subscription/UpgradePrompt";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSubscription } from "@/components/context/SubscriptionContext";
 
 interface Activity {
   id: string;
@@ -47,6 +49,7 @@ interface Activity {
 export default function DashboardPage() {
   const isMobile = useIsMobile();
   const { data: session, status } = useSession();
+  const { subscription, upgradePrompt, hideUpgradePrompt, refreshSubscription } = useSubscription();
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialRender, setIsInitialRender] = useState(true);
   const [projects, setProjects] = useState([]);
@@ -70,6 +73,7 @@ export default function DashboardPage() {
     if (session?.user?.id) {
       fetchDashboardData();
       checkPendingInvitations();
+      refreshSubscription(); // Refresh subscription data
     }
   }, [session?.user?.id]);
 
@@ -206,7 +210,9 @@ export default function DashboardPage() {
         userName={firstName}
         tasksDue={stats.upcomingDeadlines}
         projectsDue={stats.totalProjects}
+        subscription={subscription}
       />
+
 
       {showInvitations &&
         (isLoading ? (
@@ -216,6 +222,17 @@ export default function DashboardPage() {
             onInvitationAction={handleInvitationAction}
           />
         ))}
+
+      {/* Upgrade Prompt */}
+      {upgradePrompt.show && upgradePrompt.type && (
+        <UpgradePrompt
+          type={upgradePrompt.type}
+          currentCount={upgradePrompt.currentCount}
+          limit={upgradePrompt.limit}
+          plan={upgradePrompt.plan}
+          onClose={hideUpgradePrompt}
+        />
+      )}
 
       {!isMobile &&
         (isLoading ? (

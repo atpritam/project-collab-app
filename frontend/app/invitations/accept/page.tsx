@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -34,7 +34,7 @@ interface InvitationData {
   expiresAt: string;
 }
 
-export default function AcceptInvitationPage() {
+function InvitationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -369,5 +369,28 @@ export default function AcceptInvitationPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+      <Card className="w-full max-w-md border-0 shadow-lg">
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="h-12 w-12 animate-spin text-violet-700 mb-4" />
+          <p className="text-lg">Loading invitation...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Suspense boundary
+export default function AcceptInvitationPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <InvitationContent />
+    </Suspense>
   );
 }

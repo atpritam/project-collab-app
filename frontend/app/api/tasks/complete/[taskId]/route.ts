@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 // POST /api/tasks/complete/[taskId] - Add completion details to a task
 export async function POST(
-  request: Request,
-  context: { params: { taskId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ taskId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -14,7 +14,8 @@ export async function POST(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = context.params;
+    const resolvedParams = await params;
+    const taskId = resolvedParams.taskId;
     const body = await request.json();
 
     // Request to the backend service

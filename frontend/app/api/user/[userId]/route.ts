@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { userId: string } }
-) {
+  request: NextRequest,
+  context: { params: Promise<{ userId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -13,7 +13,8 @@ export async function GET(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId } = params;
+    const resolvedParams = await context.params;
+    const { userId } = resolvedParams;
 
     if (!userId) {
       return NextResponse.json(

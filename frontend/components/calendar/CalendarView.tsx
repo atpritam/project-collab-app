@@ -303,9 +303,7 @@ export default function CalendarView({
                 )}
                 {selectedEvent.taskId && (
                   <Button asChild>
-                    <Link
-                      href={`/projects/${selectedEvent.projectId}/tasks/${selectedEvent.taskId}`}
-                    >
+                    <Link href={`/tasks/${selectedEvent.taskId}`}>
                       Go to Task <ArrowUpRight className="ml-1 h-4 w-4" />
                     </Link>
                   </Button>
@@ -358,7 +356,7 @@ export default function CalendarView({
                                   event.type === "project-start" ||
                                   event.type === "project-due"
                                     ? `/projects/${event.projectId}`
-                                    : `/projects/${event.projectId}/tasks/${event.taskId}`
+                                    : `/tasks/${event.taskId}`
                                 }
                               >
                                 View{" "}

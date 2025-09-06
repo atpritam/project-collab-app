@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -21,6 +21,7 @@ import {
   FolderIcon,
   PanelLeftClose,
   PanelLeft,
+  CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -59,6 +60,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
 
 export default function WorkspaceSidebar() {
   const { data: session } = useSession();
@@ -141,6 +143,12 @@ export default function WorkspaceSidebar() {
       icon: <Users className="h-4 w-4" />,
       label: "Team",
       isActive: isLinkActive("/team"),
+    },
+    {
+      href: "/subscription",
+      icon: <CreditCard className="h-4 w-4" />,
+      label: "Subscription",
+      isActive: isLinkActive("/subscription"),
     },
   ];
 
@@ -320,16 +328,60 @@ export default function WorkspaceSidebar() {
       </div>
 
       <div className="flex items-center">
-        <Avatar className="h-8 w-8 cursor-pointer">
-          <AvatarImage
-            src={userImage}
-            alt={userName}
-            className="object-cover"
-          />
-          <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-xs">
-            {getInitials(userName)}
-          </AvatarFallback>
-        </Avatar>
+        <div className="border-t border-border/40 p-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 p-2 w-full justify-start"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={userImage}
+                    alt={userName}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-700 text-white text-xs">
+                    {getInitials(userName)}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer w-full">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/profile?tab=settings"
+                  className="cursor-pointer w-full"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="p-2">
+                <ThemeToggle />
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex w-full items-center text-red-600 focus:text-red-600 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );
@@ -343,9 +395,27 @@ export default function WorkspaceSidebar() {
         }`}
       >
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-violet-700 flex items-center justify-center group-data-[collapsible=icon]:mx-auto">
-            <Zap className="h-4 w-4 text-white" />
-          </div>
+          <motion.div
+            className="h-8 w-8 rounded-full bg-violet-700 flex items-center justify-center"
+            whileHover={{ scale: 1.05, rotate: 360 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg
+              className="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </motion.div>
+
           <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-700 to-purple-600 transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden">
             Nudge
           </span>

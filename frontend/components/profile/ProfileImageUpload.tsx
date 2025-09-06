@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { getInitials } from "@/lib/utils";
 
 interface ProfileImageUploadProps {
   onImageUpdated?: () => void;
@@ -43,19 +44,10 @@ export default function ProfileImageUpload({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFileKey, setUploadedFileKey] = useState<string | null>(null);
+  const [fileCommitted, setFileCommitted] = useState(false);
 
   const isAuthenticated = status === "authenticated";
   const hasExistingImage = !!userData?.image;
-
-  // Helper function to get user initials for avatar fallback
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
 
   // user profile data when authenticated
   useEffect(() => {
@@ -97,13 +89,13 @@ export default function ProfileImageUpload({
   };
 
   const resetState = () => {
-    // If we have a file key and a preview image that wasn't committed, we delete the file
-    if (uploadedFileKey && previewImage) {
+    if (uploadedFileKey && previewImage && !fileCommitted) {
       deleteFileFromUploadThing(uploadedFileKey);
     }
 
     setPreviewImage(null);
     setUploadedFileKey(null);
+    setFileCommitted(false);
     setIsLoading(false);
     setConfirmationView("none");
     setUploadProgress(0);
@@ -125,6 +117,8 @@ export default function ProfileImageUpload({
       if (!response.ok) {
         throw new Error(data.message || "Failed to update profile image");
       }
+
+      setFileCommitted(true);
 
       // update session
       await update({
@@ -161,7 +155,7 @@ export default function ProfileImageUpload({
       toast.error(err.message || "Failed to update profile image");
       console.error("Error updating profile image:", err);
 
-      if (uploadedFileKey) {
+      if (uploadedFileKey && !fileCommitted) {
         deleteFileFromUploadThing(uploadedFileKey);
         setUploadedFileKey(null);
       }
@@ -182,12 +176,12 @@ export default function ProfileImageUpload({
   };
 
   const handleCancelPreview = () => {
-    // Delete the file from UploadThing when user cancels
     if (uploadedFileKey) {
       deleteFileFromUploadThing(uploadedFileKey);
       setUploadedFileKey(null);
     }
     setPreviewImage(null);
+    setFileCommitted(false);
   };
 
   const ProfileAvatar = ({
@@ -384,6 +378,7 @@ export default function ProfileImageUpload({
                           console.log("File key for deletion:", fileKey);
                           setPreviewImage(uploadUrl);
                           setUploadedFileKey(fileKey);
+                          setFileCommitted(false);
                         } else {
                           toast.error("Invalid response from upload service");
                           console.error(
@@ -408,6 +403,7 @@ export default function ProfileImageUpload({
                     onUploadBegin={() => {
                       setIsUploading(true);
                       setUploadProgress(0);
+                      setFileCommitted(false);
                     }}
                     onUploadProgress={(progress) => {
                       setUploadProgress(progress);

@@ -1,19 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string; fileId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string; fileId: string }> }
+): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: projectId, fileId } = params;
+    const resolvedParams = await params;
+    const projectId = resolvedParams.id;
+    const fileId = resolvedParams.fileId;
 
     // Request to the backend service
     const response = await fetch(

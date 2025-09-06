@@ -180,7 +180,11 @@ export default function ProjectDetailPage() {
             </TabsContent>
 
             <TabsContent value="files" className="mt-6">
-              <ProjectFiles projectId={id} />
+              <ProjectFiles
+                projectId={id}
+                isAdmin={isAdmin}
+                isEditor={isEditor}
+              />
             </TabsContent>
           </Tabs>
         </div>
