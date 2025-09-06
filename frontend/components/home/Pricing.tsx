@@ -4,9 +4,8 @@ import { Check, X, Zap, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-// import { useSubscription } from "@/components/context/SubscriptionContext";
 
 interface PricingProps {
   pricingInView: boolean;
@@ -16,18 +15,19 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
   ({ pricingInView = true }, ref) => {
     const { data: session, status } = useSession();
     const router = useRouter();
-    const searchParams = useSearchParams();
-    // const { subscription } = useSubscription();
     const [loading, setLoading] = useState<string | null>(null);
     const [subscription, setSubscription] = useState<any>(null);
 
-    // Handle success redirect from checkout
+    // Handle success redirect from checkout - use window.location for SSR safety
     useEffect(() => {
-      const upgraded = searchParams.get("upgraded");
-      if (upgraded === "true") {
-        toast.success("🎉 Welcome to your new plan! Your subscription has been activated.");
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const upgraded = urlParams.get("upgraded");
+        if (upgraded === "true") {
+          toast.success("🎉 Welcome to your new plan! Your subscription has been activated.");
+        }
       }
-    }, [searchParams]);
+    }, []);
 
     // Fetch subscription data when user is authenticated
     useEffect(() => {
@@ -178,7 +178,7 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
           { included: false, text: "Priority support" },
         ],
         popular: true,
-        cta: "Try Pro Free", // Will be updated dynamically
+        cta: "Try Pro Free",
         color:
           "bg-gradient-to-b from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-200 dark:border-violet-400",
         buttonVariant: "default",
@@ -201,7 +201,7 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
           { included: true, text: "Priority support" },
         ],
         popular: false,
-        cta: "Try Enterprise Free", // Will be updated dynamically
+        cta: "Try Enterprise Free",
         color:
           "bg-card border-border hover:border-violet-200 dark:hover:border-violet-400",
         buttonVariant: "outline",

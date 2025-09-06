@@ -10,12 +10,7 @@ import Hero from "@/components/home/Hero";
 import Features from "@/components/home/Features";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
-import dynamic from "next/dynamic";
-
-const Pricing = dynamic(() => import("@/components/home/Pricing"), {
-  ssr: false,
-  loading: () => <SearchParamsLoading />
-});
+import Pricing from "@/components/home/Pricing";
 import { Loader2 } from "lucide-react";
 
 function SearchParamsHandler() {
