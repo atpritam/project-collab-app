@@ -245,31 +245,31 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6 sm:space-y-6">
         {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Subscription</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <h1 className="text-3xl sm:text-3xl font-bold tracking-tight">Subscription</h1>
+          <p className="text-base sm:text-base text-muted-foreground mt-2">
             Manage your subscription and billing preferences
           </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-3 sm:gap-3">
           <Button
             variant="outline"
-            size="sm"
+            size="default"
             onClick={refreshSubscription}
             disabled={loading}
-            className="flex items-center gap-2 text-xs sm:text-sm"
+            className="flex items-center gap-2 text-sm sm:text-sm px-4 py-2"
           >
-            <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw className={`h-4 w-4 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="sm:inline">Refresh</span>
           </Button>
           <Badge 
             variant="outline" 
-            className={`${plan.color} ${plan.borderColor} ${plan.bgColor} text-xs sm:text-sm`}
+            className={`${plan.color} ${plan.borderColor} ${plan.bgColor} text-sm sm:text-sm px-3 py-1`}
           >
-            <PlanIcon className="h-3 w-3 mr-1" />
+            <PlanIcon className="h-4 w-4 mr-2" />
             {plan.name}
           </Badge>
         </div>
@@ -285,17 +285,17 @@ export default function SubscriptionPage() {
             transition={{ duration: 0.5 }}
           >
             <Card className={`${plan.bgColor} ${plan.borderColor} border`}>
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${plan.bgColor}`}>
-                      <PlanIcon className={`h-5 w-5 sm:h-6 sm:w-6 ${plan.color}`} />
+              <CardHeader className="pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg ${plan.bgColor}`}>
+                      <PlanIcon className={`h-6 w-6 sm:h-6 sm:w-6 ${plan.color}`} />
                     </div>
                     <div>
-                      <CardTitle className={`text-lg sm:text-xl ${plan.color}`}>
+                      <CardTitle className={`text-xl sm:text-xl ${plan.color}`}>
                         {plan.name} Plan
                       </CardTitle>
-                      <CardDescription className="text-sm">
+                      <CardDescription className="text-base mt-1">
                         {subscription.status === 'ACTIVE' ? 'Active subscription' : 
                          subscription.status === 'TRIAL' ? 'Free trial' :
                          subscription.status === 'CANCELED' ? 'Canceled' :
@@ -304,63 +304,63 @@ export default function SubscriptionPage() {
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs sm:text-sm self-start sm:self-center">
+                  <Badge variant="secondary" className="text-sm sm:text-sm self-start sm:self-center px-3 py-1">
                     ${subscription.limits.price / 100}/month
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6">
+              <CardContent className="space-y-6 sm:space-y-6">
                 {/* Usage Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <FolderPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        <span>Projects</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-base">
+                      <div className="flex items-center gap-3">
+                        <FolderPlus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <span className="font-medium">Projects</span>
                       </div>
-                      <span className={getUsageColor(subscription.usage.projects, subscription.limits.projects)}>
+                      <span className={`font-semibold ${getUsageColor(subscription.usage.projects, subscription.limits.projects)}`}>
                         {subscription.usage.projects} / {subscription.limits.projects === -1 ? '∞' : subscription.limits.projects}
                       </span>
                     </div>
                     {subscription.limits.projects !== -1 && (
                       <Progress 
                         value={getUsagePercentage(subscription.usage.projects, subscription.limits.projects)} 
-                        className="h-2"
+                        className="h-3"
                       />
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <span>Team Members</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-base">
+                      <div className="flex items-center gap-3">
+                        <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        <span className="font-medium">Team Members</span>
                       </div>
-                      <span className={getUsageColor(subscription.usage.teamMembers, subscription.limits.teamMembers)}>
+                      <span className={`font-semibold ${getUsageColor(subscription.usage.teamMembers, subscription.limits.teamMembers)}`}>
                         {subscription.usage.teamMembers} / {subscription.limits.teamMembers === -1 ? '∞' : subscription.limits.teamMembers}
                       </span>
                     </div>
                     {subscription.limits.teamMembers !== -1 && (
                       <Progress 
                         value={getUsagePercentage(subscription.usage.teamMembers, subscription.limits.teamMembers)} 
-                        className="h-2"
+                        className="h-3"
                       />
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <HardDrive className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                        <span>Storage</span>
-                </div>
-                      <span className={getUsageColor(subscription.usage.storageGB, subscription.limits.storageGB)}>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-base">
+                      <div className="flex items-center gap-3">
+                        <HardDrive className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        <span className="font-medium">Storage</span>
+                      </div>
+                      <span className={`font-semibold ${getUsageColor(subscription.usage.storageGB, subscription.limits.storageGB)}`}>
                         {subscription.usage.storageGB.toFixed(1)}GB / {subscription.limits.storageGB}GB
                       </span>
                     </div>
                     <Progress 
                       value={getUsagePercentage(subscription.usage.storageGB, subscription.limits.storageGB)} 
-                      className="h-2"
+                      className="h-3"
                     />
                   </div>
                 </div>
@@ -369,32 +369,32 @@ export default function SubscriptionPage() {
 
                 {/* Billing Information */}
                 {subscription.subscription && (
-                  <div className="space-y-3 sm:space-y-4">
-                    <h3 className="text-base sm:text-lg font-semibold">Billing Information</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                  <div className="space-y-4 sm:space-y-4">
+                    <h3 className="text-lg sm:text-lg font-semibold">Billing Information</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4 text-sm sm:text-sm">
                       <div>
-                        <span className="text-muted-foreground">Current Period:</span>
-                        <p className="font-medium">
+                        <span className="text-muted-foreground font-medium">Current Period:</span>
+                        <p className="font-semibold mt-1">
                           {formatDate(subscription.subscription.currentPeriodStart)} - {formatDate(subscription.subscription.currentPeriodEnd)}
                         </p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Status:</span>
-                        <p className="font-medium capitalize">{subscription.subscription.cancelAtPeriodEnd ? 'Canceling at period end' : 'Active'}</p>
+                        <span className="text-muted-foreground font-medium">Status:</span>
+                        <p className="font-semibold capitalize mt-1">{subscription.subscription.cancelAtPeriodEnd ? 'Canceling at period end' : 'Active'}</p>
                       </div>
                     </div>
                       </div>
                     )}
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 pt-4 sm:pt-4">
                   <Button 
                     onClick={handleManageBilling}
                     variant="outline"
-                    className="flex items-center gap-2 text-sm"
-                    size="sm"
+                    className="flex items-center gap-3 text-base px-6 py-3"
+                    size="default"
                   >
-                    <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <CreditCard className="h-5 w-5 sm:h-4 sm:w-4" />
                     Manage Billing
                   </Button>
                 </div>
@@ -408,10 +408,11 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base sm:text-lg">Available Plans</CardTitle>
-                <CardDescription className="text-sm">
+            {/* Desktop Card Wrapper */}
+            <Card className="hidden sm:block">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-lg sm:text-lg">Available Plans</CardTitle>
+                <CardDescription className="text-base mt-2">
                   {subscription.plan === 'STARTER' 
                     ? 'Upgrade to unlock more features and higher limits'
                     : subscription.plan === 'ENTERPRISE' 
@@ -421,21 +422,21 @@ export default function SubscriptionPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4">
                   {/* Pro Plan Option */}
                   {(subscription.plan === 'STARTER' || subscription.plan === 'ENTERPRISE') && (
                     <Card className="flex flex-col">
-                      <CardContent className="p-3 sm:p-4 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
-                          <div className="flex items-center gap-2">
-                            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600" />
-                            <h3 className="font-semibold text-sm sm:text-base">Pro Plan</h3>
+                      <CardContent className="p-4 sm:p-4 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-4 sm:mb-3">
+                          <div className="flex items-center gap-3">
+                            <Crown className="h-5 w-5 sm:h-5 sm:w-5 text-violet-600" />
+                            <h3 className="font-semibold text-base sm:text-base">Pro Plan</h3>
                           </div>
-                          <Badge variant="outline" className="text-violet-600 text-xs sm:text-sm">
+                          <Badge variant="outline" className="text-violet-600 text-sm sm:text-sm px-3 py-1">
                             $29/month
                           </Badge>
                         </div>
-                        <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 flex-1">
+                        <div className="space-y-2 sm:space-y-2 text-sm sm:text-sm text-muted-foreground mb-4 sm:mb-4 flex-1">
                           <div>• Up to 100 projects</div>
                           <div>• Up to 15 team members</div>
                           <div>• 10GB storage</div>
@@ -444,8 +445,8 @@ export default function SubscriptionPage() {
                         <div className="mt-auto">
                           <Button 
                             variant="outline" 
-                            size="sm"
-                            className={`w-full text-xs sm:text-sm ${
+                            size="default"
+                            className={`w-full text-base sm:text-sm px-4 py-3 ${
                               subscription.plan === 'STARTER' 
                                 ? 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600'
                                 : 'border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20'
@@ -466,17 +467,17 @@ export default function SubscriptionPage() {
                   {/* Starter Plan Option */}
                   {subscription.plan !== 'STARTER' && (
                     <Card className="flex flex-col">
-                      <CardContent className="p-3 sm:p-4 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
-                          <div className="flex items-center gap-2">
-                            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-                            <h3 className="font-semibold text-sm sm:text-base">Starter Plan</h3>
+                      <CardContent className="p-4 sm:p-4 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-4 sm:mb-3">
+                          <div className="flex items-center gap-3">
+                            <Zap className="h-5 w-5 sm:h-5 sm:w-5 text-gray-600" />
+                            <h3 className="font-semibold text-base sm:text-base">Starter Plan</h3>
                           </div>
-                          <Badge variant="outline" className="text-gray-600 text-xs sm:text-sm">
+                          <Badge variant="outline" className="text-gray-600 text-sm sm:text-sm px-3 py-1">
                             Free
                           </Badge>
                         </div>
-                        <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 flex-1">
+                        <div className="space-y-2 sm:space-y-2 text-sm sm:text-sm text-muted-foreground mb-4 sm:mb-4 flex-1">
                           <div>• Up to 5 projects</div>
                           <div>• Up to 4 team members</div>
                           <div>• 100MB storage</div>
@@ -485,8 +486,8 @@ export default function SubscriptionPage() {
                         <div className="mt-auto">
                           <Button 
                             variant="outline" 
-                            size="sm"
-                            className="w-full text-xs sm:text-sm border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                            size="default"
+                            className="w-full text-base sm:text-sm px-4 py-3 border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                             onClick={() => handleDowngrade('STARTER')}
                             disabled={downgradeLoading === 'STARTER'}
                           >
@@ -500,17 +501,17 @@ export default function SubscriptionPage() {
                   {/* Enterprise Plan Option */}
                   {(subscription.plan === 'STARTER' || subscription.plan === 'PRO') && (
                     <Card className="flex flex-col">
-                      <CardContent className="p-3 sm:p-4 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
-                          <div className="flex items-center gap-2">
-                            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                            <h3 className="font-semibold text-sm sm:text-base">Enterprise Plan</h3>
+                      <CardContent className="p-4 sm:p-4 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-4 sm:mb-3">
+                          <div className="flex items-center gap-3">
+                            <Crown className="h-5 w-5 sm:h-5 sm:w-5 text-purple-600" />
+                            <h3 className="font-semibold text-base sm:text-base">Enterprise Plan</h3>
                           </div>
-                          <Badge variant="outline" className="text-purple-600 text-xs sm:text-sm">
+                          <Badge variant="outline" className="text-purple-600 text-sm sm:text-sm px-3 py-1">
                             $79/month
                           </Badge>
                         </div>
-                        <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 flex-1">
+                        <div className="space-y-2 sm:space-y-2 text-sm sm:text-sm text-muted-foreground mb-4 sm:mb-4 flex-1">
                           <div>• Unlimited projects</div>
                           <div>• Unlimited team members</div>
                           <div>• 100GB storage</div>
@@ -519,8 +520,8 @@ export default function SubscriptionPage() {
                         </div>
                         <div className="mt-auto">
                           <Button 
-                            size="sm"
-                            className={`w-full text-xs sm:text-sm ${
+                            size="default"
+                            className={`w-full text-base sm:text-sm px-4 py-3 ${
                               subscription.plan === 'STARTER' 
                                 ? 'bg-purple-600 hover:bg-purple-700 text-white'
                                 : 'bg-violet-600 hover:bg-violet-700 text-white'
@@ -536,11 +537,128 @@ export default function SubscriptionPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Mobile Direct Plan Cards */}
+            <div className="block sm:hidden">
+              <div className="grid grid-cols-1 gap-4">
+                {/* Pro Plan Option - Mobile */}
+                {(subscription.plan === 'STARTER' || subscription.plan === 'ENTERPRISE') && (
+                  <Card className="flex flex-col">
+                    <CardContent className="p-4 flex flex-col flex-1">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <Crown className="h-5 w-5 text-violet-600" />
+                          <h3 className="font-semibold text-base">Pro Plan</h3>
+                        </div>
+                        <Badge variant="outline" className="text-violet-600 text-sm px-3 py-1">
+                          $29/month
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 text-sm text-muted-foreground mb-4 flex-1">
+                        <div>• Up to 100 projects</div>
+                        <div>• Up to 15 team members</div>
+                        <div>• 10GB storage</div>
+                        <div>• Advanced task management</div>
+                      </div>
+                      <div className="mt-auto">
+                        <Button 
+                          variant="outline" 
+                          size="default"
+                          className={`w-full text-base px-4 py-3 ${
+                            subscription.plan === 'STARTER' 
+                              ? 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600'
+                              : 'border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20'
+                          }`}
+                          onClick={() => subscription.plan === 'STARTER' ? handleUpgrade('PRO') : handleDowngrade('PRO')}
+                          disabled={downgradeLoading === 'PRO'}
+                        >
+                          {subscription.plan === 'STARTER' 
+                            ? 'Upgrade to Pro'
+                            : downgradeLoading === 'PRO' ? 'Processing...' : 'Downgrade to Pro'
+                          }
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Starter Plan Option - Mobile */}
+                {subscription.plan !== 'STARTER' && (
+                  <Card className="flex flex-col">
+                    <CardContent className="p-4 flex flex-col flex-1">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <Zap className="h-5 w-5 text-gray-600" />
+                          <h3 className="font-semibold text-base">Starter Plan</h3>
+                        </div>
+                        <Badge variant="outline" className="text-gray-600 text-sm px-3 py-1">
+                          Free
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 text-sm text-muted-foreground mb-4 flex-1">
+                        <div>• Up to 5 projects</div>
+                        <div>• Up to 4 team members</div>
+                        <div>• 100MB storage</div>
+                        <div>• Basic task management</div>
+                      </div>
+                      <div className="mt-auto">
+                        <Button 
+                          variant="outline" 
+                          size="default"
+                          className="w-full text-base px-4 py-3 border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                          onClick={() => handleDowngrade('STARTER')}
+                          disabled={downgradeLoading === 'STARTER'}
+                        >
+                          {downgradeLoading === 'STARTER' ? 'Processing...' : 'Downgrade to Starter'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Enterprise Plan Option - Mobile */}
+                {(subscription.plan === 'STARTER' || subscription.plan === 'PRO') && (
+                  <Card className="flex flex-col">
+                    <CardContent className="p-4 flex flex-col flex-1">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <Crown className="h-5 w-5 text-purple-600" />
+                          <h3 className="font-semibold text-base">Enterprise Plan</h3>
+                        </div>
+                        <Badge variant="outline" className="text-purple-600 text-sm px-3 py-1">
+                          $79/month
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 text-sm text-muted-foreground mb-4 flex-1">
+                        <div>• Unlimited projects</div>
+                        <div>• Unlimited team members</div>
+                        <div>• 100GB storage</div>
+                        <div>• Advanced analytics</div>
+                        <div>• Priority support</div>
+                      </div>
+                      <div className="mt-auto">
+                        <Button 
+                          size="default"
+                          className={`w-full text-base px-4 py-3 ${
+                            subscription.plan === 'STARTER' 
+                              ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                              : 'bg-violet-600 hover:bg-violet-700 text-white'
+                          }`}
+                          onClick={() => subscription.plan === 'STARTER' ? handleUpgrade('ENTERPRISE') : handleUpgrade('ENTERPRISE')}
+                        >
+                          {subscription.plan === 'STARTER' ? 'Upgrade to Enterprise' : 'Upgrade to Enterprise'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
           </motion.div>
         </div>
 
         {/* Right Column: Quick Stats + Plan Features */}
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6 sm:space-y-6">
           {/* Quick Stats */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -548,32 +666,32 @@ export default function SubscriptionPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base sm:text-lg">Quick Stats</CardTitle>
+              <CardHeader className="pb-6">
+                <CardTitle className="text-lg sm:text-lg">Quick Stats</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4">
+              <CardContent className="space-y-4 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                    <span className="text-xs sm:text-sm">Plan Tier</span>
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                    <span className="text-sm sm:text-sm font-medium">Plan Tier</span>
                   </div>
-                  <Badge variant="outline" className="text-xs sm:text-sm">{plan.name}</Badge>
+                  <Badge variant="outline" className="text-sm sm:text-sm px-3 py-1">{plan.name}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-                    <span className="text-xs sm:text-sm">Status</span>
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-4 w-4 sm:h-4 sm:w-4 text-blue-600" />
+                    <span className="text-sm sm:text-sm font-medium">Status</span>
                   </div>
-                  <Badge variant={subscription.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-xs sm:text-sm">
+                  <Badge variant={subscription.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-sm sm:text-sm px-3 py-1">
                     {subscription.status}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                    <span className="text-xs sm:text-sm">Features</span>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                    <span className="text-sm sm:text-sm font-medium">Features</span>
                   </div>
-                  <span className="text-xs sm:text-sm font-medium">
+                  <span className="text-sm sm:text-sm font-semibold">
                     {subscription.limits.projects === -1 ? 'Unlimited' : 'Limited'}
                   </span>
                 </div>
@@ -588,55 +706,55 @@ export default function SubscriptionPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base sm:text-lg">Plan Features</CardTitle>
+              <CardHeader className="pb-6">
+                <CardTitle className="text-lg sm:text-lg">Plan Features</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-xs sm:text-sm">
+              <CardContent className="space-y-3 sm:space-y-3">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                  <span className="text-sm sm:text-sm font-medium">
                     {subscription.limits.projects === -1 ? 'Unlimited' : subscription.limits.projects} Projects
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-xs sm:text-sm">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                  <span className="text-sm sm:text-sm font-medium">
                     {subscription.limits.teamMembers === -1 ? 'Unlimited' : subscription.limits.teamMembers} Team Members
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-xs sm:text-sm">{subscription.limits.storageGB}GB Storage</span>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                  <span className="text-sm sm:text-sm font-medium">{subscription.limits.storageGB}GB Storage</span>
                 </div>
                 {subscription.plan === 'PRO' && (
                   <>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span className="text-xs sm:text-sm">Advanced Analytics</span>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-sm sm:text-sm font-medium">Advanced Analytics</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span className="text-xs sm:text-sm">Priority Support</span>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-sm sm:text-sm font-medium">Priority Support</span>
                     </div>
                   </>
                 )}
                 {subscription.plan === 'ENTERPRISE' && (
                   <>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span className="text-xs sm:text-sm">Advanced Analytics</span>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-sm sm:text-sm font-medium">Advanced Analytics</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span className="text-xs sm:text-sm">Priority Support</span>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-sm sm:text-sm font-medium">Priority Support</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span className="text-xs sm:text-sm">Custom Integrations</span>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-sm sm:text-sm font-medium">Custom Integrations</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span className="text-xs sm:text-sm">Dedicated Account Manager</span>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-green-600" />
+                      <span className="text-sm sm:text-sm font-medium">Dedicated Account Manager</span>
                     </div>
                   </>
                 )}
