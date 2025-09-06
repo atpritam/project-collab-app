@@ -15,6 +15,7 @@ import {
   isExistingProjectMember,
   hasExistingInvitation,
 } from "../utils/permissions";
+import { canCreateProject, canAddTeamMember } from "../utils/subscription";
 import { debugError, debugLog } from "../utils/debug";
 
 const prisma = new PrismaClient();
@@ -33,6 +34,26 @@ projectsRouter.post("/new", function (req: Request, res: Response) {
 
     if (!creatorId) {
       return res.status(400).json({ message: "Creator ID is required" });
+    }
+
+    // Check subscription limits
+    try {
+      const limitCheck = await canCreateProject(creatorId);
+      if (!limitCheck.canCreate) {
+        return res.status(403).json({
+          message: "Project limit reached",
+          error: "SUBSCRIPTION_LIMIT_EXCEEDED",
+          details: {
+            currentCount: limitCheck.currentCount,
+            limit: limitCheck.limit,
+            plan: limitCheck.plan,
+            upgradeRequired: true
+          }
+        });
+      }
+    } catch (error) {
+      debugError("Error checking subscription limits:", error);
+      return res.status(500).json({ message: "Failed to verify subscription limits" });
     }
 
     try {
@@ -316,6 +337,26 @@ projectsRouter.post("/:id/invite", function (req: Request, res: Response) {
           message:
             "You do not have permission to invite members to this project",
         });
+      }
+
+      // Check subscription limits for team members
+      try {
+        const limitCheck = await canAddTeamMember(userId, id);
+        if (!limitCheck.canAdd) {
+          return res.status(403).json({
+            message: "Team member limit reached",
+            error: "SUBSCRIPTION_LIMIT_EXCEEDED",
+            details: {
+              currentCount: limitCheck.currentCount,
+              limit: limitCheck.limit,
+              plan: limitCheck.plan,
+              upgradeRequired: true
+            }
+          });
+        }
+      } catch (error) {
+        debugError("Error checking subscription limits:", error);
+        return res.status(500).json({ message: "Failed to verify subscription limits" });
       }
 
       const project = await prisma.project.findUnique({

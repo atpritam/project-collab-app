@@ -11,6 +11,7 @@ import WorkspaceSidebar from "@/components/workspace/WorkspaceSidebar";
 import { Loader2 } from "lucide-react";
 import { UnifiedBreadcrumb } from "@/components/workspace/UnifiedBreadcrumb";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SubscriptionProvider } from "@/components/context/SubscriptionContext";
 
 export default function WorkspaceLayout({
   children,
@@ -39,32 +40,34 @@ export default function WorkspaceLayout({
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <SidebarProvider>
-        <div className="flex h-screen overflow-hidden bg-background w-full">
-          <WorkspaceSidebar />
-          <main
-            className={`flex-1 overflow-auto ${
-              pathname === "/messages" ? "overflow-hidden" : "overflow-auto"
-            } md:pt-0 pt-14
-             ${isMobile ? "px-0" : "px-8 lg:px-12"}`}
-          >
-            <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
-              <UnifiedBreadcrumb />
+      <SubscriptionProvider>
+        <SidebarProvider>
+          <div className="flex h-screen overflow-hidden bg-background w-full">
+            <WorkspaceSidebar />
+            <main
+              className={`flex-1 overflow-auto ${
+                pathname === "/messages" ? "overflow-hidden" : "overflow-auto"
+              } md:pt-0 pt-14
+               ${isMobile ? "px-0" : "px-8 lg:px-12"}`}
+            >
+              <div className="mx-auto py-2 px-4 md:px-6 lg:px-8">
+                <UnifiedBreadcrumb />
 
-              <div className="pt-4">{children}</div>
-              {pathname !== "/messages" && (
-                <footer>
-                  <div className="py-4">
-                    <p className="text-center text-sm text-muted-foreground">
-                      © {new Date().getFullYear()} Nudge. All rights reserved.
-                    </p>
-                  </div>
-                </footer>
-              )}
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+                <div className="pt-4">{children}</div>
+                {pathname !== "/messages" && (
+                  <footer>
+                    <div className="py-4">
+                      <p className="text-center text-sm text-muted-foreground">
+                        © {new Date().getFullYear()} Nudge. All rights reserved.
+                      </p>
+                    </div>
+                  </footer>
+                )}
+              </div>
+            </main>
+          </div>
+        </SidebarProvider>
+      </SubscriptionProvider>
     </ThemeProvider>
   );
 }

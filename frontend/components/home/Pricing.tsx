@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, X, Zap, CheckCircle, ArrowRight } from "lucide-react";
+import { Check, X, Zap, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+// import { useSubscription } from "@/components/context/SubscriptionContext";
 
 interface PricingProps {
   pricingInView: boolean;
@@ -10,6 +14,131 @@ interface PricingProps {
 
 const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
   ({ pricingInView = true }, ref) => {
+    const { data: session, status } = useSession();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    // const { subscription } = useSubscription();
+    const [loading, setLoading] = useState<string | null>(null);
+    const [subscription, setSubscription] = useState<any>(null);
+
+    // Handle success redirect from checkout
+    useEffect(() => {
+      const upgraded = searchParams.get("upgraded");
+      if (upgraded === "true") {
+        toast.success("🎉 Welcome to your new plan! Your subscription has been activated.");
+      }
+    }, [searchParams]);
+
+    // Fetch subscription data when user is authenticated
+    useEffect(() => {
+      const fetchSubscription = async () => {
+        if (status === "authenticated" && session?.user?.id) {
+          try {
+            const response = await fetch("/api/subscriptions/status", {
+              headers: {
+                "x-user-id": session.user.id,
+              },
+            });
+            if (response.ok) {
+              const data = await response.json();
+              setSubscription(data);
+            }
+          } catch (error) {
+            console.error("Error fetching subscription:", error);
+          }
+        }
+      };
+
+      fetchSubscription();
+    }, [status, session?.user?.id]);
+
+    // Helper function to get plan status
+    const getPlanStatus = (planName: string) => {
+      if (!subscription) return null;
+      
+      const planMap: { [key: string]: string } = {
+        'STARTER': 'Starter',
+        'PRO': 'Pro', 
+        'ENTERPRISE': 'Enterprise'
+      };
+      
+      if (planMap[subscription.plan] === planName) {
+        return {
+          isCurrent: true,
+          status: subscription.status,
+          isCanceled: subscription.status === 'CANCELED',
+          isActive: subscription.status === 'ACTIVE'
+        };
+      }
+      return null;
+    };
+
+    // Helper function to get plan tier level
+    const getPlanTier = (planName: string) => {
+      const tierMap: { [key: string]: number } = {
+        'Starter': 1,
+        'Pro': 2,
+        'Enterprise': 3
+      };
+      return tierMap[planName] || 0;
+    };
+
+    // Helper function to get current user's plan tier
+    const getCurrentPlanTier = () => {
+      if (!subscription) return 0;
+      const planMap: { [key: string]: string } = {
+        'STARTER': 'Starter',
+        'PRO': 'Pro', 
+        'ENTERPRISE': 'Enterprise'
+      };
+      const currentPlanName = planMap[subscription.plan];
+      return getPlanTier(currentPlanName);
+    };
+
+    // Helper function to get dynamic CTA text
+    const getCtaText = (plan: any) => {
+      if (status !== "authenticated") {
+        return plan.name === "Starter" ? "Get Started" : `Try ${plan.name} Free`;
+      }
+      
+      if (plan.name === "Starter") {
+        // Check if this is a downgrade for users with higher-tier plans
+        const currentTier = getCurrentPlanTier();
+        const planTier = getPlanTier(plan.name);
+        
+        if (currentTier > planTier) {
+          return `Downgrade to ${plan.name}`;
+        }
+        
+        return "Go to Dashboard";
+      }
+      
+      if (plan.planStatus?.isCurrent) {
+        if (plan.planStatus.isActive) return "Current Plan";
+        if (plan.planStatus.isCanceled) return "Reactivate";
+      }
+      
+      // Check if this is a downgrade
+      const currentTier = getCurrentPlanTier();
+      const planTier = getPlanTier(plan.name);
+      
+      if (currentTier > planTier) {
+        return `Downgrade to ${plan.name}`;
+      } else if (currentTier < planTier) {
+        return `Upgrade to ${plan.name}`;
+      }
+      
+      return `Upgrade to ${plan.name}`;
+    };
+
+    // Helper function to check if this is a downgrade
+    const isDowngrade = (plan: any) => {
+      if (status !== "authenticated" || !subscription) return false;
+      const currentTier = getCurrentPlanTier();
+      const planTier = getPlanTier(plan.name);
+      return currentTier > planTier;
+    };
+
     const pricingPlans = [
       {
         name: "Starter",
@@ -26,11 +155,13 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
           { included: false, text: "Priority support" },
         ],
         popular: false,
-        cta: "Get Started",
+        cta: status === "authenticated" ? "Go to Dashboard" : "Get Started",
         color:
           "bg-card border-border hover:border-violet-200 dark:hover:border-violet-400",
         buttonVariant: "outline",
         last: false,
+        priceId: null, // Free plan
+        planStatus: getPlanStatus("Starter"),
       },
       {
         name: "Pro",
@@ -47,11 +178,13 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
           { included: false, text: "Priority support" },
         ],
         popular: true,
-        cta: "Try Pro Free",
+        cta: "Try Pro Free", // Will be updated dynamically
         color:
           "bg-gradient-to-b from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/20 border-violet-200 dark:border-violet-400",
         buttonVariant: "default",
         last: false,
+        priceId: "price_1S4DQICKziAtH8BYuY73xOLJ", // Pro plan price ID ($29)
+        planStatus: getPlanStatus("Pro"),
       },
       {
         name: "Enterprise",
@@ -68,13 +201,95 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
           { included: true, text: "Priority support" },
         ],
         popular: false,
-        cta: "Contact Sales",
+        cta: "Try Enterprise Free", // Will be updated dynamically
         color:
           "bg-card border-border hover:border-violet-200 dark:hover:border-violet-400",
         buttonVariant: "outline",
         last: true,
+        priceId: "price_1S4DQTCKziAtH8BYeZh1NhJo", // Enterprise plan price ID ($79)
+        planStatus: getPlanStatus("Enterprise"),
       },
     ];
+
+    const handlePlanClick = async (plan: typeof pricingPlans[0]) => {
+      // If user is not logged in, redirect to signup
+      if (status === "unauthenticated") {
+        router.push("/auth/signup");
+        return;
+      }
+
+      // If user is logged in but session is loading, wait
+      if (status === "loading") {
+        return;
+      }
+
+      // Handle Starter plan (free)
+      if (plan.name === "Starter") {
+        // Check if this is a downgrade for Enterprise users
+        if (isDowngrade(plan)) {
+          toast.info("Please visit the subscription page to manage your plan changes.");
+          router.push("/subscription");
+          return;
+        }
+        // Otherwise, redirect to dashboard for new users
+        router.push("/dashboard");
+        return;
+      }
+
+      // Check if user already has this plan
+      if (plan.planStatus?.isCurrent) {
+        if (plan.planStatus.isActive) {
+          toast.info("You already have this plan active!");
+          router.push("/subscription");
+          return;
+        } else if (plan.planStatus.isCanceled) {
+          toast.info("This plan is canceled. Visit subscription page to reactivate.");
+          router.push("/subscription");
+          return;
+        }
+      }
+
+      // Handle downgrades - redirect to subscription page for now
+      if (isDowngrade(plan)) {
+        toast.info("Please visit the subscription page to manage your plan changes.");
+        router.push("/subscription");
+        return;
+      }
+
+      // Handle paid plans
+      if (plan.priceId) {
+        setLoading(plan.name);
+        try {
+          const response = await fetch("/api/subscriptions/checkout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-user-id": session?.user?.id || "",
+            },
+            body: JSON.stringify({
+              plan: plan.name.toUpperCase(),
+              successUrl: `${window.location.origin}/dashboard?upgraded=true`,
+              cancelUrl: `${window.location.origin}/#pricing`,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.checkoutUrl || data.url) {
+            window.location.href = data.checkoutUrl || data.url;
+          } else {
+            throw new Error(data.error || "Failed to create checkout session");
+          }
+        } catch (error) {
+          console.error("Error creating checkout session:", error);
+          // Show a more user-friendly error message
+          const errorMessage = error instanceof Error ? error.message : "Failed to start checkout process. Please try again.";
+          toast.error(errorMessage);
+        } finally {
+          setLoading(null);
+        }
+      }
+    };
 
     return (
       <div className="py-10 bg-background" ref={ref}>
@@ -150,9 +365,24 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
                   </div>
                 )}
                 <div className={`${plan.last ? "lg:pl-4" : "pl-0"}`}>
-                  <h3 className="text-2xl font-bold text-foreground">
-                    {plan.name}
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-2xl font-bold text-foreground">
+                      {plan.name}
+                    </h3>
+                    {plan.planStatus?.isCurrent && (
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        plan.planStatus.isActive 
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                          : plan.planStatus.isCanceled
+                          ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
+                      }`}>
+                        {plan.planStatus.isActive ? 'Current Plan' : 
+                         plan.planStatus.isCanceled ? 'Canceled' : 
+                         plan.planStatus.status}
+                      </div>
+                    )}
+                  </div>
                   <div
                     className={`mt-4 flex items-baseline text-foreground ${
                       plan.popular
@@ -197,24 +427,37 @@ const Pricing = React.forwardRef<HTMLDivElement, PricingProps>(
 
                 <div className={`mt-8 ${plan.last ? "lg:pl-4" : "pl-0"}`}>
                   <Button
-                    asChild
+                    onClick={() => handlePlanClick(plan)}
+                    disabled={loading === plan.name || status === "loading" || (plan.planStatus?.isCurrent && plan.planStatus.isActive)}
                     variant={
-                      plan.buttonVariant === "default" ? "default" : "outline"
+                      plan.planStatus?.isCurrent && plan.planStatus.isActive
+                        ? "outline"
+                        : plan.buttonVariant === "default" ? "default" : "outline"
                     }
                     className={`w-full ${
-                      plan.popular
+                      plan.popular && !(plan.planStatus?.isCurrent && plan.planStatus.isActive) && !isDowngrade(plan)
                         ? "bg-violet-700 hover:bg-violet-800 text-white"
+                        : plan.planStatus?.isCurrent && plan.planStatus.isActive
+                        ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                        : isDowngrade(plan)
+                        ? "border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30"
                         : ""
                     }`}
                     size="lg"
                   >
-                    <Link
-                      href="/auth/signup"
-                      className="flex items-center justify-center"
-                    >
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
+                    {loading === plan.name ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        {getCtaText(plan)}
+                        {!(plan.planStatus?.isCurrent && plan.planStatus.isActive) && (
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        )}
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>

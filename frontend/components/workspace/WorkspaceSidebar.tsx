@@ -21,6 +21,7 @@ import {
   FolderIcon,
   PanelLeftClose,
   PanelLeft,
+  CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -142,6 +143,12 @@ export default function WorkspaceSidebar() {
       icon: <Users className="h-4 w-4" />,
       label: "Team",
       isActive: isLinkActive("/team"),
+    },
+    {
+      href: "/subscription",
+      icon: <CreditCard className="h-4 w-4" />,
+      label: "Subscription",
+      isActive: isLinkActive("/subscription"),
     },
   ];
 
