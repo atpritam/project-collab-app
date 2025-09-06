@@ -38,7 +38,6 @@ export default function NewProjectPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [projectFiles, setProjectFiles] = useState<any[]>([]);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   // Redirect if not authenticated
   if (status === "unauthenticated") {
@@ -362,16 +361,6 @@ export default function NewProjectPage() {
         </div>
       </div>
 
-      {/* Upgrade Prompt */}
-      {showUpgradeDialog && (
-        <UpgradePrompt
-          type="projects"
-          currentCount={0}
-          limit={5}
-          plan="STARTER"
-          onClose={() => setShowUpgradeDialog(false)}
-        />
-      )}
     </div>
   );
 }
