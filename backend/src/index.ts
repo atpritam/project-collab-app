@@ -67,15 +67,6 @@ app.use(
   })
 );
 
-<<<<<<< HEAD
-// Body parsing with limits
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-// Input sanitization
-app.use(sanitizeHtml);
-
-=======
 // Stripe webhook route (must be before JSON parsing middleware)
 app.post("/api/subscriptions/webhook", express.raw({ type: 'application/json' }), function (req: any, res: any) {
   const sig = req.headers['stripe-signature'];
@@ -127,8 +118,6 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Input sanitization
 app.use(sanitizeHtml);
-
->>>>>>> main
 // test route
 app.get("/", (_, res) => {
   res.send("API is running");
@@ -146,17 +135,10 @@ app.use("/api/calendar", calendarRouter);
 app.use("/api/collaborators", collaboratorsRouter);
 app.use("/api/messages", messageRateLimit, messagesRouter);
 app.use("/api/team-messages", messageRateLimit, teamMessagesRouter);
-<<<<<<< HEAD
-
-// Start server
-const PORT = parseInt(process.env.PORT || "4000", 10);
-=======
 app.use("/api/subscriptions", subscriptionRouter);
 
 // Start server
 const PORT = parseInt(process.env.PORT || "4000", 10);
-
->>>>>>> main
 server.listen(PORT, "0.0.0.0", () => {
   debugLog(`Server running on port ${PORT}`);
   debugLog(`Socket.io server configured and ready`);
