@@ -15,10 +15,7 @@ import {
   isExistingProjectMember,
   hasExistingInvitation,
 } from "../utils/permissions";
-<<<<<<< HEAD
-=======
 import { canCreateProject, canAddTeamMember } from "../utils/subscription";
->>>>>>> main
 import { debugError, debugLog } from "../utils/debug";
 
 const prisma = new PrismaClient();
