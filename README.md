@@ -83,6 +83,46 @@ For demo and testing purposes, any invitation sent to "pritam.amit26@gmail.com" 
 - **Docker** with multi-container setup
 - **Docker Compose** for local development and deployment
 
+## 🧪 Testing
+
+Nudge includes a comprehensive testing suite demonstrating modern testing practices and code quality assurance:
+
+### Test Coverage
+
+- **Backend Tests**: 40 tests covering authentication, validation, and utility functions
+- **Frontend Tests**: 47 tests covering components, forms, and user interactions
+- **Total Coverage**: 87 tests ensuring reliability and maintainability
+
+### Testing Technologies
+
+- **Backend**: Jest, Supertest, TypeScript testing with mocked dependencies
+- **Frontend**: Jest, React Testing Library, user event simulation
+- **Coverage Reporting**: Detailed coverage analysis with HTML and LCOV reports
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend
+npm test
+npm run test:coverage
+
+# Frontend tests
+cd frontend
+npm test
+npm run test:coverage
+
+# Watch mode for development
+npm run test:watch
+```
+
+### Test Categories
+
+- **Unit Tests**: Individual function and component testing
+- **Integration Tests**: API endpoint testing with mocked dependencies
+- **Component Tests**: React component rendering and user interaction testing
+- **Security Tests**: Input validation, sanitization, and authentication testing
+
 ## Architecture
 
 Nudge is built on a modern, microservices-oriented architecture:
@@ -277,6 +317,7 @@ This project demonstrates my skills in full-stack development, architecture desi
 - **Real-time Features**: Socket.IO for messaging and live updates
 - **Authentication & Security**: JWT, OAuth, rate limiting, input validation
 - **Database Design**: PostgreSQL with complex relationships and queries
+- **Testing & Quality Assurance**: Comprehensive test suite with Jest, React Testing Library, and Supertest
 - **DevOps**: Docker containerization and deployment strategies
 
 Contributions are welcome! Please feel free to submit a Pull Request.

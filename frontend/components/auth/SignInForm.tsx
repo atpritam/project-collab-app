@@ -339,7 +339,7 @@ function SignInForm() {
             >
               <Link
                 href="/auth/signup"
-                className="flex items-center inline-flex"
+                className="inline-flex items-center"
               >
                 Sign up
                 <ArrowRight className="h-4 w-4 ml-1" />
