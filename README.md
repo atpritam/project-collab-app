@@ -19,7 +19,7 @@
 Nudge is a sophisticated project collaboration platform designed to streamline team workflows and enhance productivity through intuitive project management tools. This full-stack application provides teams with a centralized workspace to create, track, and complete projects with ease.
 
 🔗 **Live Demo**: [project-collab-app.vercel.app](https://project-collab-app.vercel.app/)  
-🚀 **Backend**: Express.js API with PostgreSQL database deployed on Railway
+🚀 **Backend**: Express.js API with PostgreSQL database deployed on Nortflank
 
 **Accounts created with email/password require activation before login. You can sign up with Google or GitHub for instant verification.**
 
@@ -37,6 +37,9 @@ Nudge is a sophisticated project collaboration platform designed to streamline t
 - **Kanban Board View**: Drag-and-drop task management with visual workflow stages
 - **Responsive Design**: Fully mobile-responsive interface for collaboration on any device
 
+![Nudge Logo](Photos/Messages.png)
+
+
 ## 💳 Subscription & Payment System
 
 - **Flexible Subscription Plans**: Three-tiered pricing (Starter, Pro, Enterprise) with different limits and features
@@ -53,7 +56,8 @@ Nudge is a sophisticated project collaboration platform designed to streamline t
 | **Enterprise** | Unlimited | Unlimited | 100GB | $79/month |
 
 
-![Nudge Logo](Photos/Messages.png)
+![Nudge Logo](Photos/Subscription.png)
+
 
 ### Auto-Accept Team Invitation
 
@@ -133,6 +137,8 @@ Nudge is built on a modern, microservices-oriented architecture:
 
 The application uses a RESTful API for most operations, with Socket.io for real-time features like messaging and status updates.
 
+![Nudge Logo](Photos/File-System.png)
+
 ## 💰 Subscription System Architecture
 
 ### Payment Flow
@@ -142,7 +148,6 @@ The application uses a RESTful API for most operations, with Socket.io for real-
 4. **Database Sync**: Automatic subscription status and limits updates
 5. **Billing Portal**: Self-service billing management for customers
 
-![Nudge Logo](Photos/File-System.png)
 
 ## 🔒 Security Features
 
