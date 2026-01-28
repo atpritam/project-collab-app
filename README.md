@@ -346,16 +346,6 @@ For local development without Docker:
 
 ## Contribution
 
-This project demonstrates my skills in full-stack development, architecture design, payment system integration, and creating intuitive user experiences. As a portfolio piece, it showcases my ability to build complex systems with modern web technologies including:
-
-- **Full-Stack Development**: Next.js, Express.js, PostgreSQL, TypeScript
-- **Payment Integration**: Stripe subscription management with webhooks
-- **Real-time Features**: Socket.IO for messaging and live updates
-- **Authentication & Security**: JWT, OAuth, rate limiting, input validation
-- **Database Design**: PostgreSQL with complex relationships and queries
-- **Testing & Quality Assurance**: Comprehensive test suite with Jest, React Testing Library, and Supertest
-- **DevOps**: Docker containerization and deployment strategies
-
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
